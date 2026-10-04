@@ -1,0 +1,10 @@
+# Private CV dataset
+data/resumes/raw/
+data/resumes/processed/
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
