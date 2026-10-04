@@ -1,0 +1,42 @@
+<View>
+
+    <Header value="AUTO-HR Resume NER Annotation"/>
+
+    <Text
+        name="text"
+        value="$text"
+    />
+
+    <Labels
+        name="label"
+        toName="text"
+    >
+
+        <Label
+            value="HARD_SKILL"
+            background="#4CAF50"
+        />
+
+        <Label
+            value="SOFT_SKILL"
+            background="#2196F3"
+        />
+
+        <Label
+            value="EXPERIENCE"
+            background="#FF9800"
+        />
+
+        <Label
+            value="EDUCATION"
+            background="#9C27B0"
+        />
+
+        <Label
+            value="LANG"
+            background="#F44336"
+        />
+
+    </Labels>
+
+</View>

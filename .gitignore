@@ -8,3 +8,6 @@ data/resumes/processed/
 # Python
 __pycache__/
 *.pyc
+
+# Private annotation data
+data/annotations/
