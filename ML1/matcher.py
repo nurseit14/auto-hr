@@ -30,7 +30,7 @@ EMBEDDINGS_FILE = (
 
 class JobMatcher:
 
-    def __init__(self, alpha=0.6):
+    def __init__(self, alpha=0.4):
 
         self.alpha = alpha
 
@@ -63,28 +63,33 @@ class JobMatcher:
             f"{self.vacancy_embeddings.shape}"
         )
 
+    # --------------------------------------------------
+    # Semantic similarity
+    # --------------------------------------------------
+
     def semantic_scores(
         self,
         resume_text
     ):
         """
-        Calculate semantic similarity between
-        resume and all vacancies.
+        Calculate semantic similarity between a resume
+        and every vacancy.
+
+        Vacancy embeddings and resume embeddings are
+        normalized, so dot product = cosine similarity.
         """
 
         resume_embedding = encode_text(
             resume_text
         )
 
-        # Embeddings are normalized, therefore
-        # dot product = cosine similarity
         scores = (
             self.vacancy_embeddings
             @ resume_embedding
         )
 
-        # Cosine similarity can theoretically
-        # be negative.
+        # Negative cosine similarities are not useful
+        # for the current prototype.
         scores = np.clip(
             scores,
             0.0,
@@ -93,17 +98,39 @@ class JobMatcher:
 
         return scores
 
+    # --------------------------------------------------
+    # Main matching method
+    # --------------------------------------------------
+
     def match(
         self,
         resume_text,
-        top_k=10
+        top_k=10,
+        resume_skills=None
     ):
+        """
+        Match one resume against all vacancies.
+
+        Parameters
+        ----------
+        resume_text:
+            Full processed resume text.
+
+        top_k:
+            Number of highest-ranked vacancies returned.
+
+        resume_skills:
+            Optional already-extracted skills.
+            If not provided, skills are extracted here.
+        """
 
         print("\nExtracting resume skills...")
 
-        resume_skills = extract_skills(
-            resume_text
-        )
+        if resume_skills is None:
+
+            resume_skills = extract_skills(
+                resume_text
+            )
 
         print(
             "Detected resume skills:",
@@ -120,6 +147,10 @@ class JobMatcher:
 
         results = []
 
+        # --------------------------------------------------
+        # Compare resume against every vacancy
+        # --------------------------------------------------
+
         for index, vacancy in (
             self.vacancies.iterrows()
         ):
@@ -129,6 +160,10 @@ class JobMatcher:
                 ""
             )
 
+            if pd.isna(vacancy_skills):
+                vacancy_skills = ""
+
+            # Skill similarity
             skill_score = (
                 calculate_skill_similarity(
                     resume_skills,
@@ -136,13 +171,16 @@ class JobMatcher:
                 )
             )
 
+            # Semantic similarity
             semantic_score = float(
                 semantic_scores[index]
             )
 
+            # Hybrid score
             hybrid_score = (
                 self.alpha * skill_score
-                + (1 - self.alpha)
+                +
+                (1 - self.alpha)
                 * semantic_score
             )
 
@@ -153,43 +191,110 @@ class JobMatcher:
                 )
             )
 
-            results.append(
-                {
-                    "index": index,
+            # --------------------------------------------------
+            # Collect complete vacancy context
+            # --------------------------------------------------
 
-                    "title": vacancy.get(
+            result = {
+
+                "index":
+                    int(index),
+
+                "vacancy_id":
+                    vacancy.get(
+                        "id",
+                        index
+                    ),
+
+                "title":
+                    vacancy.get(
                         "title",
                         "Unknown"
                     ),
 
-                    "city": vacancy.get(
+                "city":
+                    vacancy.get(
                         "city",
                         "Unknown"
                     ),
 
-                    "job_category": vacancy.get(
+                "job_category":
+                    vacancy.get(
                         "Job",
                         "Unknown"
                     ),
 
-                    "skill_score": skill_score,
+                # Full text used by the future assistant
+                "description":
+                    vacancy.get(
+                        "text",
+                        ""
+                    ),
 
-                    "semantic_score":
-                        semantic_score,
+                "requirements":
+                    vacancy.get(
+                        "requirements",
+                        ""
+                    ),
 
-                    "hybrid_score":
-                        hybrid_score,
+                "responsibilities":
+                    vacancy.get(
+                        "responsibilities",
+                        ""
+                    ),
 
-                    "matched_skills":
-                        matched,
+                "experience":
+                    vacancy.get(
+                        "experience",
+                        ""
+                    ),
 
-                    "missing_skills":
-                        missing,
+                "employment":
+                    vacancy.get(
+                        "employment",
+                        ""
+                    ),
 
-                    "vacancy_skills":
-                        vacancy_skills,
-                }
+                "salary":
+                    vacancy.get(
+                        "salary",
+                        ""
+                    ),
+
+                "url":
+                    vacancy.get(
+                        "url",
+                        ""
+                    ),
+
+                # Scores
+                "skill_score":
+                    skill_score,
+
+                "semantic_score":
+                    semantic_score,
+
+                "hybrid_score":
+                    hybrid_score,
+
+                # Skill explanation
+                "matched_skills":
+                    matched,
+
+                "missing_skills":
+                    missing,
+
+                "vacancy_skills":
+                    vacancy_skills,
+            }
+
+            results.append(
+                result
             )
+
+        # --------------------------------------------------
+        # Rank
+        # --------------------------------------------------
 
         results.sort(
             key=lambda x: x["hybrid_score"],

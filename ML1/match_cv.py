@@ -1,11 +1,21 @@
+import os
+
+os.environ[
+    "TOKENIZERS_PARALLELISM"
+] = "false"
+
 import sys
 from pathlib import Path
 
+from ML1.job_assistant import JobAssistant
 from ML1.matcher import JobMatcher
 from NLP.cv_parser import parse_cv
 
 
 def print_result(position, result):
+    """
+    Display one vacancy result.
+    """
 
     print("\n" + "=" * 70)
     print(f"#{position} {result['title']}")
@@ -33,14 +43,26 @@ def print_result(position, result):
 
     print()
 
-    matched = result["matched_skills"]
-    missing = result["missing_skills"]
+    vacancy_skills = result.get(
+        "vacancy_skills",
+        ""
+    )
 
     print(
         "Vacancy skills:",
-        result["vacancy_skills"]
-        if result["vacancy_skills"]
+        vacancy_skills
+        if vacancy_skills
         else "None detected"
+    )
+
+    matched = result.get(
+        "matched_skills",
+        []
+    )
+
+    missing = result.get(
+        "missing_skills",
+        []
     )
 
     print(
@@ -58,6 +80,62 @@ def print_result(position, result):
     )
 
 
+def select_vacancy(results):
+    """
+    Let the candidate select one vacancy
+    from the Top-K recommendations.
+    """
+
+    print("\n" + "=" * 70)
+    print("SELECT VACANCY")
+    print("=" * 70)
+
+    print(
+        f"\nEnter a vacancy number from 1 to "
+        f"{len(results)}."
+    )
+
+    print(
+        "Press Enter to exit."
+    )
+
+    while True:
+
+        choice = input(
+            "\nVacancy number: "
+        ).strip()
+
+        if not choice:
+            return None
+
+        try:
+            position = int(choice)
+
+        except ValueError:
+
+            print(
+                "Please enter a valid number."
+            )
+
+            continue
+
+        if (
+            position < 1
+            or position > len(results)
+        ):
+
+            print(
+                f"Please choose a number "
+                f"between 1 and {len(results)}."
+            )
+
+            continue
+
+        return results[
+            position - 1
+        ]
+
+
 def main():
 
     print("=" * 70)
@@ -70,20 +148,24 @@ def main():
 
     if len(sys.argv) != 2:
 
+        print("\nUsage:")
+
         print(
-            "\nUsage:\n"
             'python -m ML1.match_cv '
             '"data/resumes/raw/example.pdf"'
         )
 
         sys.exit(1)
 
-    cv_path = Path(sys.argv[1])
+    cv_path = Path(
+        sys.argv[1]
+    )
 
     if not cv_path.exists():
 
         print(
-            f"\nCV file not found:\n{cv_path}"
+            f"\nCV file not found:\n"
+            f"{cv_path}"
         )
 
         sys.exit(1)
@@ -92,7 +174,7 @@ def main():
     # Parse CV
     # --------------------------------------------------
 
-    print(f"\nReading CV...")
+    print("\nReading CV...")
 
     try:
 
@@ -109,8 +191,13 @@ def main():
 
         sys.exit(1)
 
-    resume_text = cv["text"]
-    resume_skills = cv["skills"]
+    resume_text = cv[
+        "text"
+    ]
+
+    resume_skills = cv[
+        "skills"
+    ]
 
     if not resume_text.strip():
 
@@ -125,7 +212,9 @@ def main():
 
         sys.exit(1)
 
-    print("CV successfully parsed.")
+    print(
+        "CV successfully parsed."
+    )
 
     print(
         f"Characters extracted: "
@@ -142,16 +231,23 @@ def main():
     if resume_skills:
 
         for skill in resume_skills:
-            print(f"  - {skill}")
+            print(
+                f"  - {skill}"
+            )
 
     else:
-        print("  None")
+
+        print(
+            "  None"
+        )
 
     # --------------------------------------------------
     # Load matcher
     # --------------------------------------------------
 
-    print("\nLoading job matcher...")
+    print(
+        "\nLoading job matcher..."
+    )
 
     matcher = JobMatcher(
         alpha=0.4
@@ -166,12 +262,13 @@ def main():
     )
 
     results = matcher.match(
-        resume_text,
+        resume_text=resume_text,
+        resume_skills=resume_skills,
         top_k=10
     )
 
     # --------------------------------------------------
-    # Results
+    # Display Top 10
     # --------------------------------------------------
 
     print("\n" + "=" * 70)
@@ -187,6 +284,45 @@ def main():
             position,
             result
         )
+
+    # --------------------------------------------------
+    # Select vacancy
+    # --------------------------------------------------
+
+    selected_vacancy = (
+        select_vacancy(
+            results
+        )
+    )
+
+    if selected_vacancy is None:
+
+        print(
+            "\nAUTO-HR closed."
+        )
+
+        return
+
+    print(
+        f"\nSelected vacancy: "
+        f"{selected_vacancy['title']}"
+    )
+
+    print(
+        "Starting AUTO-HR Assistant..."
+    )
+
+    # --------------------------------------------------
+    # Start contextual assistant
+    # --------------------------------------------------
+
+    assistant = JobAssistant(
+        resume_text=resume_text,
+        resume_skills=resume_skills,
+        vacancy=selected_vacancy
+    )
+
+    assistant.chat()
 
 
 if __name__ == "__main__":
