@@ -11,3 +11,5 @@ __pycache__/
 
 # Private annotation data
 data/annotations/
+.env
+
