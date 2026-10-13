@@ -13,3 +13,5 @@ __pycache__/
 data/annotations/
 .env
 
+data/processed/resumes.csv
+data/processed/resumes.xlsx
