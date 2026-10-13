@@ -1,14 +1,46 @@
 import re
 from pathlib import Path
 
-from pypdf import PdfReader
+import pymupdf
+import pytesseract
+from PIL import Image
 
 from NLP.skill_extractor import extract_skills
 from NLP.anonymizer import anonymize_text
 
+
+def ocr_page(page):
+    """
+    OCR fallback for pages without selectable text.
+    Supports Kazakh, Russian and English.
+    """
+
+    pix = page.get_pixmap(
+        matrix=pymupdf.Matrix(2, 2),
+        alpha=False
+    )
+
+    image = Image.frombytes(
+        "RGB",
+        [pix.width, pix.height],
+        pix.samples
+    )
+
+    text = pytesseract.image_to_string(
+        image,
+        lang="kaz+rus+eng"
+    )
+
+    return text
+
+
 def extract_text_from_pdf(file_path):
     """
     Extract text from a PDF CV.
+
+    First try normal PyMuPDF text extraction.
+    If a page contains no selectable text,
+    use OCR fallback.
     """
 
     file_path = Path(file_path)
@@ -23,43 +55,176 @@ def extract_text_from_pdf(file_path):
             f"Unsupported file type: {file_path.suffix}"
         )
 
-    reader = PdfReader(file_path)
-
     pages = []
 
-    for page_number, page in enumerate(
-        reader.pages,
-        start=1
-    ):
-        try:
-            text = page.extract_text()
+    with pymupdf.open(file_path) as document:
 
-            if text:
-                pages.append(text)
+        for page_number, page in enumerate(
+            document,
+            start=1
+        ):
+            try:
 
-        except Exception as error:
-            print(
-                f"Warning: could not read page "
-                f"{page_number}: {error}"
-            )
+                text = page.get_text(
+                    "text",
+                    sort=True
+                )
+
+                # OCR fallback only if normal extraction is empty
+                if not text.strip():
+
+                    print(
+                        f"OCR fallback: page {page_number}"
+                    )
+
+                    text = ocr_page(
+                        page
+                    )
+
+                if text:
+                    pages.append(text)
+
+            except Exception as error:
+
+                print(
+                    f"Warning: could not read page "
+                    f"{page_number}: {error}"
+                )
 
     return "\n".join(pages)
 
 
+def repair_spaced_heading(line):
+    """
+    Repair headings where letters are separated by spaces.
+
+    Examples:
+        S K I L L S
+        -> SKILLS
+
+        Б І Л І М І
+        -> БІЛІМІ
+
+    Normal text such as:
+        Python, Java, C#
+    is left unchanged.
+    """
+
+    if not isinstance(line, str):
+        return line
+
+    stripped = line.strip()
+
+    if not stripped:
+        return line
+
+    parts = stripped.split()
+
+    if len(parts) < 4:
+        return line
+
+    single_character_parts = [
+        part
+        for part in parts
+        if len(part) == 1 and part.isalpha()
+    ]
+
+    ratio = (
+        len(single_character_parts)
+        / len(parts)
+    )
+
+    # Only repair lines that strongly look
+    # like artificially letter-spaced headings.
+    if ratio >= 0.75:
+
+        repaired = "".join(parts)
+
+        leading_spaces = (
+            len(line)
+            - len(line.lstrip())
+        )
+
+        return (
+            " " * leading_spaces
+            + repaired
+        )
+
+    return line
+
+
 def clean_cv_text(text):
     """
-    Basic cleaning while preserving useful CV content.
+    Clean extracted CV text while preserving
+    useful structure for NER.
     """
 
     if not text:
         return ""
 
     # Remove null characters
-    text = text.replace("\x00", " ")
+    text = text.replace(
+        "\x00",
+        " "
+    )
 
-    # Normalize spaces/tabs
+    # Normalize line endings
+    text = text.replace(
+        "\r\n",
+        "\n"
+    )
+
+    text = text.replace(
+        "\r",
+        "\n"
+    )
+
+    # --------------------------------------------------
+    # Fix known letter-spaced section headings
+    # --------------------------------------------------
+
+    heading_replacements = {
+        "S K I L L S": "SKILLS",
+        "Ж О Б А Л А Р": "ЖОБАЛАР",
+        "Т Е Х Н И К А Л Ы Қ": "ТЕХНИКАЛЫҚ",
+        "Д А Ғ Д Ы Л А Р": "ДАҒДЫЛАР",
+    }
+
+    for old, new in heading_replacements.items():
+        text = text.replace(
+            old,
+            new
+        )
+
+    # --------------------------------------------------
+    # Repair other strongly spaced headings
+    # --------------------------------------------------
+
+    lines = text.splitlines()
+
+    repaired_lines = [
+        repair_spaced_heading(line)
+        for line in lines
+    ]
+
+    text = "\n".join(
+        repaired_lines
+    )
+
+    # --------------------------------------------------
+    # Basic whitespace cleanup
+    # --------------------------------------------------
+
+    # Remove trailing spaces before line breaks
     text = re.sub(
-        r"[ \t]+",
+        r"[ \t]+\n",
+        "\n",
+        text
+    )
+
+    # Normalize repeated spaces/tabs inside lines
+    text = re.sub(
+        r"[ \t]{2,}",
         " ",
         text
     )
@@ -76,11 +241,13 @@ def clean_cv_text(text):
 
 def parse_cv(file_path):
     """
-    Complete V1 CV parsing pipeline.
+    Complete CV parsing pipeline.
 
     PDF
-      -> text
+      -> PyMuPDF extraction
+      -> OCR fallback if necessary
       -> cleaned text
+      -> anonymized text
       -> extracted skills
     """
 
@@ -104,8 +271,15 @@ def parse_cv(file_path):
 
     return {
         "filename": file_path.name,
+
+        "raw_text": raw_text,
+
+        "clean_text": clean_text,
+
         "text": anonymized_text,
+
         "skills": skills,
+
         "skill_count": len(skills),
     }
 
@@ -115,16 +289,36 @@ def print_cv_result(result):
     Print a safe summary for testing.
     """
 
-    print("\n" + "=" * 70)
-    print("CV PARSING RESULT")
-    print("=" * 70)
-
     print(
-        f"\nFile: {result['filename']}"
+        "\n"
+        + "=" * 70
     )
 
     print(
-        f"Characters extracted: "
+        "CV PARSING RESULT"
+    )
+
+    print(
+        "=" * 70
+    )
+
+    print(
+        f"\nFile: "
+        f"{result['filename']}"
+    )
+
+    print(
+        f"Raw characters: "
+        f"{len(result['raw_text'])}"
+    )
+
+    print(
+        f"Clean characters: "
+        f"{len(result['clean_text'])}"
+    )
+
+    print(
+        f"Anonymized characters: "
         f"{len(result['text'])}"
     )
 
@@ -133,25 +327,50 @@ def print_cv_result(result):
         f"{result['skill_count']}"
     )
 
-    print("\nDetected skills:")
+    print(
+        "\nDetected skills:"
+    )
 
     if result["skills"]:
+
         for skill in result["skills"]:
-            print(f"  - {skill}")
+
+            print(
+                f"  - {skill}"
+            )
+
     else:
-        print("  None")
 
-    print("\n" + "=" * 70)
-    print("TEXT PREVIEW")
-    print("=" * 70)
+        print(
+            "  None"
+        )
 
-    # Only show first 1500 characters for debugging
-    preview = result["text"][:1500]
+    print(
+        "\n"
+        + "=" * 70
+    )
 
-    print(preview)
+    print(
+        "TEXT PREVIEW"
+    )
+
+    print(
+        "=" * 70
+    )
+
+    preview = (
+        result["text"][:1500]
+    )
+
+    print(
+        preview
+    )
 
     if len(result["text"]) > 1500:
-        print("\n...[text truncated]...")
+
+        print(
+            "\n...[text truncated]..."
+        )
 
 
 if __name__ == "__main__":

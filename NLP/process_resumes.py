@@ -7,17 +7,17 @@ from NLP.cv_parser import parse_cv
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 
+# Папка с PDF-резюме на рабочем столе
 RESUMES_DIR = (
-    ROOT_DIR
-    / "data"
+    Path.home()
+    / "Desktop"
     / "resumes"
-    / "raw"
 )
 
+# Куда сохранить общий CSV
 OUTPUT_FILE = (
     ROOT_DIR
     / "data"
-    / "resumes"
     / "processed"
     / "resumes.csv"
 )
@@ -29,15 +29,19 @@ def main():
     print("AUTO-HR RESUME DATASET PROCESSOR")
     print("=" * 70)
 
-    # Make sure output directory exists
+    # Создаём папку для результата, если её ещё нет
     OUTPUT_FILE.parent.mkdir(
         parents=True,
         exist_ok=True
     )
 
-    # Find PDF files
+    # Ищем все PDF-файлы в Desktop/resumes
     pdf_files = sorted(
         RESUMES_DIR.glob("*.pdf")
+    )
+
+    print(
+        f"\nResume folder:\n{RESUMES_DIR}"
     )
 
     print(
@@ -52,7 +56,6 @@ def main():
         return
 
     results = []
-
     failed = []
 
     for number, file_path in enumerate(
@@ -71,7 +74,7 @@ def main():
                 file_path
             )
 
-            # Do NOT use candidate names as IDs.
+            # Не используем имя человека как ID
             resume_id = (
                 f"resume_{number:04d}"
             )
@@ -84,6 +87,12 @@ def main():
                     "filename":
                         file_path.name,
 
+                    "raw_text":
+                        result["raw_text"],
+
+                    "clean_text":
+                        result["clean_text"],
+
                     "text":
                         result["text"],
 
@@ -95,18 +104,34 @@ def main():
                     "skill_count":
                         result["skill_count"],
 
+                    "raw_character_count":
+                        len(result["raw_text"]),
+
+                    "clean_character_count":
+                        len(result["clean_text"]),
+
                     "character_count":
                         len(result["text"]),
                 }
             )
 
             print(
-                f"  Characters: "
+                f"  Raw characters: "
+                f"{len(result['raw_text'])}"
+            )
+
+            print(
+                f"  Clean characters: "
+                f"{len(result['clean_text'])}"
+            )
+
+            print(
+                f"  Anonymized characters: "
                 f"{len(result['text'])}"
             )
 
             print(
-                f"  Skills: "
+                f"  Skills detected: "
                 f"{result['skill_count']}"
             )
 
@@ -127,7 +152,7 @@ def main():
             )
 
     # ----------------------------------------
-    # Save successful resumes
+    # Сохраняем успешно обработанные резюме
     # ----------------------------------------
 
     df = pd.DataFrame(
@@ -136,11 +161,12 @@ def main():
 
     df.to_csv(
         OUTPUT_FILE,
-        index=False
+        index=False,
+        encoding="utf-8-sig"
     )
 
     # ----------------------------------------
-    # Statistics
+    # Статистика
     # ----------------------------------------
 
     print("\n" + "=" * 70)
@@ -203,7 +229,7 @@ def main():
     )
 
     # ----------------------------------------
-    # Failed files
+    # Ошибки
     # ----------------------------------------
 
     if failed:
