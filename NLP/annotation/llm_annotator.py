@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import sys
 from pathlib import Path
 from typing import Literal
@@ -20,10 +21,11 @@ load_dotenv()
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 
+# IMPORTANT:
+# All NLP scripts use the same current dataset.
 RESUMES_FILE = (
     ROOT_DIR
     / "data"
-    / "resumes"
     / "processed"
     / "resumes.csv"
 )
@@ -39,8 +41,8 @@ DEFAULT_MODEL = os.getenv(
     "OPENAI_ANNOTATION_MODEL",
     os.getenv(
         "OPENAI_ASSISTANT_MODEL",
-        "gpt-6-luna"
-    )
+        "gpt-6-luna",
+    ),
 )
 
 VALID_LABELS = {
@@ -51,13 +53,12 @@ VALID_LABELS = {
     "LANG",
 }
 
-
-# Approximate maximum size of each CV chunk.
+# Small chunks reduce context ambiguity and API cost.
 CHUNK_SIZE = 1000
 
-# Give the model enough output room for one small chunk,
-# without allowing unnecessarily huge responses.
-MAX_OUTPUT_TOKENS_PER_CHUNK = 1500
+# Enough room for structured NER output without
+# unnecessarily large generations.
+MAX_OUTPUT_TOKENS_PER_CHUNK = 800
 
 
 # ============================================================
@@ -75,6 +76,10 @@ class NEREntity(BaseModel):
         "LANG",
     ]
 
+    # Character offsets RELATIVE TO THE CURRENT CHUNK.
+    start: int
+    end: int
+
 
 class NERAnnotationResult(BaseModel):
     entities: list[NEREntity]
@@ -86,93 +91,97 @@ class NERAnnotationResult(BaseModel):
 
 def split_text_into_chunks(
     text,
-    max_chars=CHUNK_SIZE
+    max_chars=CHUNK_SIZE,
 ):
     """
     Split CV text into reasonably sized chunks.
 
-    Prefer splitting on newline boundaries so that sections
-    and entity phrases are less likely to be cut in half.
+    Prefer newline boundaries so sections and entity phrases
+    are less likely to be split.
+
+    Each returned item contains:
+        text
+        start
+        end
+
+    start/end refer to the ORIGINAL CV text.
     """
 
-    text = (text or "").strip()
+    text = text or ""
 
-    if not text:
+    if not text.strip():
         return []
 
-    lines = text.splitlines()
-
     chunks = []
-    current_lines = []
-    current_length = 0
 
-    for line in lines:
+    start = 0
+    text_length = len(text)
 
-        # +1 represents the newline we will restore.
-        line_length = len(line) + 1
+    while start < text_length:
 
-        # If one individual line is extremely long,
-        # handle it separately.
-        if line_length > max_chars:
-
-            # First save any existing chunk.
-            if current_lines:
-
-                chunks.append(
-                    "\n".join(current_lines)
-                )
-
-                current_lines = []
-                current_length = 0
-
-            # Split the long line into smaller pieces.
-            start = 0
-
-            while start < len(line):
-
-                end = min(
-                    start + max_chars,
-                    len(line)
-                )
-
-                chunks.append(
-                    line[start:end]
-                )
-
-                start = end
-
-            continue
-
-        # Would this line make the current chunk too large?
-        if (
-            current_lines
-            and current_length + line_length > max_chars
+        # Skip leading newlines between chunks.
+        while (
+            start < text_length
+            and text[start] == "\n"
         ):
+            start += 1
 
-            chunks.append(
-                "\n".join(current_lines)
+        if start >= text_length:
+            break
+
+        proposed_end = min(
+            start + max_chars,
+            text_length,
+        )
+
+        if proposed_end < text_length:
+
+            # Prefer splitting at the last newline.
+            newline_pos = text.rfind(
+                "\n",
+                start,
+                proposed_end,
             )
 
-            current_lines = []
-            current_length = 0
+            if newline_pos > start:
+                end = newline_pos
 
-        current_lines.append(
-            line
-        )
+            else:
+                # If no newline exists, prefer whitespace.
+                whitespace_pos = text.rfind(
+                    " ",
+                    start,
+                    proposed_end,
+                )
 
-        current_length += line_length
+                if whitespace_pos > start:
+                    end = whitespace_pos
 
-    if current_lines:
+                else:
+                    end = proposed_end
 
-        chunks.append(
-            "\n".join(current_lines)
-        )
+        else:
+            end = text_length
 
-    return [
-        chunk
-        for chunk in chunks
-        if chunk.strip()
-    ]
+        chunk_text = text[start:end]
+
+        if chunk_text.strip():
+
+            chunks.append(
+                {
+                    "text": chunk_text,
+                    "start": start,
+                    "end": end,
+                }
+            )
+
+        if end <= start:
+            # Safety guard.
+            start += 1
+        else:
+            start = end
+
+    return chunks
 
 
 # ============================================================
@@ -201,40 +210,65 @@ class LLMAnnotator:
         self.model = DEFAULT_MODEL
 
     # --------------------------------------------------------
-    # Validate one chunk's predictions
+    # Validate one chunk
     # --------------------------------------------------------
 
     @staticmethod
     def _validate_entities(
         entities,
-        source_text
+        source_text,
     ):
+        """
+        Validate that the LLM returned real exact spans
+        inside the chunk.
+
+        This prevents global text search from incorrectly
+        assigning one entity to unrelated repetitions.
+        """
 
         valid = []
-
         seen = set()
 
         for entity in entities:
 
             if not isinstance(
                 entity,
-                dict
+                dict,
             ):
                 continue
 
             entity_text = str(
                 entity.get(
                     "text",
-                    ""
+                    "",
                 )
-            ).strip()
+            )
 
             label = str(
                 entity.get(
                     "label",
-                    ""
+                    "",
                 )
             ).strip()
+
+            try:
+                start = int(
+                    entity.get(
+                        "start"
+                    )
+                )
+
+                end = int(
+                    entity.get(
+                        "end"
+                    )
+                )
+
+            except (
+                TypeError,
+                ValueError,
+            ):
+                continue
 
             if not entity_text:
                 continue
@@ -242,19 +276,27 @@ class LLMAnnotator:
             if label not in VALID_LABELS:
                 continue
 
-            # Grounding check:
-            # the prediction must literally occur
-            # inside the chunk supplied to the model.
-            if entity_text not in source_text:
+            if (
+                start < 0
+                or end <= start
+                or end > len(source_text)
+            ):
+                continue
+
+            # Critical offset validation.
+            actual_text = source_text[
+                start:end
+            ]
+
+            if actual_text != entity_text:
                 continue
 
             key = (
-                entity_text,
-                label
+                start,
+                end,
+                label,
             )
 
-            # The LLM does NOT need to return Python
-            # five times. Python will find all occurrences.
             if key in seen:
                 continue
 
@@ -264,20 +306,22 @@ class LLMAnnotator:
 
             valid.append(
                 {
-                    "text": entity_text,
+                    "text": actual_text,
                     "label": label,
+                    "start": start,
+                    "end": end,
                 }
             )
 
         return valid
 
     # --------------------------------------------------------
-    # Annotate ONE chunk
+    # Annotate one chunk
     # --------------------------------------------------------
 
     def annotate_chunk(
         self,
-        chunk_text
+        chunk_text,
     ):
 
         user_input = f"""
@@ -293,18 +337,41 @@ LANG
 
 Follow the supplied annotation guidelines exactly.
 
-IMPORTANT OUTPUT RULES:
+IMPORTANT OFFSET RULES:
 
-- Return each UNIQUE entity text/label combination only once
-  for this chunk.
-- If "Python" appears multiple times, return Python only once.
-- Python code will later locate every occurrence.
+- For every entity return:
+  text
+  label
+  start
+  end
+
+- start and end are character offsets relative ONLY
+  to the CV CHUNK below.
+
+- Python slicing must satisfy exactly:
+
+  chunk_text[start:end] == text
+
+- Return the exact occurrence that is valid in context.
+
+- Do NOT return an entity simply because the same word
+  appears elsewhere.
+
+IMPORTANT ANNOTATION RULES:
+
+- Return each actual entity occurrence separately.
 - Return entity text EXACTLY as written.
 - Do not normalize spelling.
 - Do not translate.
 - Do not paraphrase.
 - Do not invent entities.
 - Do not annotate section headings.
+- Desired position is NOT EXPERIENCE.
+- Company name alone is NOT EXPERIENCE.
+- Date alone is NOT EXPERIENCE.
+- University name alone is NOT EDUCATION.
+- Language mentioned only as course language is NOT
+  automatically a candidate LANG entity.
 - The text below may be only one section of a larger CV.
 
 CV CHUNK
@@ -338,31 +405,43 @@ CV CHUNK
             {
                 "text": entity.text,
                 "label": entity.label,
+                "start": entity.start,
+                "end": entity.end,
             }
             for entity in parsed.entities
         ]
 
         return self._validate_entities(
             entities,
-            chunk_text
+            chunk_text,
         )
 
     # --------------------------------------------------------
-    # Annotate COMPLETE CV
+    # Annotate complete CV
     # --------------------------------------------------------
 
     def annotate(
         self,
         cv_text,
-        verbose=True
+        verbose=True,
     ):
+        """
+        Annotate a complete CV.
+
+        Returns exact GLOBAL character offsets.
+
+        IMPORTANT:
+        If ANY chunk fails, the whole CV annotation fails.
+        This prevents partial LLM results from silently
+        becoming ordinary Hybrid predictions.
+        """
 
         cv_text = (
             cv_text
             or ""
-        ).strip()
+        )
 
-        if not cv_text:
+        if not cv_text.strip():
             return []
 
         chunks = split_text_into_chunks(
@@ -379,30 +458,46 @@ CV CHUNK
                 f"Chunks: {len(chunks)}"
             )
 
-        all_entities = []
+        all_regions = []
+        failed_chunks = []
 
-        for index, chunk in enumerate(
+        for index, chunk_info in enumerate(
             chunks,
-            start=1
+            start=1,
         ):
+
+            chunk_text = chunk_info[
+                "text"
+            ]
+
+            chunk_start = chunk_info[
+                "start"
+            ]
 
             if verbose:
 
                 print(
                     f"\n[{index}/{len(chunks)}] "
                     f"Annotating chunk "
-                    f"({len(chunk)} characters)..."
+                    f"({len(chunk_text)} characters)..."
                 )
 
             try:
 
-                entities = (
+                local_entities = (
                     self.annotate_chunk(
-                        chunk
+                        chunk_text
                     )
                 )
 
             except Exception as error:
+
+                failed_chunks.append(
+                    {
+                        "chunk": index,
+                        "error": str(error),
+                    }
+                )
 
                 print(
                     f"  Chunk {index} failed: "
@@ -411,30 +506,84 @@ CV CHUNK
 
                 continue
 
-            all_entities.extend(
-                entities
-            )
+            for entity in local_entities:
+
+                global_start = (
+                    chunk_start
+                    + entity["start"]
+                )
+
+                global_end = (
+                    chunk_start
+                    + entity["end"]
+                )
+
+                actual_text = cv_text[
+                    global_start:
+                    global_end
+                ]
+
+                # Final grounding check against full CV.
+                if actual_text != entity["text"]:
+                    continue
+
+                all_regions.append(
+                    {
+                        "start":
+                            global_start,
+
+                        "end":
+                            global_end,
+
+                        "text":
+                            actual_text,
+
+                        "label":
+                            entity["label"],
+                    }
+                )
 
             if verbose:
 
                 print(
                     f"  Entities: "
-                    f"{len(entities)}"
+                    f"{len(local_entities)}"
                 )
 
         # ----------------------------------------------------
-        # Deduplicate predictions across chunks
+        # B09: never silently accept partial LLM output
         # ----------------------------------------------------
 
-        unique_entities = []
+        if failed_chunks:
 
+            failed_numbers = [
+                str(
+                    item["chunk"]
+                )
+                for item in failed_chunks
+            ]
+
+            raise RuntimeError(
+                "LLM annotation is incomplete. "
+                "Failed chunks: "
+                + ", ".join(
+                    failed_numbers
+                )
+            )
+
+        # ----------------------------------------------------
+        # Remove exact duplicates only
+        # ----------------------------------------------------
+
+        unique_regions = []
         seen = set()
 
-        for entity in all_entities:
+        for region in all_regions:
 
             key = (
-                entity["text"],
-                entity["label"]
+                region["start"],
+                region["end"],
+                region["label"],
             )
 
             if key in seen:
@@ -444,92 +593,155 @@ CV CHUNK
                 key
             )
 
-            unique_entities.append(
-                entity
+            unique_regions.append(
+                region
             )
 
-        return unique_entities
+        unique_regions.sort(
+            key=lambda item: (
+                item["start"],
+                item["end"],
+                item["label"],
+            )
+        )
+
+        return unique_regions
 
 
 # ============================================================
-# Convert Entity Text -> Character Offsets
+# Compatibility Helper
 # ============================================================
 
 def find_entity_occurrences(
     cv_text,
-    entities
+    entities,
 ):
     """
-    Convert predicted entity texts into character spans.
+    Convert entities to character regions.
 
-    Improvements over V1:
-    - finds repeated occurrences;
-    - avoids matching short entities inside larger words;
-    - resolves overlapping entities;
-    - prefers the longest meaningful span when two
-      entities with the same label overlap.
+    New LLMAnnotator output already contains exact offsets,
+    so those offsets are preserved.
 
-    Examples:
-
-        PostgreSQL -> HARD_SKILL
-
-    will not additionally produce:
-
-        SQL -> HARD_SKILL
-
-    from inside the word PostgreSQL.
-
-    Similarly:
-
-        GitHub Actions
-
-    is preferred over nested:
-
-        GitHub
-        Git
+    A fallback exists for old text+label predictions,
+    but new annotation should use exact offsets.
     """
 
-    import re
+    regions = []
 
-    candidates = []
-
-    # ==================================================
-    # 1. Find candidate occurrences
-    # ==================================================
+    # --------------------------------------------------------
+    # New format: exact offsets already available
+    # --------------------------------------------------------
 
     for entity in entities:
 
-        entity_text = entity[
-            "text"
-        ].strip()
+        if (
+            "start" in entity
+            and "end" in entity
+        ):
 
-        label = entity[
-            "label"
-        ]
+            try:
+                start = int(
+                    entity["start"]
+                )
 
-        if not entity_text:
+                end = int(
+                    entity["end"]
+                )
+
+            except (
+                TypeError,
+                ValueError,
+            ):
+                continue
+
+            if (
+                start < 0
+                or end <= start
+                or end > len(cv_text)
+            ):
+                continue
+
+            actual_text = cv_text[
+                start:end
+            ]
+
+            entity_text = str(
+                entity.get(
+                    "text",
+                    ""
+                )
+            )
+
+            if actual_text != entity_text:
+                continue
+
+            label = str(
+                entity.get(
+                    "label",
+                    ""
+                )
+            )
+
+            if label not in VALID_LABELS:
+                continue
+
+            regions.append(
+                {
+                    "start": start,
+                    "end": end,
+                    "text": actual_text,
+                    "label": label,
+                }
+            )
+
+    if regions:
+
+        regions.sort(
+            key=lambda item: (
+                item["start"],
+                item["end"],
+                item["label"],
+            )
+        )
+
+        return regions
+
+    # --------------------------------------------------------
+    # Legacy fallback
+    # --------------------------------------------------------
+    #
+    # Kept only so older saved predictions can still be read.
+    # Do NOT use this path for new human-reviewed batches.
+    # --------------------------------------------------------
+
+    candidates = []
+
+    for entity in entities:
+
+        entity_text = str(
+            entity.get(
+                "text",
+                ""
+            )
+        ).strip()
+
+        label = str(
+            entity.get(
+                "label",
+                ""
+            )
+        ).strip()
+
+        if (
+            not entity_text
+            or label not in VALID_LABELS
+        ):
             continue
 
-        # Escape special regex characters such as:
-        # C++, C#, JPA/Hibernate, etc.
         escaped = re.escape(
             entity_text
         )
 
-        # Prevent matching inside another alphanumeric word.
-        #
-        # Example:
-        #
-        # SQL
-        #
-        # should match:
-        #
-        # SQL queries
-        #
-        # but NOT:
-        #
-        # PostgreSQL
-        #
         pattern = (
             rf"(?<![\w])"
             rf"{escaped}"
@@ -539,7 +751,7 @@ def find_entity_occurrences(
         for match in re.finditer(
             pattern,
             cv_text,
-            flags=re.IGNORECASE
+            flags=re.IGNORECASE,
         ):
 
             start = match.start()
@@ -547,28 +759,15 @@ def find_entity_occurrences(
 
             candidates.append(
                 {
-                    "start":
-                        start,
-
-                    "end":
-                        end,
-
-                    # Always preserve the exact text
-                    # from the original CV.
+                    "start": start,
+                    "end": end,
                     "text":
                         cv_text[start:end],
-
-                    "label":
-                        label,
+                    "label": label,
                 }
             )
 
-    # ==================================================
-    # 2. Remove exact duplicate predictions
-    # ==================================================
-
-    unique_candidates = []
-
+    unique = []
     seen = set()
 
     for candidate in candidates:
@@ -586,127 +785,11 @@ def find_entity_occurrences(
             key
         )
 
-        unique_candidates.append(
+        unique.append(
             candidate
         )
 
-    # ==================================================
-    # 3. Prefer longer spans
-    # ==================================================
-    #
-    # Example:
-    #
-    # Git
-    # GitHub
-    # GitHub Actions
-    #
-    # At the same location, GitHub Actions should
-    # be considered first.
-
-    unique_candidates.sort(
-        key=lambda item: (
-            -(item["end"] - item["start"]),
-            item["start"],
-        )
-    )
-
-    selected = []
-
-    # ==================================================
-    # 4. Resolve overlaps
-    # ==================================================
-
-    for candidate in unique_candidates:
-
-        candidate_start = candidate[
-            "start"
-        ]
-
-        candidate_end = candidate[
-            "end"
-        ]
-
-        candidate_label = candidate[
-            "label"
-        ]
-
-        should_keep = True
-
-        for existing in selected:
-
-            existing_start = existing[
-                "start"
-            ]
-
-            existing_end = existing[
-                "end"
-            ]
-
-            existing_label = existing[
-                "label"
-            ]
-
-            # Do the spans overlap?
-            overlap = (
-                candidate_start
-                < existing_end
-                and
-                candidate_end
-                > existing_start
-            )
-
-            if not overlap:
-                continue
-
-            # --------------------------------------------------
-            # Same label + overlapping span
-            # --------------------------------------------------
-            #
-            # Prefer the longer span.
-            #
-            # Since candidates are already sorted by length,
-            # the existing span is normally longer.
-            #
-            # Example:
-            #
-            # HARD_SKILL GitHub Actions
-            #
-            # wins over:
-            #
-            # HARD_SKILL GitHub
-            # HARD_SKILL Git
-
-            if (
-                candidate_label
-                == existing_label
-            ):
-
-                should_keep = False
-                break
-
-            # --------------------------------------------------
-            # Different labels
-            # --------------------------------------------------
-            #
-            # For now we keep different-label overlaps.
-            #
-            # Example:
-            #
-            # if future annotation rules legitimately allow
-            # different entity categories to overlap, we do
-            # not silently destroy that information here.
-
-        if should_keep:
-
-            selected.append(
-                candidate
-            )
-
-    # ==================================================
-    # 5. Sort back into document order
-    # ==================================================
-
-    selected.sort(
+    unique.sort(
         key=lambda item: (
             item["start"],
             item["end"],
@@ -714,7 +797,7 @@ def find_entity_occurrences(
         )
     )
 
-    return selected
+    return unique
 
 
 # ============================================================
@@ -722,7 +805,7 @@ def find_entity_occurrences(
 # ============================================================
 
 def load_resume(
-    resume_id
+    resume_id,
 ):
 
     if not RESUMES_FILE.exists():
@@ -787,12 +870,12 @@ def load_resume(
 def save_prediction(
     resume_id,
     model,
-    regions
+    regions,
 ):
 
     OUTPUT_DIR.mkdir(
         parents=True,
-        exist_ok=True
+        exist_ok=True,
     )
 
     output_file = (
@@ -801,23 +884,33 @@ def save_prediction(
     )
 
     result = {
-        "resume_id": resume_id,
-        "model": model,
-        "entity_count": len(regions),
-        "entities": regions,
+        "resume_id":
+            resume_id,
+
+        "model":
+            model,
+
+        "status":
+            "complete",
+
+        "entity_count":
+            len(regions),
+
+        "entities":
+            regions,
     }
 
     with open(
         output_file,
         "w",
-        encoding="utf-8"
+        encoding="utf-8",
     ) as file:
 
         json.dump(
             result,
             file,
             ensure_ascii=False,
-            indent=2
+            indent=2,
         )
 
     return output_file
@@ -828,7 +921,7 @@ def save_prediction(
 # ============================================================
 
 def print_predictions(
-    regions
+    regions,
 ):
 
     print(
@@ -962,10 +1055,10 @@ def main():
 
     try:
 
-        entities = (
+        regions = (
             annotator.annotate(
                 resume["text"],
-                verbose=True
+                verbose=True,
             )
         )
 
@@ -979,30 +1072,16 @@ def main():
             error
         )
 
+        print(
+            "\nNo prediction file was saved "
+            "because the CV annotation "
+            "was incomplete."
+        )
+
         return
 
     print(
-        "\nMerging predictions..."
-    )
-
-    # --------------------------------------------------------
-    # Locate every occurrence in original CV
-    # --------------------------------------------------------
-
-    regions = (
-        find_entity_occurrences(
-            resume["text"],
-            entities
-        )
-    )
-
-    print(
-        f"\nUnique entity predictions: "
-        f"{len(entities)}"
-    )
-
-    print(
-        f"Located annotation regions: "
+        f"\nLocated annotation regions: "
         f"{len(regions)}"
     )
 
@@ -1022,7 +1101,7 @@ def main():
         save_prediction(
             resume_id,
             annotator.model,
-            regions
+            regions,
         )
     )
 

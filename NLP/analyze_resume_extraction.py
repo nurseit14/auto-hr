@@ -4,6 +4,10 @@ from pathlib import Path
 import pandas as pd
 
 
+# ============================================================
+# Paths
+# ============================================================
+
 ROOT_DIR = Path(__file__).resolve().parent.parent
 
 INPUT_FILE = (
@@ -21,73 +25,128 @@ OUTPUT_FILE = (
 )
 
 
+# ============================================================
+# Helpers
+# ============================================================
+
+def safe_text(value):
+    """
+    Convert a dataframe value to safe string.
+    """
+
+    if pd.isna(value):
+        return ""
+
+    return str(value)
+
+
+def non_whitespace_length(text):
+    """
+    Count content characters while ignoring whitespace.
+
+    This is more useful than ordinary string length when
+    evaluating cleaning quality, because PDF extraction often
+    contains large amounts of layout whitespace.
+    """
+
+    text = safe_text(text)
+
+    return len(
+        re.sub(
+            r"\s+",
+            "",
+            text,
+        )
+    )
+
+
+# ============================================================
+# Spaced-letter analysis
+# ============================================================
+
+SPACED_LETTER_PATTERN = re.compile(
+    r"\b"
+    r"(?:"
+    r"[A-Za-zА-Яа-яӘәІіҢңҒғҮүҰұҚқӨөҺһ]"
+    r"[ \t]+"
+    r"){3,}"
+    r"[A-Za-zА-Яа-яӘәІіҢңҒғҮүҰұҚқӨөҺһ]"
+    r"\b"
+)
+
+
 def spaced_letter_score(text):
     """
-    Count suspicious spaced-letter sequences.
+    Count suspicious letter-spaced sequences.
 
-    Examples:
-        P y t h o n
-        S K I L L S
-        Б І Л І М І
+    Important:
+    this should be applied to FINAL text.
+
+    Example:
+
+        M U R A T ...
+        -> if anonymizer already replaced it with [NAME],
+           it is no longer a final dataset problem.
     """
 
-    if not isinstance(text, str):
-        return 0
+    text = safe_text(text)
 
-    pattern = (
-        r"\b(?:[A-Za-zА-Яа-яӘәІіҢңҒғҮүҰұҚқӨөҺһ]\s+){3,}"
-        r"[A-Za-zА-Яа-яӘәІіҢңҒғҮүҰұҚқӨөҺһ]\b"
+    return len(
+        SPACED_LETTER_PATTERN.findall(
+            text
+        )
     )
-
-    matches = re.findall(
-        pattern,
-        text
-    )
-
-    return len(matches)
 
 
 def find_spaced_letter_sequences(text):
     """
-    Return the actual suspicious spaced-letter fragments.
+    Return suspicious spaced-letter fragments
+    from final text.
     """
 
-    if not isinstance(text, str):
-        return []
+    text = safe_text(text)
 
-    pattern = (
-        r"\b(?:[A-Za-zА-Яа-яӘәІіҢңҒғҮүҰұҚқӨөҺһ]\s+){3,}"
-        r"[A-Za-zА-Яа-яӘәІіҢңҒғҮүҰұҚқӨөҺһ]\b"
-    )
-
-    return re.findall(
-        pattern,
-        text
+    return (
+        SPACED_LETTER_PATTERN.findall(
+            text
+        )
     )
 
 
-def duplicate_line_score(text):
+# ============================================================
+# Duplicate analysis
+# ============================================================
+
+def normalized_lines(text):
     """
-    Count duplicated non-empty lines inside one CV.
+    Return non-empty stripped lines.
     """
 
-    if not isinstance(text, str):
-        return 0
+    text = safe_text(text)
 
-    lines = [
+    return [
         line.strip()
         for line in text.splitlines()
         if line.strip()
     ]
 
+
+def duplicate_line_score(text):
+    """
+    Count repeated non-empty lines.
+    """
+
+    lines = normalized_lines(
+        text
+    )
+
     if not lines:
         return 0
 
-    duplicate_count = (
-        len(lines) - len(set(lines))
+    return (
+        len(lines)
+        - len(set(lines))
     )
-
-    return duplicate_count
 
 
 def duplicate_ratio(text):
@@ -95,20 +154,16 @@ def duplicate_ratio(text):
     Calculate duplicated-line ratio.
     """
 
-    if not isinstance(text, str):
-        return 0.0
-
-    lines = [
-        line.strip()
-        for line in text.splitlines()
-        if line.strip()
-    ]
+    lines = normalized_lines(
+        text
+    )
 
     if not lines:
         return 0.0
 
     duplicate_count = (
-        len(lines) - len(set(lines))
+        len(lines)
+        - len(set(lines))
     )
 
     return (
@@ -117,15 +172,62 @@ def duplicate_ratio(text):
     )
 
 
+# ============================================================
+# Content-loss calculation
+# ============================================================
+
+def calculate_content_loss(
+    raw_text,
+    clean_text,
+):
+    """
+    Compare RAW and CLEAN text using only
+    non-whitespace characters.
+
+    0.00 means no content-character loss.
+
+    Positive values mean characters disappeared.
+
+    Negative values are possible if controlled cleaning
+    reconstructs characters/structure. They are not treated
+    as content loss.
+    """
+
+    raw_length = non_whitespace_length(
+        raw_text
+    )
+
+    clean_length = non_whitespace_length(
+        clean_text
+    )
+
+    if raw_length == 0:
+        return 0.0
+
+    loss = (
+        raw_length
+        - clean_length
+    ) / raw_length
+
+    return max(
+        0.0,
+        loss,
+    )
+
+
+# ============================================================
+# Main
+# ============================================================
+
 def main():
 
     print("=" * 70)
     print("AUTO-HR RESUME EXTRACTION ANALYSIS")
     print("=" * 70)
 
-    # --------------------------------------------------
-    # Check input file
-    # --------------------------------------------------
+    # --------------------------------------------------------
+    # Input
+    # --------------------------------------------------------
 
     if not INPUT_FILE.exists():
 
@@ -135,10 +237,6 @@ def main():
         )
 
         return
-
-    # --------------------------------------------------
-    # Load dataset
-    # --------------------------------------------------
 
     df = pd.read_csv(
         INPUT_FILE
@@ -166,84 +264,130 @@ def main():
 
         raise ValueError(
             "Missing columns: "
-            + ", ".join(missing_columns)
+            + ", ".join(
+                missing_columns
+            )
         )
 
-    # --------------------------------------------------
-    # Text lengths
-    # --------------------------------------------------
+    # --------------------------------------------------------
+    # Safe text columns
+    # --------------------------------------------------------
+
+    for column in [
+        "raw_text",
+        "clean_text",
+        "text",
+    ]:
+
+        df[column] = (
+            df[column]
+            .fillna("")
+            .astype(str)
+        )
+
+    # --------------------------------------------------------
+    # Ordinary character lengths
+    # --------------------------------------------------------
 
     df["raw_length"] = (
         df["raw_text"]
-        .fillna("")
-        .astype(str)
         .str.len()
     )
 
     df["clean_length"] = (
         df["clean_text"]
-        .fillna("")
-        .astype(str)
         .str.len()
     )
 
     df["final_length"] = (
         df["text"]
-        .fillna("")
-        .astype(str)
         .str.len()
     )
-
-    # --------------------------------------------------
-    # Cleaning difference
-    # --------------------------------------------------
 
     df["cleaning_difference"] = (
         df["raw_length"]
         - df["clean_length"]
     )
 
-    # --------------------------------------------------
-    # Spaced-letter analysis
-    #
-    # IMPORTANT:
-    # Check CLEAN TEXT, not RAW TEXT.
-    # --------------------------------------------------
+    # --------------------------------------------------------
+    # Non-whitespace lengths
+    # --------------------------------------------------------
 
-    df["spaced_letter_sequences"] = (
-        df["clean_text"]
-        .fillna("")
-        .apply(spaced_letter_score)
+    df["raw_non_ws_length"] = (
+        df["raw_text"]
+        .apply(
+            non_whitespace_length
+        )
     )
 
-    # --------------------------------------------------
+    df["clean_non_ws_length"] = (
+        df["clean_text"]
+        .apply(
+            non_whitespace_length
+        )
+    )
+
+    # --------------------------------------------------------
+    # Real content loss
+    # --------------------------------------------------------
+
+    df["content_loss_ratio"] = df.apply(
+        lambda row:
+            calculate_content_loss(
+                row["raw_text"],
+                row["clean_text"],
+            ),
+        axis=1,
+    )
+
+    # --------------------------------------------------------
+    # Spaced-letter analysis
+    #
+    # Check FINAL text.
+    #
+    # If a spaced personal name has already been safely
+    # anonymized to [NAME], it is not a remaining dataset
+    # quality problem.
+    # --------------------------------------------------------
+
+    df["spaced_letter_sequences"] = (
+        df["text"]
+        .apply(
+            spaced_letter_score
+        )
+    )
+
+    # --------------------------------------------------------
     # Duplicate analysis
     #
-    # Also check CLEAN TEXT.
-    # --------------------------------------------------
+    # Check CLEAN text because anonymization can legitimately
+    # create repeated placeholders like [EMAIL] or [PHONE].
+    # --------------------------------------------------------
 
     df["duplicate_lines"] = (
         df["clean_text"]
-        .fillna("")
-        .apply(duplicate_line_score)
+        .apply(
+            duplicate_line_score
+        )
     )
 
     df["duplicate_ratio"] = (
         df["clean_text"]
-        .fillna("")
-        .apply(duplicate_ratio)
+        .apply(
+            duplicate_ratio
+        )
     )
 
-    # --------------------------------------------------
+    # --------------------------------------------------------
     # Flags
-    # --------------------------------------------------
+    # --------------------------------------------------------
 
     df["flag_empty_text"] = (
-        df["raw_length"] == 0
+        df["final_length"] == 0
     )
 
     df["flag_short_text"] = (
-        df["clean_length"] < 300
+        df["final_length"] < 300
     )
 
     df["flag_spaced_letters"] = (
@@ -254,42 +398,53 @@ def main():
         df["duplicate_ratio"] > 0.30
     )
 
-    df["flag_large_cleaning_change"] = (
-        (
-            df["raw_length"] > 0
-        )
-        &
-        (
-            (
-                df["cleaning_difference"].abs()
-                / df["raw_length"]
-            )
-            > 0.40
-        )
+    # --------------------------------------------------------
+    # Important:
+    #
+    # Old version used ordinary raw/clean character lengths.
+    # That incorrectly treated removal of PDF layout spaces
+    # as content loss.
+    #
+    # Now flag only when >10% of NON-WHITESPACE characters
+    # disappear.
+    # --------------------------------------------------------
+
+    df["flag_content_loss"] = (
+        df["content_loss_ratio"] > 0.10
     )
 
-    # --------------------------------------------------
+    # Keep old column name for compatibility with previous
+    # reports/scripts, but give it the corrected meaning.
+    df["flag_large_cleaning_change"] = (
+        df["flag_content_loss"]
+    )
+
+    # --------------------------------------------------------
     # Total problem count
-    # --------------------------------------------------
+    # --------------------------------------------------------
+
+    problem_columns = [
+        "flag_empty_text",
+        "flag_short_text",
+        "flag_spaced_letters",
+        "flag_duplicates",
+        "flag_content_loss",
+    ]
 
     df["problem_count"] = (
         df[
-            [
-                "flag_empty_text",
-                "flag_short_text",
-                "flag_spaced_letters",
-                "flag_duplicates",
-                "flag_large_cleaning_change",
-            ]
+            problem_columns
         ]
         .sum(axis=1)
     )
 
-    # --------------------------------------------------
+    # --------------------------------------------------------
     # Summary
-    # --------------------------------------------------
+    # --------------------------------------------------------
 
-    print("\n--- SUMMARY ---")
+    print(
+        "\n--- SUMMARY ---"
+    )
 
     print(
         f"Empty text: "
@@ -312,34 +467,48 @@ def main():
     )
 
     print(
-        f"Large cleaning changes: "
-        f"{int(df['flag_large_cleaning_change'].sum())}"
+        f"Real content-loss problems: "
+        f"{int(df['flag_content_loss'].sum())}"
     )
 
-    # --------------------------------------------------
+    # --------------------------------------------------------
     # Suspicious resumes
-    # --------------------------------------------------
+    # --------------------------------------------------------
 
     suspicious = df[
         df["problem_count"] > 0
     ].copy()
 
-    suspicious = suspicious.sort_values(
-        by=[
-            "problem_count",
-            "duplicate_ratio",
-            "spaced_letter_sequences",
-        ],
-        ascending=[
-            False,
-            False,
-            False,
-        ],
+    suspicious = (
+        suspicious
+        .sort_values(
+            by=[
+                "problem_count",
+                "content_loss_ratio",
+                "duplicate_ratio",
+                "spaced_letter_sequences",
+            ],
+            ascending=[
+                False,
+                False,
+                False,
+                False,
+            ],
+        )
     )
 
-    print("\n" + "=" * 70)
-    print("SUSPICIOUS RESUMES")
-    print("=" * 70)
+    print(
+        "\n"
+        + "=" * 70
+    )
+
+    print(
+        "SUSPICIOUS RESUMES"
+    )
+
+    print(
+        "=" * 70
+    )
 
     if suspicious.empty:
 
@@ -351,7 +520,10 @@ def main():
 
         for _, row in suspicious.iterrows():
 
-            print("\n" + "-" * 70)
+            print(
+                "\n"
+                + "-" * 70
+            )
 
             print(
                 f"Resume ID: "
@@ -379,24 +551,42 @@ def main():
             )
 
             print(
-                f"Cleaning difference: "
-                f"{row['cleaning_difference']}"
+                f"Raw non-whitespace length: "
+                f"{row['raw_non_ws_length']}"
+            )
+
+            print(
+                f"Clean non-whitespace length: "
+                f"{row['clean_non_ws_length']}"
+            )
+
+            print(
+                f"Content loss: "
+                f"{row['content_loss_ratio']:.2%}"
             )
 
             print(
                 f"Spaced-letter sequences "
-                f"after cleaning: "
+                f"in final text: "
                 f"{row['spaced_letter_sequences']}"
             )
 
-            if row["spaced_letter_sequences"] > 0:
+            if (
+                row[
+                    "spaced_letter_sequences"
+                ]
+                > 0
+            ):
 
-                sequences = find_spaced_letter_sequences(
-                    str(row["clean_text"])
+                sequences = (
+                    find_spaced_letter_sequences(
+                        row["text"]
+                    )
                 )
 
                 print(
-                    "Remaining spaced-letter fragments:"
+                    "Remaining spaced-letter "
+                    "fragments:"
                 )
 
                 for sequence in sequences:
@@ -417,8 +607,8 @@ def main():
             )
 
             print(
-                f"Large cleaning change: "
-                f"{row['flag_large_cleaning_change']}"
+                f"Real content-loss flag: "
+                f"{row['flag_content_loss']}"
             )
 
             print(
@@ -426,19 +616,33 @@ def main():
                 f"{row['problem_count']}"
             )
 
-    # --------------------------------------------------
+    # --------------------------------------------------------
     # Save report
-    # --------------------------------------------------
+    # --------------------------------------------------------
+
+    OUTPUT_FILE.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
 
     df.to_csv(
         OUTPUT_FILE,
         index=False,
-        encoding="utf-8-sig"
+        encoding="utf-8-sig",
     )
 
-    print("\n" + "=" * 70)
-    print("ANALYSIS FINISHED")
-    print("=" * 70)
+    print(
+        "\n"
+        + "=" * 70
+    )
+
+    print(
+        "ANALYSIS FINISHED"
+    )
+
+    print(
+        "=" * 70
+    )
 
     print(
         f"\nReport saved to:\n"

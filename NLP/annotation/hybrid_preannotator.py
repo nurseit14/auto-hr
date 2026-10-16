@@ -5,10 +5,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from NLP.annotation.llm_annotator import (
-    LLMAnnotator,
-    find_entity_occurrences,
-)
+from NLP.annotation.llm_annotator import LLMAnnotator
 
 from NLP.annotation.preannotate_resumes import (
     generate_annotations,
@@ -24,7 +21,6 @@ ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 RESUMES_FILE = (
     ROOT_DIR
     / "data"
-    / "resumes"
     / "processed"
     / "resumes.csv"
 )
@@ -37,7 +33,9 @@ OUTPUT_FILE = (
 )
 
 
-# Hybrid V1 strategy determined from pilot development data.
+# Hybrid V1 strategy:
+# HARD_SKILL + SOFT_SKILL -> Rules V2
+# EXPERIENCE + EDUCATION + LANG -> LLM V1
 
 RULE_LABELS = {
     "HARD_SKILL",
@@ -105,15 +103,14 @@ def resume_number(
     resume_id
 ):
     """
-    resume_0006 -> 6
+    Convert:
+        resume_0006 -> 6
     """
 
     try:
 
         return int(
-            resume_id.split(
-                "_"
-            )[-1]
+            resume_id.split("_")[-1]
         )
 
     except Exception:
@@ -127,32 +124,27 @@ def create_label_studio_region(
     text,
     label
 ):
+    """
+    Convert one exact entity span into
+    Label Studio format.
+    """
+
+    start = int(start)
+    end = int(end)
 
     return {
-        "id":
-            str(uuid.uuid4())[:8],
-
-        "from_name":
-            "label",
-
-        "to_name":
-            "text",
-
-        "type":
-            "labels",
+        "id": str(uuid.uuid4())[:8],
+        "from_name": "label",
+        "to_name": "text",
+        "type": "labels",
 
         "value": {
-            "start":
-                int(start),
+            "start": start,
+            "end": end,
 
-            "end":
-                int(end),
-
-            "text":
-                text[
-                    int(start):
-                    int(end)
-                ],
+            "text": text[
+                start:end
+            ],
 
             "labels": [
                 label
@@ -173,10 +165,8 @@ def get_rules_regions(
     from Rules V2.
     """
 
-    raw_regions = (
-        generate_annotations(
-            text
-        )
+    raw_regions = generate_annotations(
+        text
     )
 
     regions = []
@@ -215,25 +205,37 @@ def get_rules_regions(
         ):
             continue
 
+        try:
+
+            start = int(start)
+            end = int(end)
+
+        except (
+            TypeError,
+            ValueError,
+        ):
+
+            continue
+
+        # Basic range validation.
+        if (
+            start < 0
+            or end <= start
+            or end > len(text)
+        ):
+            continue
+
+        actual_text = text[
+            start:end
+        ]
+
         regions.append(
             {
-                "start":
-                    int(start),
-
-                "end":
-                    int(end),
-
-                "text":
-                    text[
-                        int(start):
-                        int(end)
-                    ],
-
-                "label":
-                    label,
-
-                "source":
-                    "rules_v2",
+                "start": start,
+                "end": end,
+                "text": actual_text,
+                "label": label,
+                "source": "rules_v2",
             }
         )
 
@@ -251,19 +253,15 @@ def get_llm_regions(
     """
     Keep only EXPERIENCE, EDUCATION and LANG
     from LLM V1.
+
+    LLMAnnotator now returns exact global
+    character offsets for the specific occurrence
+    in context.
     """
 
-    entities = annotator.annotate(
+    raw_regions = annotator.annotate(
         text,
         verbose=False
-    )
-
-    # Convert entity strings to exact offsets.
-    raw_regions = (
-        find_entity_occurrences(
-            text,
-            entities
-        )
     )
 
     regions = []
@@ -277,26 +275,61 @@ def get_llm_regions(
         if label not in LLM_LABELS:
             continue
 
+        try:
+
+            start = int(
+                region["start"]
+            )
+
+            end = int(
+                region["end"]
+            )
+
+        except (
+            KeyError,
+            TypeError,
+            ValueError,
+        ):
+
+            continue
+
+        # Validate range.
+        if (
+            start < 0
+            or end <= start
+            or end > len(text)
+        ):
+
+            continue
+
+        actual_text = text[
+            start:end
+        ]
+
+        predicted_text = str(
+            region.get(
+                "text",
+                ""
+            )
+        )
+
+        # Exact grounding check:
+        # offsets must refer to the exact
+        # annotated text.
+        if (
+            actual_text
+            != predicted_text
+        ):
+
+            continue
+
         regions.append(
             {
-                "start":
-                    int(
-                        region["start"]
-                    ),
-
-                "end":
-                    int(
-                        region["end"]
-                    ),
-
-                "text":
-                    region["text"],
-
-                "label":
-                    label,
-
-                "source":
-                    "llm_v1",
+                "start": start,
+                "end": end,
+                "text": actual_text,
+                "label": label,
+                "source": "llm_v1",
             }
         )
 
@@ -314,11 +347,13 @@ def merge_regions(
     """
     Merge Hybrid V1 predictions.
 
-    Duplicate (start, end, label) regions are removed.
+    Exact duplicates:
+        same start + end + label
 
-    We intentionally do not aggressively resolve
-    different-label overlaps here because a human
-    reviewer will verify all predictions.
+    are removed.
+
+    Different-label overlaps are preserved
+    for human review.
     """
 
     merged = []
@@ -371,21 +406,40 @@ def to_label_studio_regions(
 
     for region in regions:
 
+        start = region[
+            "start"
+        ]
+
+        end = region[
+            "end"
+        ]
+
+        label = region[
+            "label"
+        ]
+
+        # Final validation before JSON export.
+        if (
+            start < 0
+            or end <= start
+            or end > len(text)
+        ):
+
+            continue
+
+        if (
+            text[start:end]
+            != region["text"]
+        ):
+
+            continue
+
         results.append(
             create_label_studio_region(
-                start=region[
-                    "start"
-                ],
-
-                end=region[
-                    "end"
-                ],
-
+                start=start,
+                end=end,
                 text=text,
-
-                label=region[
-                    "label"
-                ],
+                label=label,
             )
         )
 
@@ -459,8 +513,18 @@ def main():
             f"{RESUMES_FILE}"
         )
 
+    print(
+        f"\nLoading resumes from:\n"
+        f"{RESUMES_FILE}"
+    )
+
     df = pd.read_csv(
         RESUMES_FILE
+    )
+
+    print(
+        f"\nLoaded resumes: "
+        f"{len(df)}"
     )
 
     # Ignore unreadable CVs.
@@ -494,6 +558,7 @@ def main():
             args.end is not None
             and number > args.end
         ):
+
             continue
 
         selected_rows.append(
@@ -517,9 +582,24 @@ def main():
     # Initialize LLM once
     # --------------------------------------------------------
 
-    annotator = (
-        LLMAnnotator()
-    )
+    try:
+
+        annotator = (
+            LLMAnnotator()
+        )
+
+    except Exception as error:
+
+        print(
+            "\nCould not initialize "
+            "LLM annotator:"
+        )
+
+        print(
+            error
+        )
+
+        return
 
     print(
         f"LLM model: "
@@ -549,11 +629,19 @@ def main():
             ]
         )
 
+        filename = row.get(
+            "filename",
+            ""
+        )
+
+        if pd.isna(
+            filename
+        ):
+
+            filename = ""
+
         filename = str(
-            row.get(
-                "filename",
-                ""
-            )
+            filename
         )
 
         text = row.get(
@@ -561,10 +649,15 @@ def main():
             ""
         )
 
-        if pd.isna(text):
+        if pd.isna(
+            text
+        ):
+
             text = ""
 
-        text = str(text)
+        text = str(
+            text
+        )
 
         print(
             "\n" + "-" * 70
@@ -576,7 +669,8 @@ def main():
         )
 
         print(
-            f"File: {filename}"
+            f"File: "
+            f"{filename}"
         )
 
         print(
@@ -588,11 +682,26 @@ def main():
         # Rules
         # ----------------------------------------------------
 
-        rules_regions = (
-            get_rules_regions(
-                text
+        try:
+
+            rules_regions = (
+                get_rules_regions(
+                    text
+                )
             )
-        )
+
+        except Exception as error:
+
+            print(
+                "Rules V2 failed: "
+                f"{error}"
+            )
+
+            failed.append(
+                resume_id
+            )
+
+            continue
 
         print(
             f"Rules V2 regions: "
@@ -615,7 +724,7 @@ def main():
         except Exception as error:
 
             print(
-                f"LLM annotation failed: "
+                "LLM annotation failed: "
                 f"{error}"
             )
 
@@ -623,9 +732,9 @@ def main():
                 resume_id
             )
 
-            # Do NOT silently create a supposedly
-            # complete hybrid task without its LLM
-            # component.
+            # IMPORTANT:
+            # do not create incomplete Hybrid
+            # result when LLM annotation is incomplete.
             continue
 
         print(
@@ -668,6 +777,23 @@ def main():
             )
         )
 
+        # Final integrity check.
+        if (
+            len(label_studio_regions)
+            != len(hybrid_regions)
+        ):
+
+            print(
+                "Hybrid integrity validation failed. "
+                "Task was not saved."
+            )
+
+            failed.append(
+                resume_id
+            )
+
+            continue
+
         # ----------------------------------------------------
         # Label Studio task
         # ----------------------------------------------------
@@ -687,9 +813,9 @@ def main():
             "predictions": [
                 {
                     "model_version":
-                        "autohr-hybrid-v1",
+                        "autohr-hybrid-v1-context-offsets",
 
-                    # This is not calibrated probability.
+                    # Not a calibrated probability.
                     "score":
                         0.5,
 
@@ -722,7 +848,9 @@ def main():
 
     else:
 
-        output_file = OUTPUT_FILE
+        output_file = (
+            OUTPUT_FILE
+        )
 
     output_file.parent.mkdir(
         parents=True,
@@ -788,7 +916,7 @@ def main():
     if failed:
 
         print(
-            "\nFAILED CVs:"
+            "\nFAILED / INCOMPLETE CVs:"
         )
 
         for resume_id in failed:
@@ -801,6 +929,29 @@ def main():
         f"\nSaved to:\n"
         f"{output_file}"
     )
+
+    if failed:
+
+        print(
+            "\nWARNING:"
+        )
+
+        print(
+            "Some CVs were not included because "
+            "their annotation was incomplete."
+        )
+
+        print(
+            "Do not treat this output as a complete "
+            "batch until failed CVs are reviewed."
+        )
+
+    else:
+
+        print(
+            "\nAll selected CVs were processed "
+            "without incomplete LLM annotations."
+        )
 
 
 if __name__ == "__main__":
