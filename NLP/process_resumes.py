@@ -1,249 +1,189 @@
+import csv
+import hashlib
+import json
 from pathlib import Path
-
-import pandas as pd
 
 from NLP.cv_parser import parse_cv
 
 
-ROOT_DIR = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[1]
 
-# Папка с PDF-резюме на рабочем столе
-RESUMES_DIR = (
-    Path.home()
-    / "Desktop"
-    / "resumes"
-)
+RESUMES_DIR = Path.home() / "Desktop" / "resumes"
+OUTPUT_DIR = ROOT / "data" / "processed"
+OUTPUT_FILE = OUTPUT_DIR / "resumes.csv"
 
-# Куда сохранить общий CSV
-OUTPUT_FILE = (
-    ROOT_DIR
-    / "data"
-    / "processed"
-    / "resumes.csv"
-)
+SCHEMA_VERSION = "1.0"
+TEXT_VERSION = "v1"
+
+
+def sha256_bytes(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
+
+
+def sha256_text(text: str) -> str:
+    return hashlib.sha256(
+        (text or "").encode("utf-8")
+    ).hexdigest()
+
+
+def make_document_id(pdf_path: Path) -> tuple[str, str]:
+    """
+    Stable ID based on the original PDF bytes.
+
+    Same PDF -> same document_id,
+    regardless of its numeric resume_id.
+    """
+    source_hash = sha256_bytes(
+        pdf_path.read_bytes()
+    )
+
+    document_id = f"doc_{source_hash[:16]}"
+
+    return document_id, source_hash
 
 
 def main():
-
-    print("=" * 70)
-    print("AUTO-HR RESUME DATASET PROCESSOR")
-    print("=" * 70)
-
-    # Создаём папку для результата, если её ещё нет
-    OUTPUT_FILE.parent.mkdir(
+    OUTPUT_DIR.mkdir(
         parents=True,
-        exist_ok=True
+        exist_ok=True,
     )
 
-    # Ищем все PDF-файлы в Desktop/resumes
     pdf_files = sorted(
-        RESUMES_DIR.glob("*.pdf")
-    )
-
-    print(
-        f"\nResume folder:\n{RESUMES_DIR}"
-    )
-
-    print(
-        f"\nFound {len(pdf_files)} PDF resumes."
+        RESUMES_DIR.glob("*.pdf"),
+        key=lambda p: p.name.lower(),
     )
 
     if not pdf_files:
-        print(
-            "\nNo PDF files found in:"
+        raise RuntimeError(
+            f"No PDF files found in: {RESUMES_DIR}"
         )
-        print(RESUMES_DIR)
-        return
 
-    results = []
-    failed = []
+    rows = []
 
-    for number, file_path in enumerate(
+    print("=" * 80)
+    print("AUTO-HR FINAL RESUME PROCESSING")
+    print("=" * 80)
+    print(f"Found {len(pdf_files)} PDFs")
+    print()
+
+    for number, pdf_path in enumerate(
         pdf_files,
-        start=1
+        start=1,
     ):
+        resume_id = f"resume_{number:04d}"
 
         print(
-            f"\n[{number}/{len(pdf_files)}] "
-            f"Processing: {file_path.name}"
+            f"[{number:02d}/{len(pdf_files)}] "
+            f"{resume_id} | {pdf_path.name}"
         )
 
         try:
+            result = parse_cv(pdf_path)
 
-            result = parse_cv(
-                file_path
+            document_id, source_hash = make_document_id(
+                pdf_path
             )
 
-            # Не используем имя человека как ID
-            resume_id = (
-                f"resume_{number:04d}"
+            final_text = result["text"]
+
+            text_hash = sha256_text(
+                final_text
             )
 
-            results.append(
+            layouts = result["layouts"]
+
+            layout_string = ", ".join(
+                f"p{x['page']}={x['layout']}"
+                for x in layouts
+            )
+
+            rows.append(
                 {
-                    "resume_id":
-                        resume_id,
-
-                    "filename":
-                        file_path.name,
-
-                    "raw_text":
-                        result["raw_text"],
-
-                    "clean_text":
-                        result["clean_text"],
-
-                    "text":
-                        result["text"],
-
-                    "skills":
-                        ", ".join(
-                            result["skills"]
-                        ),
-
-                    "skill_count":
-                        result["skill_count"],
-
-                    "raw_character_count":
-                        len(result["raw_text"]),
-
-                    "clean_character_count":
-                        len(result["clean_text"]),
-
-                    "character_count":
-                        len(result["text"]),
+                    "schema_version": SCHEMA_VERSION,
+                    "resume_id": resume_id,
+                    "document_id": document_id,
+                    "filename": pdf_path.name,
+                    "source_sha256": source_hash,
+                    "text_version": TEXT_VERSION,
+                    "text_sha256": text_hash,
+                    "layouts": layout_string,
+                    "review_required": result[
+                        "review_required"
+                    ],
+                    "raw_text": result[
+                        "raw_text"
+                    ],
+                    "clean_text": result[
+                        "clean_text"
+                    ],
+                    "text": final_text,
+                    "skills": json.dumps(
+                        result["skills"],
+                        ensure_ascii=False,
+                    ),
+                    "skill_count": result[
+                        "skill_count"
+                    ],
+                    "raw_length": len(
+                        result["raw_text"]
+                    ),
+                    "clean_length": len(
+                        result["clean_text"]
+                    ),
+                    "text_length": len(
+                        final_text
+                    ),
                 }
-            )
-
-            print(
-                f"  Raw characters: "
-                f"{len(result['raw_text'])}"
-            )
-
-            print(
-                f"  Clean characters: "
-                f"{len(result['clean_text'])}"
-            )
-
-            print(
-                f"  Anonymized characters: "
-                f"{len(result['text'])}"
-            )
-
-            print(
-                f"  Skills detected: "
-                f"{result['skill_count']}"
             )
 
         except Exception as error:
-
             print(
-                f"  FAILED: {error}"
+                f"    ERROR: {error}"
             )
 
-            failed.append(
-                {
-                    "filename":
-                        file_path.name,
+            raise
 
-                    "error":
-                        str(error),
-                }
-            )
+    fieldnames = [
+        "schema_version",
+        "resume_id",
+        "document_id",
+        "filename",
+        "source_sha256",
+        "text_version",
+        "text_sha256",
+        "layouts",
+        "review_required",
+        "raw_text",
+        "clean_text",
+        "text",
+        "skills",
+        "skill_count",
+        "raw_length",
+        "clean_length",
+        "text_length",
+    ]
 
-    # ----------------------------------------
-    # Сохраняем успешно обработанные резюме
-    # ----------------------------------------
-
-    df = pd.DataFrame(
-        results
-    )
-
-    df.to_csv(
-        OUTPUT_FILE,
-        index=False,
-        encoding="utf-8-sig"
-    )
-
-    # ----------------------------------------
-    # Статистика
-    # ----------------------------------------
-
-    print("\n" + "=" * 70)
-    print("PROCESSING COMPLETE")
-    print("=" * 70)
-
-    print(
-        f"\nTotal PDF files: "
-        f"{len(pdf_files)}"
-    )
-
-    print(
-        f"Successfully processed: "
-        f"{len(results)}"
-    )
-
-    print(
-        f"Failed: "
-        f"{len(failed)}"
-    )
-
-    if results:
-
-        zero_text = (
-            df["character_count"] == 0
-        ).sum()
-
-        zero_skills = (
-            df["skill_count"] == 0
-        ).sum()
-
-        print(
-            f"CVs with no extracted text: "
-            f"{zero_text}"
+    with OUTPUT_FILE.open(
+        "w",
+        newline="",
+        encoding="utf-8-sig",
+    ) as file:
+        writer = csv.DictWriter(
+            file,
+            fieldnames=fieldnames,
         )
 
-        print(
-            f"CVs with no detected skills: "
-            f"{zero_skills}"
-        )
+        writer.writeheader()
+        writer.writerows(rows)
 
-        print(
-            f"Average detected skills: "
-            f"{df['skill_count'].mean():.2f}"
-        )
-
-        print(
-            f"Maximum detected skills: "
-            f"{df['skill_count'].max()}"
-        )
-
-        print(
-            f"Minimum detected skills: "
-            f"{df['skill_count'].min()}"
-        )
-
-    print(
-        f"\nDataset saved to:\n"
-        f"{OUTPUT_FILE}"
-    )
-
-    # ----------------------------------------
-    # Ошибки
-    # ----------------------------------------
-
-    if failed:
-
-        print(
-            "\nFiles that failed:"
-        )
-
-        for item in failed:
-
-            print(
-                f"- {item['filename']}: "
-                f"{item['error']}"
-            )
+    print()
+    print("=" * 80)
+    print("FINISHED")
+    print("=" * 80)
+    print(f"Saved {len(rows)} resumes")
+    print(f"Output: {OUTPUT_FILE}")
+    print(f"Schema version: {SCHEMA_VERSION}")
+    print(f"Text version: {TEXT_VERSION}")
 
 
 if __name__ == "__main__":

@@ -58,7 +58,7 @@ CHUNK_SIZE = 1000
 
 # Enough room for structured NER output without
 # unnecessarily large generations.
-MAX_OUTPUT_TOKENS_PER_CHUNK = 800
+MAX_OUTPUT_TOKENS_PER_CHUNK = 3000
 
 
 # ============================================================
@@ -386,6 +386,7 @@ CV CHUNK
                 instructions=SYSTEM_PROMPT,
                 input=user_input,
                 text_format=NERAnnotationResult,
+                reasoning={"effort": "none"},
                 max_output_tokens=(
                     MAX_OUTPUT_TOKENS_PER_CHUNK
                 ),
