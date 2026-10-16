@@ -15,3 +15,10 @@ data/annotations/
 
 data/processed/resumes.csv
 data/processed/resumes.xlsx
+
+# Local NLP quality reports
+data/processed/full_cv_check.csv
+data/processed/full_cv_text_review.txt
+data/processed/possible_duplicates.csv
+data/processed/resume_extraction_report.csv
+data/processed/resumes_before_freeze.csv
