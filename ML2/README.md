@@ -12,7 +12,6 @@
 ./.venv-label-studio/bin/python -m ML2.run --publish
 ```
 
-Или дважды нажмите `ML2-Разметить.command` в корне проекта.
 Для установки в новом окружении: `python -m pip install -r ML2/requirements.txt`.
 Для публикации нужен также установленный `label-studio` и вход в локальный аккаунт.
 
