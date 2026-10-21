@@ -6,12 +6,15 @@ from pathlib import Path
 import pandas as pd
 
 
+# ============================================================
+# Configuration
+# ============================================================
+
 ROOT_DIR = Path(__file__).resolve().parent.parent
 
 INPUT_FILE = (
     ROOT_DIR
     / "data"
-    / "resumes"
     / "processed"
     / "resumes.csv"
 )
@@ -19,14 +22,16 @@ INPUT_FILE = (
 OUTPUT_FILE = (
     ROOT_DIR
     / "data"
-    / "resumes"
     / "processed"
     / "possible_duplicates.csv"
 )
 
-
 NEAR_DUPLICATE_THRESHOLD = 0.85
 
+
+# ============================================================
+# Helpers
+# ============================================================
 
 def normalize_for_duplicate_check(text):
     """
@@ -44,27 +49,27 @@ def normalize_for_duplicate_check(text):
 
     text = text.lower()
 
-    # Remove anonymization placeholders
+    # Remove anonymization placeholders.
     text = re.sub(
         r"\[(email|phone|url|contact)\]",
         " ",
         text,
-        flags=re.IGNORECASE
+        flags=re.IGNORECASE,
     )
 
-    # Keep letters and numbers
+    # Keep letters and numbers.
     text = re.sub(
         r"[^a-zа-яёәіңғүұқөһ0-9]+",
         " ",
         text,
-        flags=re.IGNORECASE
+        flags=re.IGNORECASE,
     )
 
-    # Normalize whitespace
+    # Normalize whitespace.
     text = re.sub(
         r"\s+",
         " ",
-        text
+        text,
     )
 
     return text.strip()
@@ -91,9 +96,13 @@ def text_similarity(text_a, text_b):
     return SequenceMatcher(
         None,
         text_a,
-        text_b
+        text_b,
     ).ratio()
 
+
+# ============================================================
+# Main
+# ============================================================
 
 def main():
 
@@ -101,25 +110,52 @@ def main():
     print("AUTO-HR CV DUPLICATE CHECK")
     print("=" * 70)
 
-    df = pd.read_csv(INPUT_FILE)
+    # --------------------------------------------------------
+    # Input validation
+    # --------------------------------------------------------
+
+    print(
+        f"\nReading resumes from:\n"
+        f"{INPUT_FILE}"
+    )
+
+    if not INPUT_FILE.exists():
+
+        raise FileNotFoundError(
+            f"Resume dataset not found:\n"
+            f"{INPUT_FILE}"
+        )
+
+    df = pd.read_csv(
+        INPUT_FILE
+    )
 
     print(
         f"\nLoaded {len(df)} resumes."
     )
 
+    # --------------------------------------------------------
     # Ignore unreadable CVs
-    df = df[
-        df["character_count"] > 0
-    ].copy()
+    # --------------------------------------------------------
+
+    if "character_count" in df.columns:
+
+        df = df[
+            df["character_count"] > 0
+        ].copy()
 
     df.reset_index(
         drop=True,
-        inplace=True
+        inplace=True,
     )
 
     print(
         f"Usable resumes: {len(df)}"
     )
+
+    # --------------------------------------------------------
+    # Normalize texts
+    # --------------------------------------------------------
 
     normalized_texts = [
         normalize_for_duplicate_check(text)
@@ -133,15 +169,20 @@ def main():
 
     duplicates = []
 
-    # ------------------------------------------
+    # --------------------------------------------------------
     # Compare every pair
-    # ------------------------------------------
+    # --------------------------------------------------------
 
-    for i in range(len(df)):
+    for i in range(
+        len(df)
+    ):
 
-        for j in range(i + 1, len(df)):
+        for j in range(
+            i + 1,
+            len(df),
+        ):
 
-            # Exact duplicate
+            # Exact duplicate.
             if hashes[i] == hashes[j]:
 
                 duplicates.append(
@@ -168,9 +209,11 @@ def main():
 
                 continue
 
-            similarity = text_similarity(
-                normalized_texts[i],
-                normalized_texts[j]
+            similarity = (
+                text_similarity(
+                    normalized_texts[i],
+                    normalized_texts[j],
+                )
             )
 
             if (
@@ -201,13 +244,14 @@ def main():
                 )
 
     duplicates.sort(
-        key=lambda x: x["similarity"],
-        reverse=True
+        key=lambda item:
+            item["similarity"],
+        reverse=True,
     )
 
-    # ------------------------------------------
+    # --------------------------------------------------------
     # Print results
-    # ------------------------------------------
+    # --------------------------------------------------------
 
     print("\n" + "=" * 70)
     print("POSSIBLE DUPLICATES")
@@ -216,14 +260,15 @@ def main():
     if not duplicates:
 
         print(
-            "\nNo exact or near duplicates found."
+            "\nNo exact or near "
+            "duplicates found."
         )
 
     else:
 
         for number, pair in enumerate(
             duplicates,
-            start=1
+            start=1,
         ):
 
             print(
@@ -231,7 +276,8 @@ def main():
             )
 
             print(
-                f"Type: {pair['type']}"
+                f"Type: "
+                f"{pair['type']}"
             )
 
             print(
@@ -249,15 +295,32 @@ def main():
                 f"{pair['filename_2']}"
             )
 
-    # ------------------------------------------
+    # --------------------------------------------------------
     # Save report
-    # ------------------------------------------
+    # --------------------------------------------------------
 
-    pd.DataFrame(
-        duplicates
-    ).to_csv(
+    OUTPUT_FILE.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    output_columns = [
+        "resume_id_1",
+        "filename_1",
+        "resume_id_2",
+        "filename_2",
+        "type",
+        "similarity",
+    ]
+
+    report_df = pd.DataFrame(
+        duplicates,
+        columns=output_columns,
+    )
+
+    report_df.to_csv(
         OUTPUT_FILE,
-        index=False
+        index=False,
     )
 
     print("\n" + "=" * 70)
@@ -269,4 +332,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main() 

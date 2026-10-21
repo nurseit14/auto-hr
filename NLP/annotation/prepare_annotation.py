@@ -9,7 +9,6 @@ ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 RESUMES_FILE = (
     ROOT_DIR
     / "data"
-    / "resumes"
     / "processed"
     / "resumes.csv"
 )
@@ -28,23 +27,37 @@ def main():
     print("AUTO-HR ANNOTATION DATA PREPARATION")
     print("=" * 70)
 
-    print("\nLoading resumes...")
+    print("\nLoading resumes from:")
+    print(RESUMES_FILE)
+
+    # ----------------------------------------
+    # Check input file
+    # ----------------------------------------
+
+    if not RESUMES_FILE.exists():
+
+        raise FileNotFoundError(
+            f"Resume dataset not found:\n"
+            f"{RESUMES_FILE}"
+        )
 
     df = pd.read_csv(
         RESUMES_FILE
     )
 
     print(
-        f"Loaded {len(df)} resumes."
+        f"\nLoaded {len(df)} resumes."
     )
 
     # ----------------------------------------
     # Remove CVs without extractable text
     # ----------------------------------------
 
-    df = df[
-        df["character_count"] > 0
-    ].copy()
+    if "character_count" in df.columns:
+
+        df = df[
+            df["character_count"] > 0
+        ].copy()
 
     print(
         f"Usable resumes: {len(df)}"
@@ -52,26 +65,58 @@ def main():
 
     tasks = []
 
+    # ----------------------------------------
+    # Create Label Studio tasks
+    # ----------------------------------------
+
     for _, row in df.iterrows():
 
+        text = row.get(
+            "text",
+            ""
+        )
+
+        if pd.isna(text):
+            text = ""
+
         text = str(
-            row["text"]
+            text
         ).strip()
 
         if not text:
             continue
 
+        resume_id = str(
+            row.get(
+                "resume_id",
+                ""
+            )
+        )
+
+        filename = str(
+            row.get(
+                "filename",
+                ""
+            )
+        )
+
         task = {
             "data": {
                 "text": text,
 
-                # Anonymous internal ID
+                # Internal document ID
                 "resume_id":
-                    row["resume_id"]
+                    resume_id,
+
+                # Useful for manual review
+                "filename":
+                    filename,
             }
         }
 
-        tasks.append(task)
+        tasks.append(
+            task
+        )
 
     # ----------------------------------------
     # Save Label Studio JSON
