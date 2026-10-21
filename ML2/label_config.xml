@@ -1,0 +1,52 @@
+<View>
+  <Header value="ML2: резюме и вакансия" />
+  <Text name="pair_meta" value="$pair_caption" />
+  <Text name="instructions" value="Модель уже предложила оценки. Нажми на выделенное требование в вакансии: проверь балл, объяснение и цитату из резюме. Можно менять тип и название требования, удалять лишние выделения и добавлять пропущенные. Затем проверь общую оценку и нажми Submit." />
+  <Text name="warnings" value="$warnings_text" />
+  <View style="display:flex; flex-wrap:wrap; gap:20px; align-items:flex-start; margin-top:16px;">
+    <View style="flex:1; min-width:300px;">
+      <Header value="Резюме" />
+      <View style="max-height:460px; overflow-y:auto; padding:10px; background:#f7f9fc;">
+        <Text name="cv" value="$cv_text" />
+      </View>
+    </View>
+    <View style="flex:1; min-width:300px;">
+      <Header value="Вакансия — выбери выделенное требование" />
+      <Labels name="requirement_type" toName="requirements">
+        <Label value="ROLE_LEVEL" background="#b8a1f2" />
+        <Label value="EXPERIENCE" background="#ffc078" />
+        <Label value="HARD_SKILL" background="#8ce99a" />
+        <Label value="SOFT_SKILL" background="#91d5ff" />
+        <Label value="EDUCATION" background="#eebefa" />
+        <Label value="LANGUAGE" background="#ffa8a8" />
+        <Label value="OTHER" background="#ced4da" />
+      </Labels>
+      <View style="max-height:460px; overflow-y:auto; padding:10px; background:#f7f9fc;">
+        <Text name="requirements" value="$vacancy_display" />
+      </View>
+    </View>
+  </View>
+  <Text name="rubric" value="Балл требования: 0 — нет информации; 1 — явно не соответствует; 2 — соответствует частично; 3 — соответствует. 0 не означает, что человек не владеет навыком. Баллы 1–3 должны опираться на сведения в резюме." />
+  <View visibleWhen="region-selected">
+    <Header value="Выбранное требование" />
+    <TextArea name="requirement_title" toName="requirements" perRegion="true" editable="true" rows="2" maxSubmissions="1" required="true" />
+    <Choices name="match_score" toName="requirements" perRegion="true" choice="single-radio" showInline="true" required="true">
+      <Choice value="0" /><Choice value="1" /><Choice value="2" /><Choice value="3" />
+    </Choices>
+    <Header value="Почему такой балл" />
+    <TextArea name="reason" toName="requirements" perRegion="true" editable="true" rows="3" maxSubmissions="1" required="true" />
+    <Header value="Цитата из резюме (для 0 оставь пустой)" />
+    <View style="max-height:160px; overflow-y:auto;">
+      <TextArea name="cv_evidence" toName="requirements" perRegion="true" editable="true" rows="3" maxSubmissions="1" />
+    </View>
+  </View>
+  <Header value="Насколько кандидат подходит на эту должность" />
+  <Text name="overall_rubric" value="0 — недостаточно данных; 1 — слабо подходит; 2 — подходит частично; 3 — хорошо подходит. Это общая оценка по ключевым требованиям." />
+  <Choices name="overall_score" toName="requirements" choice="single-radio" showInline="true" required="true">
+    <Choice value="0" /><Choice value="1" /><Choice value="2" /><Choice value="3" />
+  </Choices>
+  <TextArea name="overall_reason" toName="requirements" editable="true" rows="4" maxSubmissions="1" required="true" />
+  <Choices name="human_review" toName="requirements" choice="multiple" required="true" requiredMessage="Проверь требования и общую оценку, затем отметь подтверждение.">
+    <Choice value="Я проверил требования, баллы и общую оценку" />
+  </Choices>
+</View>

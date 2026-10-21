@@ -13,3 +13,5 @@ __pycache__/
 data/annotations/
 .env
 
+
+.venv-label-studio/
