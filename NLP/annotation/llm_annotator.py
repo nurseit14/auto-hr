@@ -856,6 +856,10 @@ def load_resume(
         "resume_id": resume_id,
         "filename": str(filename),
         "text": str(text),
+        "document_id": str(row["document_id"]),
+        "source_sha256": str(row["source_sha256"]),
+        "text_sha256": str(row["text_sha256"]),
+        "text_version": str(row["text_version"]),
     }
 
 
@@ -867,7 +871,24 @@ def save_prediction(
     resume_id,
     model,
     regions,
+    resume=None,
 ):
+    if resume is None:
+        resume = load_resume(resume_id)
+
+    if str(resume["resume_id"]) != str(resume_id):
+        raise ValueError("Resume ID mismatch while saving prediction.")
+
+    required = (
+        "document_id",
+        "source_sha256",
+        "text_sha256",
+        "text_version",
+    )
+
+    for field in required:
+        if not resume.get(field):
+            raise ValueError(f"Missing prediction metadata: {field}")
 
     OUTPUT_DIR.mkdir(
         parents=True,
@@ -876,12 +897,15 @@ def save_prediction(
 
     output_file = (
         OUTPUT_DIR
-        / f"{resume_id}.json"
+        / f"{resume['document_id']}_{resume['text_sha256']}.json"
     )
 
     result = {
-        "resume_id":
-            resume_id,
+        "resume_id": resume_id,
+        "document_id": resume["document_id"],
+        "source_sha256": resume["source_sha256"],
+        "text_sha256": resume["text_sha256"],
+        "text_version": resume["text_version"],
 
         "model":
             model,
@@ -1098,6 +1122,7 @@ def main():
             resume_id,
             annotator.model,
             regions,
+            resume=resume,
         )
     )
 

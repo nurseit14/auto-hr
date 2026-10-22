@@ -1,4 +1,5 @@
 import argparse
+import hashlib
 import json
 from pathlib import Path
 
@@ -89,29 +90,30 @@ def main():
 
     df = load_resumes(RESUMES_FILE)
 
-    current_texts = {}
+    current_documents = {}
 
     for _, row in df.iterrows():
+        document_id = str(row["document_id"])
 
-        resume_id = str(
-            row["resume_id"]
-        )
+        if not document_id:
+            raise ValueError("Empty document_id in resumes.csv")
 
-        text = row.get(
-            "text",
-            ""
-        )
+        if document_id in current_documents:
+            raise ValueError(
+                f"Duplicate document_id: {document_id}"
+            )
 
-        if pd.isna(text):
-            text = ""
-
-        current_texts[
-            resume_id
-        ] = str(text)
+        current_documents[document_id] = {
+            "resume_id": str(row["resume_id"]),
+            "text": str(row["text"]),
+            "source_sha256": str(row["source_sha256"]),
+            "text_sha256": str(row["text_sha256"]),
+            "text_version": str(row["text_version"]),
+        }
 
     print(
-        f"\nCurrent resumes loaded: "
-        f"{len(current_texts)}"
+        f"\\nCurrent resumes loaded: "
+        f"{len(current_documents)}"
     )
 
     # --------------------------------------------------
@@ -139,6 +141,7 @@ def main():
 
     task_text_changed = 0
     missing_resume_ids = 0
+    identity_errors = []
 
     total_regions = 0
     valid_regions = 0
@@ -172,49 +175,74 @@ def main():
         )
 
         # --------------------------------------------------
-        # Resume ID check
+        # Stable document and text-version validation
         # --------------------------------------------------
 
-        if resume_id not in current_texts:
+        document_id = str(data.get("document_id") or "")
 
-            missing_resume_ids += 1
-
-            print(
-                f"\nWARNING: "
-                f"{resume_id} not found "
-                f"in current resumes.csv"
-            )
-
-            continue
-
-        current_text = (
-            current_texts[
-                resume_id
-            ]
+        required = (
+            "document_id",
+            "source_sha256",
+            "text_sha256",
+            "text_version",
         )
 
-        # --------------------------------------------------
-        # Check whether task text changed
-        # --------------------------------------------------
+        missing = [
+            field for field in required
+            if not data.get(field)
+        ]
 
-        if task_text != current_text:
+        if missing:
+            status = "MISSING_METADATA"
+            detail = ", ".join(missing)
+            identity_errors.append((status, resume_id, detail))
+            print(f"ERROR [{status}] {resume_id}: {detail}")
+            continue
 
+        if document_id not in current_documents:
+            status = "UNKNOWN_DOCUMENT"
+            identity_errors.append(
+                (status, resume_id, document_id)
+            )
+            print(f"ERROR [{status}] {document_id}")
+            continue
+
+        current = current_documents[document_id]
+        current_text = current["text"]
+
+        mismatches = []
+
+        if str(data["source_sha256"]) != current["source_sha256"]:
+            mismatches.append("SOURCE_HASH_MISMATCH")
+
+        if str(data["text_version"]) != current["text_version"]:
+            mismatches.append("VERSION_MISMATCH")
+
+        task_hash = hashlib.sha256(
+            task_text.encode("utf-8")
+        ).hexdigest()
+
+        if (
+            str(data["text_sha256"]) != current["text_sha256"]
+            or str(data["text_sha256"]) != task_hash
+            or task_text != current_text
+        ):
+            mismatches.append("TEXT_MISMATCH")
             task_text_changed += 1
 
-            print(
-                f"\nTEXT CHANGED: "
-                f"{resume_id}"
-            )
+        if mismatches:
+            for status in mismatches:
+                identity_errors.append(
+                    (status, resume_id, document_id)
+                )
+                print(
+                    f"ERROR [{status}] "
+                    f"{document_id} ({resume_id})"
+                )
+            continue
 
-            print(
-                f"  JSON text length: "
-                f"{len(task_text)}"
-            )
-
-            print(
-                f"  Current text length: "
-                f"{len(current_text)}"
-            )
+        # resume_id is informational only.
+        # Renumbering must not invalidate the document.
 
         # --------------------------------------------------
         # Validate each annotation region
@@ -361,8 +389,8 @@ def main():
     )
 
     print(
-        f"Missing resume IDs: "
-        f"{missing_resume_ids}"
+        f"Identity/version errors: "
+        f"{len(identity_errors)}"
     )
 
     print(
@@ -434,7 +462,7 @@ def main():
     if (
         task_text_changed == 0
         and invalid_regions == 0
-        and missing_resume_ids == 0
+        and not identity_errors
     ):
 
         print(
@@ -449,6 +477,9 @@ def main():
         )
 
     print("=" * 70)
+
+    if identity_errors or invalid_regions or task_text_changed:
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

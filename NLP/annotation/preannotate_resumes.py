@@ -508,6 +508,10 @@ def main():
             "data": {
                 "text": text,
                 "resume_id": resume_id,
+                "document_id": str(row["document_id"]),
+                "source_sha256": str(row["source_sha256"]),
+                "text_sha256": str(row["text_sha256"]),
+                "text_version": str(row["text_version"]),
             },
 
             "predictions": [
