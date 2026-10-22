@@ -2,16 +2,13 @@ import json
 from pathlib import Path
 
 import pandas as pd
+from NLP.config import RESUMES_FILE
+from NLP.resume_loader import load_resumes
 
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 
-RESUMES_FILE = (
-    ROOT_DIR
-    / "data"
-    / "processed"
-    / "resumes.csv"
-)
+
 
 OUTPUT_FILE = (
     ROOT_DIR
@@ -41,9 +38,7 @@ def main():
             f"{RESUMES_FILE}"
         )
 
-    df = pd.read_csv(
-        RESUMES_FILE
-    )
+    df = load_resumes(RESUMES_FILE)
 
     print(
         f"\nLoaded {len(df)} resumes."
@@ -53,11 +48,9 @@ def main():
     # Remove CVs without extractable text
     # ----------------------------------------
 
-    if "character_count" in df.columns:
-
-        df = df[
-            df["character_count"] > 0
-        ].copy()
+    df = df[
+        df["text_length"] > 0
+    ].copy()
 
     print(
         f"Usable resumes: {len(df)}"
@@ -79,9 +72,8 @@ def main():
         if pd.isna(text):
             text = ""
 
-        text = str(
-            text
-        ).strip()
+        # Preserve exact frozen text for NER offsets.
+        text = str(text)
 
         if not text:
             continue
@@ -111,6 +103,15 @@ def main():
                 # Useful for manual review
                 "filename":
                     filename,
+
+                "document_id":
+                    str(row["document_id"]),
+
+                "text_sha256":
+                    str(row["text_sha256"]),
+
+                "text_version":
+                    str(row.get("text_version", "v1")),
             }
         }
 

@@ -4,6 +4,8 @@ from difflib import SequenceMatcher
 from pathlib import Path
 
 import pandas as pd
+from NLP.config import RESUMES_FILE
+from NLP.resume_loader import load_resumes
 
 
 # ============================================================
@@ -12,12 +14,7 @@ import pandas as pd
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 
-INPUT_FILE = (
-    ROOT_DIR
-    / "data"
-    / "processed"
-    / "resumes.csv"
-)
+INPUT_FILE = RESUMES_FILE
 
 OUTPUT_FILE = (
     ROOT_DIR
@@ -126,9 +123,7 @@ def main():
             f"{INPUT_FILE}"
         )
 
-    df = pd.read_csv(
-        INPUT_FILE
-    )
+    df = load_resumes(INPUT_FILE)
 
     print(
         f"\nLoaded {len(df)} resumes."
@@ -138,11 +133,9 @@ def main():
     # Ignore unreadable CVs
     # --------------------------------------------------------
 
-    if "character_count" in df.columns:
-
-        df = df[
-            df["character_count"] > 0
-        ].copy()
+    df = df[
+        df["text_length"] > 0
+    ].copy()
 
     df.reset_index(
         drop=True,

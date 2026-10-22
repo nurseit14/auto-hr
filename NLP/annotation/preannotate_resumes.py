@@ -14,13 +14,8 @@ from NLP.annotation.annotation_dictionary import (
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 
-RESUMES_FILE = (
-    ROOT_DIR
-    / "data"
-    / "resumes"
-    / "processed"
-    / "resumes.csv"
-)
+from NLP.config import RESUMES_FILE
+from NLP.resume_loader import load_resumes
 
 OUTPUT_FILE = (
     ROOT_DIR
@@ -476,13 +471,11 @@ def main():
     print("AUTO-HR RESUME PRE-ANNOTATION")
     print("=" * 70)
 
-    df = pd.read_csv(
-        RESUMES_FILE
-    )
+    df = load_resumes(RESUMES_FILE)
 
     # Ignore unreadable CVs
     df = df[
-        df["character_count"] > 0
+        df["text_length"] > 0
     ].copy()
 
     print(

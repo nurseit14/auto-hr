@@ -4,15 +4,13 @@ from pathlib import Path
 
 import pandas as pd
 
+from NLP.config import RESUMES_FILE
+from NLP.resume_loader import load_resumes
+
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 
-RESUMES_FILE = (
-    ROOT_DIR
-    / "data"
-    / "processed"
-    / "resumes.csv"
-)
+
 
 
 def parse_args():
@@ -89,9 +87,7 @@ def main():
     # Load current resume dataset
     # --------------------------------------------------
 
-    df = pd.read_csv(
-        RESUMES_FILE
-    )
+    df = load_resumes(RESUMES_FILE)
 
     current_texts = {}
 

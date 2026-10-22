@@ -5,6 +5,9 @@ from pathlib import Path
 
 import pandas as pd
 
+from NLP.config import RESUMES_FILE
+from NLP.resume_loader import load_resumes
+
 from NLP.annotation.preannotate_resumes import generate_annotations
 
 
@@ -28,13 +31,7 @@ LLM_DIR = (
     / "llm_predictions"
 )
 
-RESUMES_FILE = (
-    ROOT_DIR
-    / "data"
-    / "resumes"
-    / "processed"
-    / "resumes.csv"
-)
+
 
 LABELS = [
     "HARD_SKILL",
@@ -275,9 +272,7 @@ def load_rules_predictions(
             f"{RESUMES_FILE}"
         )
 
-    df = pd.read_csv(
-        RESUMES_FILE
-    )
+    df = load_resumes(RESUMES_FILE)
 
     predictions = {}
 

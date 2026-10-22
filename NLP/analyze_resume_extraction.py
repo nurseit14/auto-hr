@@ -3,6 +3,9 @@ from pathlib import Path
 
 import pandas as pd
 
+from NLP.config import RESUMES_FILE
+from NLP.resume_loader import load_resumes
+
 
 # ============================================================
 # Paths
@@ -10,12 +13,7 @@ import pandas as pd
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 
-INPUT_FILE = (
-    ROOT_DIR
-    / "data"
-    / "processed"
-    / "resumes.csv"
-)
+INPUT_FILE = RESUMES_FILE
 
 OUTPUT_FILE = (
     ROOT_DIR
@@ -238,9 +236,7 @@ def main():
 
         return
 
-    df = pd.read_csv(
-        INPUT_FILE
-    )
+    df = load_resumes(INPUT_FILE)
 
     print(
         f"\nLoaded {len(df)} resumes."

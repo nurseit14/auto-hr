@@ -10,6 +10,8 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from pydantic import BaseModel
 
+from NLP.config import RESUMES_FILE
+from NLP.resume_loader import load_resumes
 from NLP.annotation.llm_annotation_prompt import SYSTEM_PROMPT
 
 
@@ -23,12 +25,7 @@ ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 
 # IMPORTANT:
 # All NLP scripts use the same current dataset.
-RESUMES_FILE = (
-    ROOT_DIR
-    / "data"
-    / "processed"
-    / "resumes.csv"
-)
+
 
 OUTPUT_DIR = (
     ROOT_DIR
@@ -816,9 +813,7 @@ def load_resume(
             f"{RESUMES_FILE}"
         )
 
-    df = pd.read_csv(
-        RESUMES_FILE
-    )
+    df = load_resumes(RESUMES_FILE)
 
     if "resume_id" not in df.columns:
 

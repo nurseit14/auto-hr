@@ -5,6 +5,9 @@ from pathlib import Path
 
 import pandas as pd
 
+from NLP.config import RESUMES_FILE
+from NLP.resume_loader import load_resumes
+
 from NLP.annotation.llm_annotator import LLMAnnotator
 
 from NLP.annotation.preannotate_resumes import (
@@ -18,12 +21,7 @@ from NLP.annotation.preannotate_resumes import (
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 
-RESUMES_FILE = (
-    ROOT_DIR
-    / "data"
-    / "processed"
-    / "resumes.csv"
-)
+
 
 OUTPUT_FILE = (
     ROOT_DIR
@@ -518,9 +516,7 @@ def main():
         f"{RESUMES_FILE}"
     )
 
-    df = pd.read_csv(
-        RESUMES_FILE
-    )
+    df = load_resumes(RESUMES_FILE)
 
     print(
         f"\nLoaded resumes: "
@@ -528,11 +524,9 @@ def main():
     )
 
     # Ignore unreadable CVs.
-    if "character_count" in df.columns:
-
-        df = df[
-            df["character_count"] > 0
-        ].copy()
+    df = df[
+        df["text_length"] > 0
+    ].copy()
 
     selected_rows = []
 
