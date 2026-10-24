@@ -17,6 +17,9 @@ from unittest.mock import Mock, patch
 
 import numpy as np
 
+from ML1.config import EMBEDDING_DIMENSION
+from ML1.vacancy_index import read_vacancies, save_index
+
 
 # Load an isolated module so this test's encoder stub does not affect other tests
 # or import sentence-transformers/torch when merely checking source IDs.
@@ -25,7 +28,7 @@ SPEC = importlib.util.spec_from_file_location(
 )
 matcher_module = importlib.util.module_from_spec(SPEC)
 encoder_module = types.ModuleType("ML1.embeddings")
-encoder_module.encode_text = Mock(return_value=np.array([1.0, 0.0]))
+encoder_module.encode_text = Mock(return_value=np.eye(1, EMBEDDING_DIMENSION)[0])
 with patch.dict("sys.modules", {"ML1.embeddings": encoder_module}):
     SPEC.loader.exec_module(matcher_module)
 
@@ -56,7 +59,11 @@ class VacancyIdentityTests(unittest.TestCase):
         if vectors is None:
             vectors = np.tile([1.0, 0.0], (len(rows), 1))
         embedding_path = self.directory / "embeddings.npy"
-        np.save(embedding_path, vectors)
+        # The production model has 384 dimensions; preserve fixture geometry.
+        if vectors.shape[1] < EMBEDDING_DIMENSION:
+            vectors = np.pad(vectors, ((0, 0), (0, EMBEDDING_DIMENSION - vectors.shape[1])))
+        frame, csv_sha256 = read_vacancies(path)
+        save_index(frame, csv_sha256, vectors, embedding_path)
         with ExitStack() as stack:
             stack.enter_context(patch.object(matcher_module, "VACANCIES_FILE", path))
             stack.enter_context(patch.object(matcher_module, "EMBEDDINGS_FILE", embedding_path))
@@ -96,7 +103,7 @@ class VacancyIdentityTests(unittest.TestCase):
             self.assertEqual(result["vacancy_skills"], source["skills"])
 
     def test_reordering_rows_and_their_vectors_preserves_identity_and_scores(self):
-        # Reordering CSV WITHOUT its matching vectors is ML1-03, not this fix.
+        # Rebuild both the matrix and manifest after reordering the source CSV.
         rows = [self.row("job-a", "First"), self.row("job-b", "Second")]
         vectors = np.array([[1.0, 0.0], [0.0, 1.0]])
         original = self.match(self.create(rows, vectors))

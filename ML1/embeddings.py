@@ -1,8 +1,4 @@
-from sentence_transformers import SentenceTransformer
-
-
-# Multilingual embedding model
-MODEL_NAME = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+from ML1.config import MODEL_NAME
 
 _model = None
 
@@ -15,6 +11,8 @@ def get_model():
     global _model
 
     if _model is None:
+        from sentence_transformers import SentenceTransformer
+
         print(f"Loading embedding model: {MODEL_NAME}")
 
         _model = SentenceTransformer(MODEL_NAME)

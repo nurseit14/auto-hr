@@ -1,31 +1,11 @@
-from pathlib import Path
-
 import numpy as np
 import pandas as pd
 
+from ML1.config import VACANCIES_FILE, EMBEDDINGS_FILE
 from ML1.embeddings import encode_text
-from ML1.skill_similarity import (
-    calculate_skill_similarity,
-    get_skill_details,
-)
+from ML1.vacancy_index import read_vacancies, load_index
+from ML1.skill_similarity import calculate_skill_similarity, get_skill_details
 from NLP.skill_extractor import extract_skills
-
-
-ROOT_DIR = Path(__file__).resolve().parent.parent
-
-VACANCIES_FILE = (
-    ROOT_DIR
-    / "data"
-    / "processed"
-    / "vacancies_with_skills.csv"
-)
-
-EMBEDDINGS_FILE = (
-    ROOT_DIR
-    / "data"
-    / "processed"
-    / "vacancy_embeddings.npy"
-)
 
 
 class JobMatcher:
@@ -36,57 +16,13 @@ class JobMatcher:
 
         print("Loading vacancies...")
 
-        self.vacancies = pd.read_csv(
-            VACANCIES_FILE,
-            dtype={"vacancy_id": str},
-            keep_default_na=False,
+        self.vacancies, csv_sha256 = read_vacancies(VACANCIES_FILE)
+        print(f"Loaded {len(self.vacancies)} vacancies.")
+        print("Loading and validating vacancy embeddings...")
+        self.vacancy_embeddings, self.index_metadata = load_index(
+            self.vacancies, csv_sha256, EMBEDDINGS_FILE
         )
-
-        self._validate_vacancy_ids()
-
-        print(
-            f"Loaded {len(self.vacancies)} vacancies."
-        )
-
-        print("Loading vacancy embeddings...")
-
-        self.vacancy_embeddings = np.load(
-            EMBEDDINGS_FILE
-        )
-
-        if len(self.vacancies) != len(
-            self.vacancy_embeddings
-        ):
-            raise ValueError(
-                "Vacancy dataset and embeddings "
-                "have different sizes."
-            )
-
-        print(
-            f"Loaded embeddings: "
-            f"{self.vacancy_embeddings.shape}"
-        )
-
-    def _validate_vacancy_ids(self):
-        """Require stable source IDs before loading or using the index."""
-        if "vacancy_id" not in self.vacancies.columns:
-            raise ValueError(
-                "Vacancy dataset must contain a 'vacancy_id' column. "
-                "Row numbers and the legacy 'id' column are not vacancy IDs."
-            )
-
-        ids = self.vacancies["vacancy_id"].tolist()
-
-        if any(not isinstance(value, str) or not value.strip() for value in ids):
-            raise ValueError("Vacancy dataset contains empty vacancy_id values.")
-
-        if any(value != value.strip() for value in ids):
-            raise ValueError(
-                "Vacancy IDs must not contain leading or trailing whitespace."
-            )
-
-        if len(ids) != len(set(ids)):
-            raise ValueError("Vacancy dataset contains duplicate vacancy_id values.")
+        print(f"Loaded embeddings: {self.vacancy_embeddings.shape}")
 
     # --------------------------------------------------
     # Semantic similarity

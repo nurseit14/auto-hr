@@ -176,7 +176,33 @@ Output:
 
 ```text
 data/processed/vacancy_embeddings.npy
+data/processed/vacancy_embeddings.manifest.json
 ```
+
+The matrix and manifest must be generated together. After changing the CSV,
+rebuild the index, then validate it without loading the embedding model:
+
+```bash
+python -m ML1.build_vacancy_embeddings
+python -m ML1.validate_index
+```
+
+The matcher verifies the exact CSV checksum, ordered vacancy IDs and text hashes,
+model name, normalization setting, matrix checksum, shape and dtype. Missing or
+stale metadata causes an error with a rebuild command. Legacy matrices without a
+manifest must be rebuilt. Even CSV-only formatting or metadata changes require a
+rebuild because the full source file is hashed.
+
+The manifest includes a schema version, UTC build time and content-derived
+`index_version`. Matrix rows must be finite, L2-normalized float vectors with the
+configured dimension (384). Temporary files are replaced individually, with the
+manifest published last; an interrupted publication is detected on load and
+requires rebuilding. Concurrent builders are not supported.
+
+Model identity currently uses the configured Hugging Face model name, rather than
+a pinned weights revision. This protects against configuration changes, but does
+not establish reproducibility across upstream model updates. Pinning model and
+library revisions is a separate follow-up.
 
 This allows new resumes to be compared against all vacancies without regenerating the vacancy representations.
 
