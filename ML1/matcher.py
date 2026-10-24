@@ -37,8 +37,12 @@ class JobMatcher:
         print("Loading vacancies...")
 
         self.vacancies = pd.read_csv(
-            VACANCIES_FILE
+            VACANCIES_FILE,
+            dtype={"vacancy_id": str},
+            keep_default_na=False,
         )
+
+        self._validate_vacancy_ids()
 
         print(
             f"Loaded {len(self.vacancies)} vacancies."
@@ -62,6 +66,27 @@ class JobMatcher:
             f"Loaded embeddings: "
             f"{self.vacancy_embeddings.shape}"
         )
+
+    def _validate_vacancy_ids(self):
+        """Require stable source IDs before loading or using the index."""
+        if "vacancy_id" not in self.vacancies.columns:
+            raise ValueError(
+                "Vacancy dataset must contain a 'vacancy_id' column. "
+                "Row numbers and the legacy 'id' column are not vacancy IDs."
+            )
+
+        ids = self.vacancies["vacancy_id"].tolist()
+
+        if any(not isinstance(value, str) or not value.strip() for value in ids):
+            raise ValueError("Vacancy dataset contains empty vacancy_id values.")
+
+        if any(value != value.strip() for value in ids):
+            raise ValueError(
+                "Vacancy IDs must not contain leading or trailing whitespace."
+            )
+
+        if len(ids) != len(set(ids)):
+            raise ValueError("Vacancy dataset contains duplicate vacancy_id values.")
 
     # --------------------------------------------------
     # Semantic similarity
@@ -201,10 +226,7 @@ class JobMatcher:
                     int(index),
 
                 "vacancy_id":
-                    vacancy.get(
-                        "id",
-                        index
-                    ),
+                    vacancy["vacancy_id"],
 
                 "title":
                     vacancy.get(
