@@ -1,3 +1,4 @@
 openai==1.109.1
 pydantic>=2.9,<3
 python-dotenv>=1,<2
+numpy>=1.26,<3

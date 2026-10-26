@@ -1,1 +1,1 @@
-"""Automatic CV–vacancy pre-annotation for human review in Label Studio."""
+"""CV–vacancy pre-annotation, reviewed datasets and a local learned reranker."""

@@ -11,6 +11,7 @@ __pycache__/
 
 # Private annotation data
 data/annotations/
+ML2/project-*.json
 .env
 
 .venv-label-studio/
