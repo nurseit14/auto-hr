@@ -1,7 +1,12 @@
+from dataclasses import replace
+
 import numpy as np
 import pandas as pd
 
-from ML1.config import VACANCIES_FILE, EMBEDDINGS_FILE
+from ML1.config import (
+    VACANCIES_FILE, EMBEDDINGS_FILE, MatchingConfig,
+    DEFAULT_ALPHA, DEFAULT_CONFIDENCE_TARGET, DEFAULT_TOP_K,
+)
 from ML1.embeddings import encode_text
 from ML1.vacancy_index import read_vacancies, load_index
 from ML1.skill_similarity import calculate_skill_similarity, get_skill_details
@@ -10,9 +15,9 @@ from NLP.skill_extractor import extract_skills
 
 class JobMatcher:
 
-    def __init__(self, alpha=0.4):
+    def __init__(self, alpha=DEFAULT_ALPHA, confidence_target=DEFAULT_CONFIDENCE_TARGET):
 
-        self.alpha = alpha
+        self.config = MatchingConfig(alpha=alpha, confidence_target=confidence_target)
 
         print("Loading vacancies...")
 
@@ -23,6 +28,10 @@ class JobMatcher:
             self.vacancies, csv_sha256, EMBEDDINGS_FILE
         )
         print(f"Loaded embeddings: {self.vacancy_embeddings.shape}")
+
+    @property
+    def alpha(self):
+        return self.config.alpha
 
     # --------------------------------------------------
     # Semantic similarity
@@ -66,7 +75,7 @@ class JobMatcher:
     def match(
         self,
         resume_text,
-        top_k=10,
+        top_k=DEFAULT_TOP_K,
         resume_skills=None
     ):
         """
@@ -84,6 +93,10 @@ class JobMatcher:
             Optional already-extracted skills.
             If not provided, skills are extracted here.
         """
+
+        run_config = replace(self.config, top_k=top_k)
+        if not isinstance(resume_text, str) or not resume_text.strip():
+            raise ValueError("resume_text must be a non-empty string; no ranking was performed.")
 
         print("\nExtracting resume skills...")
 
@@ -128,7 +141,8 @@ class JobMatcher:
             skill_score = (
                 calculate_skill_similarity(
                     resume_skills,
-                    vacancy_skills
+                    vacancy_skills,
+                    confidence_target=run_config.confidence_target,
                 )
             )
 
@@ -139,9 +153,9 @@ class JobMatcher:
 
             # Hybrid score
             hybrid_score = (
-                self.alpha * skill_score
+                run_config.alpha * skill_score
                 +
-                (1 - self.alpha)
+                (1 - run_config.alpha)
                 * semantic_score
             )
 
@@ -234,6 +248,12 @@ class JobMatcher:
 
                 "hybrid_score":
                     hybrid_score,
+
+                "matching_metadata": {
+                    **run_config.metadata(),
+                    "index_version": self.index_metadata["index_version"],
+                    "model_name": self.index_metadata["model_name"],
+                },
 
                 # Skill explanation
                 "matched_skills":

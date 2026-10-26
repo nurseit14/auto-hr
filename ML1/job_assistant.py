@@ -1,12 +1,6 @@
 import os
 
-from dotenv import load_dotenv
-from openai import OpenAI
-
 from ML1.assistant_prompt import SYSTEM_PROMPT
-
-
-load_dotenv()
 
 
 DEFAULT_MODEL = os.getenv(
@@ -35,6 +29,10 @@ class JobAssistant:
         vacancy
     ):
 
+        from dotenv import load_dotenv
+
+        load_dotenv()
+
         api_key = os.getenv(
             "OPENAI_API_KEY"
         )
@@ -46,11 +44,13 @@ class JobAssistant:
                 "Add it to the .env file."
             )
 
+        from openai import OpenAI
+
         self.client = OpenAI(
             api_key=api_key
         )
 
-        self.model = DEFAULT_MODEL
+        self.model = os.getenv("OPENAI_ASSISTANT_MODEL", DEFAULT_MODEL)
 
         self.resume_text = (
             resume_text or ""
@@ -186,6 +186,19 @@ class JobAssistant:
             )
         )
 
+        metadata = vacancy.get("matching_metadata") or {}
+        required = {"alpha", "semantic_weight", "confidence_target", "zero_skill_policy", "index_version"}
+        if required.issubset(metadata):
+            formula = (
+                f"hybrid_score = {metadata['alpha']:g} * skill_score + "
+                f"{metadata['semantic_weight']:g} * semantic_score\n"
+                f"confidence_target = {metadata['confidence_target']:g}\n"
+                f"zero_skill_policy = {metadata['zero_skill_policy']}\n"
+                f"index_version = {metadata['index_version']}"
+            )
+        else:
+            formula = "Matching configuration unavailable; do not assume weights or infer a formula."
+
         context = f"""
 SELECTED VACANCY
 ================
@@ -242,10 +255,7 @@ Displayed percentage:
 
 Current hybrid formula:
 
-hybrid_score =
-0.4 * skill_score
-+
-0.6 * semantic_score
+{formula}
 
 Matched skills:
 {matched}

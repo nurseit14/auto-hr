@@ -1,4 +1,6 @@
-from ML1.matcher import JobMatcher
+import argparse
+
+from ML1.cli import add_matching_arguments, matching_config, match_processed_resume
 
 
 def print_result(
@@ -67,15 +69,19 @@ def print_result(
     )
 
 
-def main():
+def make_parser():
+    parser = argparse.ArgumentParser(description="Match pasted resume text against vacancies.")
+    add_matching_arguments(parser)
+    return parser
+
+
+def main(argv=None):
+    parser = make_parser()
+    config = matching_config(parser, parser.parse_args(argv))
 
     print("=" * 70)
     print("AUTO-HR JOB MATCHING PROTOTYPE")
     print("=" * 70)
-
-    matcher = JobMatcher(
-        alpha=0.6
-    )
 
     print(
         "\nPaste/type resume text."
@@ -106,16 +112,16 @@ def main():
             "Resume text is empty."
         )
 
-        return
+        parser.exit(1)
 
     print("\nSearching for jobs...")
 
-    results = matcher.match(
-        resume_text,
-        top_k=10
-    )
+    try:
+        results = match_processed_resume(resume_text, config=config)
+    except (ValueError, OSError) as exc:
+        parser.exit(1, f"Matching failed: {exc}\n")
 
-    print("\n\nTOP 10 MATCHING VACANCIES")
+    print(f"\n\nTOP {len(results)} MATCHING VACANCIES")
 
     for position, result in enumerate(
         results,

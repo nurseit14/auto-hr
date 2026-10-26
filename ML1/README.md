@@ -66,6 +66,41 @@ ML1/
 
 ---
 
+# Shared matching configuration (ML1-04)
+
+Both CLI entrypoints use `alpha=0.4`, `confidence_target=5`, `top_k=10` by
+default. The pasted-text CLI previously used `alpha=0.6`; its default ranking
+now follows the same baseline as the PDF CLI. `MatchingConfig` in `config.py`
+validates settings, and `cli.py` runs the common matching path.
+
+```bash
+python -m ML1.match_resume --alpha 0.4 --confidence-target 5 --top-k 5
+python -m ML1.match_cv "data/resumes/raw/example.pdf" --alpha 0.4 --confidence-target 5 --top-k 5
+```
+
+`alpha` must be finite and in [0, 1], `confidence_target` must be finite and
+positive, and `top_k` must be a positive integer. A larger `top_k` than the
+corpus returns all available vacancies. Invalid CLI settings exit with code 2;
+empty resume text or an unusable corpus causes an explicit error. Input text
+is checked for whitespace but passed to the encoder without stripping.
+
+`resume_skills=None` requests skill extraction. An explicit empty list is
+respected. With no detected vacancy or candidate skills, the skill score is
+zero and the original weights remain fixed: no automatic semantic reweighting
+is applied. For example, `skill_score=0`, `semantic_score=1`, `alpha=0.4`
+gives `hybrid_score=0.6`.
+
+Every result adds `matching_metadata`: actual alpha, semantic weight,
+confidence target, requested top_k, zero-skill policy, model name and index
+version. Existing flat result fields remain available. The assistant reads
+the formula from this metadata; for legacy results without it, it states
+that the matching configuration is unavailable.
+
+Matching settings do not change vacancy vectors, so ML1-04 does not require
+rebuilding a valid ML1-03 index. Chunking long documents remains ML1-05.
+
+---
+
 # 1. Multilingual Embeddings
 
 File:

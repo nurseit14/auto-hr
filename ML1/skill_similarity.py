@@ -1,3 +1,6 @@
+from ML1.config import DEFAULT_CONFIDENCE_TARGET, validate_positive_number
+
+
 def parse_skills(skills):
     """
     Convert skills into a normalized set.
@@ -32,7 +35,7 @@ def parse_skills(skills):
 def calculate_skill_similarity(
     resume_skills,
     vacancy_skills,
-    confidence_target=5
+    confidence_target=DEFAULT_CONFIDENCE_TARGET
 ):
     """
     Calculate confidence-adjusted skill similarity.
@@ -43,6 +46,8 @@ def calculate_skill_similarity(
     A confidence factor reduces the influence of vacancies
     where only a very small number of skills were detected.
     """
+
+    validate_positive_number(confidence_target, "confidence_target")
 
     resume_skills = parse_skills(resume_skills)
     vacancy_skills = parse_skills(vacancy_skills)

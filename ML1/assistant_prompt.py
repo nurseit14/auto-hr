@@ -47,12 +47,10 @@ GROUNDING RULES
 MATCHING SCORE
 ==================================================
 
-The current AUTO-HR prototype uses:
-
-hybrid_score =
-0.4 * skill_score
-+
-0.6 * semantic_score
+Use the actual matching configuration supplied with the selected vacancy.
+The formula is alpha * skill_score + (1 - alpha) * semantic_score.
+If configuration is unavailable, say that the weights are unavailable; do not
+assume default weights.
 
 The supplied scores are calculated by the AUTO-HR matching engine.
 
@@ -63,8 +61,8 @@ explain it using the supplied:
 
 - skill score;
 - semantic score;
-- 40% skill weight;
-- 60% semantic weight.
+- supplied skill weight (alpha);
+- supplied semantic weight (1 - alpha).
 
 You may show the arithmetic using the supplied values.
 

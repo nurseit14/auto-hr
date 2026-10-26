@@ -4,12 +4,10 @@ os.environ[
     "TOKENIZERS_PARALLELISM"
 ] = "false"
 
-import sys
+import argparse
 from pathlib import Path
 
-from ML1.job_assistant import JobAssistant
-from ML1.matcher import JobMatcher
-from NLP.cv_parser import parse_cv
+from ML1.cli import add_matching_arguments, matching_config, match_processed_resume
 
 
 def print_result(position, result):
@@ -136,30 +134,18 @@ def select_vacancy(results):
         ]
 
 
-def main():
+def make_parser():
+    parser = argparse.ArgumentParser(description="Parse and match a PDF resume.")
+    parser.add_argument("cv_path", type=Path)
+    add_matching_arguments(parser)
+    return parser
 
-    print("=" * 70)
-    print("AUTO-HR CV MATCHING SYSTEM")
-    print("=" * 70)
 
-    # --------------------------------------------------
-    # Check command-line argument
-    # --------------------------------------------------
-
-    if len(sys.argv) != 2:
-
-        print("\nUsage:")
-
-        print(
-            'python -m ML1.match_cv '
-            '"data/resumes/raw/example.pdf"'
-        )
-
-        sys.exit(1)
-
-    cv_path = Path(
-        sys.argv[1]
-    )
+def main(argv=None):
+    parser = make_parser()
+    args = parser.parse_args(argv)
+    config = matching_config(parser, args)
+    cv_path = args.cv_path
 
     if not cv_path.exists():
 
@@ -168,11 +154,13 @@ def main():
             f"{cv_path}"
         )
 
-        sys.exit(1)
+        parser.exit(1)
 
     # --------------------------------------------------
     # Parse CV
     # --------------------------------------------------
+
+    from NLP.cv_parser import parse_cv
 
     print("\nReading CV...")
 
@@ -189,7 +177,7 @@ def main():
             f"{error}"
         )
 
-        sys.exit(1)
+        parser.exit(1)
 
     resume_text = cv[
         "text"
@@ -210,7 +198,7 @@ def main():
             "This PDF may require OCR."
         )
 
-        sys.exit(1)
+        parser.exit(1)
 
     print(
         "CV successfully parsed."
@@ -249,30 +237,17 @@ def main():
         "\nLoading job matcher..."
     )
 
-    matcher = JobMatcher(
-        alpha=0.4
-    )
-
-    # --------------------------------------------------
-    # Match CV
-    # --------------------------------------------------
-
-    print(
-        "\nComparing CV against vacancies..."
-    )
-
-    results = matcher.match(
-        resume_text=resume_text,
-        resume_skills=resume_skills,
-        top_k=10
-    )
+    try:
+        results = match_processed_resume(resume_text, resume_skills, config)
+    except (ValueError, OSError) as exc:
+        parser.exit(1, f"Matching failed: {exc}\n")
 
     # --------------------------------------------------
     # Display Top 10
     # --------------------------------------------------
 
     print("\n" + "=" * 70)
-    print("TOP 10 MATCHING VACANCIES")
+    print(f"TOP {len(results)} MATCHING VACANCIES")
     print("=" * 70)
 
     for position, result in enumerate(
@@ -315,6 +290,8 @@ def main():
     # --------------------------------------------------
     # Start contextual assistant
     # --------------------------------------------------
+
+    from ML1.job_assistant import JobAssistant
 
     assistant = JobAssistant(
         resume_text=resume_text,
