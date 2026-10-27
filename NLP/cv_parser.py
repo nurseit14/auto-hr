@@ -409,6 +409,11 @@ def classify_two_column_blocks(blocks, gutter):
     left = []
     right = []
 
+    first_header_bottom = (
+        max(bottom for _, bottom in bands)
+        if bands else None
+    )
+
     for block in blocks:
 
         center = _center_y(block)
@@ -418,7 +423,12 @@ def classify_two_column_blocks(blocks, gutter):
             for top, bottom in bands
         )
 
-        if in_header_row:
+        above_header = (
+            first_header_bottom is not None
+            and block[3] <= first_header_bottom + 1
+        )
+
+        if in_header_row or above_header:
             header.append(block)
         elif id(block) in crossing_ids:
             left.append(block)
@@ -426,6 +436,35 @@ def classify_two_column_blocks(blocks, gutter):
             left.append(block)
         else:
             right.append(block)
+
+    # Keep oversized title elements together with a common
+    # full-width header, even when their bounding boxes are tall.
+    if header:
+        header_top = min(b[1] for b in header)
+        header_bottom = max(b[3] for b in header)
+
+        moved = []
+
+        for group in (left, right):
+            for block in group[:]:
+                overlaps_header = (
+                    block[1] < header_bottom
+                    and block[3] > header_top
+                )
+
+                upper_page = block[1] < 0.25 * max(
+                    b[3] for b in blocks
+                )
+
+                oversized = (
+                    block[3] - block[1] >= 3 * typical
+                )
+
+                if overlaps_header and upper_page and oversized:
+                    group.remove(block)
+                    moved.append(block)
+
+        header.extend(moved)
 
     lead, right = _take_right_lead(left, right, typical)
 
@@ -472,10 +511,28 @@ def extract_page_text(page):
     extraction does not change.
     """
 
-    blocks = [
-        b for b in page.get_text("blocks")
-        if b[6] == 0 and b[4].strip()
-    ]
+    # Use individual text lines for column detection.
+    # PyMuPDF can merge left and right columns into one block.
+    blocks = []
+
+    for block in page.get_text("dict")["blocks"]:
+        if block.get("type") != 0:
+            continue
+
+        for line in block.get("lines", []):
+            text = "".join(
+                span.get("text", "")
+                for span in line.get("spans", [])
+            )
+
+            if not text.strip():
+                continue
+
+            x0, y0, x1, y1 = line["bbox"]
+
+            blocks.append(
+                (x0, y0, x1, y1, text, len(blocks), 0)
+            )
 
     gutter = None
 
@@ -529,7 +586,7 @@ def extract_pdf_with_layout(file_path):
                     text = ocr_page(page)
                     layout = "ocr"
 
-                if text:
+                if text.strip():
                     pages.append(text)
                     layouts.append(
                         {
@@ -537,9 +594,31 @@ def extract_pdf_with_layout(file_path):
                             "layout": layout,
                         }
                     )
+                else:
+                    print(
+                        f"ERROR: page {page_number} "
+                        "has no extractable text after OCR"
+                    )
+                    layouts.append(
+                        {
+                            "page": page_number,
+                            "layout": "failed",
+                            "error": "OCR returned empty text",
+                        }
+                    )
 
             except Exception as error:
-                print(f"Warning: could not read page {page_number}: {error}")
+                print(
+                    f"ERROR: could not read page "
+                    f"{page_number}: {error}"
+                )
+                layouts.append(
+                    {
+                        "page": page_number,
+                        "layout": "failed",
+                        "error": str(error),
+                    }
+                )
 
     return "\n".join(pages), layouts
 
@@ -763,7 +842,7 @@ def parse_cv(file_path):
     skills = extract_skills(anonymized_text)
 
     review_required = any(
-        item["layout"] in ("ocr", "two_column")
+        item["layout"] in ("ocr", "two_column", "failed")
         for item in layouts
     )
 

@@ -97,6 +97,20 @@ def main():
                 for x in layouts
             )
 
+            failed_pages = [
+                item for item in layouts
+                if item["layout"] == "failed"
+            ]
+
+            if failed_pages:
+                for item in failed_pages:
+                    print(
+                        f"    WARNING: page {item['page']} "
+                        f"extraction failed: "
+                        f"{item.get('error', 'Unknown error')}"
+                    )
+                print("    ACTION: manual review required")
+
             rows.append(
                 {
                     "schema_version": SCHEMA_VERSION,
@@ -107,6 +121,20 @@ def main():
                     "text_version": TEXT_VERSION,
                     "text_sha256": text_hash,
                     "layouts": layout_string,
+                    "extraction_errors": json.dumps(
+                        [
+                            {
+                                "page": item["page"],
+                                "error": item.get(
+                                    "error",
+                                    "Unknown extraction error"
+                                ),
+                            }
+                            for item in layouts
+                            if item["layout"] == "failed"
+                        ],
+                        ensure_ascii=False,
+                    ),
                     "review_required": result[
                         "review_required"
                     ],
@@ -152,6 +180,7 @@ def main():
         "text_version",
         "text_sha256",
         "layouts",
+        "extraction_errors",
         "review_required",
         "raw_text",
         "clean_text",
