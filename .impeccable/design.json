@@ -1,0 +1,442 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-31T18:07:00.216435+00:00",
+  "title": "Design System: Auto-HR",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Primary",
+        "tonalRamp": [
+          "oklch(15% 0.2075 265.36)",
+          "oklch(26.4% 0.2075 265.36)",
+          "oklch(37.9% 0.2075 265.36)",
+          "oklch(49.3% 0.2075 265.36)",
+          "oklch(60.7% 0.2075 265.36)",
+          "oklch(72.1% 0.2075 265.36)",
+          "oklch(83.6% 0.2075 265.36)",
+          "oklch(95% 0.2075 265.36)"
+        ]
+      },
+      "primary-hover": {
+        "role": "primary",
+        "displayName": "Primary Hover",
+        "tonalRamp": [
+          "oklch(15% 0.1888 265.32)",
+          "oklch(26.4% 0.1888 265.32)",
+          "oklch(37.9% 0.1888 265.32)",
+          "oklch(49.3% 0.1888 265.32)",
+          "oklch(60.7% 0.1888 265.32)",
+          "oklch(72.1% 0.1888 265.32)",
+          "oklch(83.6% 0.1888 265.32)",
+          "oklch(95% 0.1888 265.32)"
+        ]
+      },
+      "navy": {
+        "role": "neutral",
+        "displayName": "Navy",
+        "tonalRamp": [
+          "oklch(15% 0.0369 249.33)",
+          "oklch(26.4% 0.0369 249.33)",
+          "oklch(37.9% 0.0369 249.33)",
+          "oklch(49.3% 0.0369 249.33)",
+          "oklch(60.7% 0.0369 249.33)",
+          "oklch(72.1% 0.0369 249.33)",
+          "oklch(83.6% 0.0369 249.33)",
+          "oklch(95% 0.0369 249.33)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "tonalRamp": [
+          "oklch(15% 0.0435 261.09)",
+          "oklch(26.4% 0.0435 261.09)",
+          "oklch(37.9% 0.0435 261.09)",
+          "oklch(49.3% 0.0435 261.09)",
+          "oklch(60.7% 0.0435 261.09)",
+          "oklch(72.1% 0.0435 261.09)",
+          "oklch(83.6% 0.0435 261.09)",
+          "oklch(95% 0.0435 261.09)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted",
+        "tonalRamp": [
+          "oklch(15% 0.0436 257.02)",
+          "oklch(26.4% 0.0436 257.02)",
+          "oklch(37.9% 0.0436 257.02)",
+          "oklch(49.3% 0.0436 257.02)",
+          "oklch(60.7% 0.0436 257.02)",
+          "oklch(72.1% 0.0436 257.02)",
+          "oklch(83.6% 0.0436 257.02)",
+          "oklch(95% 0.0436 257.02)"
+        ]
+      },
+      "canvas": {
+        "role": "neutral",
+        "displayName": "Canvas",
+        "tonalRamp": [
+          "oklch(15% 0.0079 253.85)",
+          "oklch(26.4% 0.0079 253.85)",
+          "oklch(37.9% 0.0079 253.85)",
+          "oklch(49.3% 0.0079 253.85)",
+          "oklch(60.7% 0.0079 253.85)",
+          "oklch(72.1% 0.0079 253.85)",
+          "oklch(83.6% 0.0079 253.85)",
+          "oklch(95% 0.0079 253.85)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Surface",
+        "tonalRamp": [
+          "oklch(15% 0.0000 89.88)",
+          "oklch(26.4% 0.0000 89.88)",
+          "oklch(37.9% 0.0000 89.88)",
+          "oklch(49.3% 0.0000 89.88)",
+          "oklch(60.7% 0.0000 89.88)",
+          "oklch(72.1% 0.0000 89.88)",
+          "oklch(83.6% 0.0000 89.88)",
+          "oklch(95% 0.0000 89.88)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Line",
+        "tonalRamp": [
+          "oklch(15% 0.0121 259.82)",
+          "oklch(26.4% 0.0121 259.82)",
+          "oklch(37.9% 0.0121 259.82)",
+          "oklch(49.3% 0.0121 259.82)",
+          "oklch(60.7% 0.0121 259.82)",
+          "oklch(72.1% 0.0121 259.82)",
+          "oklch(83.6% 0.0121 259.82)",
+          "oklch(95% 0.0121 259.82)"
+        ]
+      },
+      "confirmed": {
+        "role": "secondary",
+        "displayName": "Confirmed",
+        "tonalRamp": [
+          "oklch(15% 0.1039 160.50)",
+          "oklch(26.4% 0.1039 160.50)",
+          "oklch(37.9% 0.1039 160.50)",
+          "oklch(49.3% 0.1039 160.50)",
+          "oklch(60.7% 0.1039 160.50)",
+          "oklch(72.1% 0.1039 160.50)",
+          "oklch(83.6% 0.1039 160.50)",
+          "oklch(95% 0.1039 160.50)"
+        ]
+      },
+      "confirmed-bg": {
+        "role": "secondary",
+        "displayName": "Confirmed Bg",
+        "tonalRamp": [
+          "oklch(15% 0.0249 164.44)",
+          "oklch(26.4% 0.0249 164.44)",
+          "oklch(37.9% 0.0249 164.44)",
+          "oklch(49.3% 0.0249 164.44)",
+          "oklch(60.7% 0.0249 164.44)",
+          "oklch(72.1% 0.0249 164.44)",
+          "oklch(83.6% 0.0249 164.44)",
+          "oklch(95% 0.0249 164.44)"
+        ]
+      },
+      "confirmed-tag-text": {
+        "role": "secondary",
+        "displayName": "Confirmed Tag Text",
+        "tonalRamp": [
+          "oklch(15% 0.0903 160.79)",
+          "oklch(26.4% 0.0903 160.79)",
+          "oklch(37.9% 0.0903 160.79)",
+          "oklch(49.3% 0.0903 160.79)",
+          "oklch(60.7% 0.0903 160.79)",
+          "oklch(72.1% 0.0903 160.79)",
+          "oklch(83.6% 0.0903 160.79)",
+          "oklch(95% 0.0903 160.79)"
+        ]
+      },
+      "unknown": {
+        "role": "secondary",
+        "displayName": "Unknown",
+        "tonalRamp": [
+          "oklch(15% 0.1007 76.93)",
+          "oklch(26.4% 0.1007 76.93)",
+          "oklch(37.9% 0.1007 76.93)",
+          "oklch(49.3% 0.1007 76.93)",
+          "oklch(60.7% 0.1007 76.93)",
+          "oklch(72.1% 0.1007 76.93)",
+          "oklch(83.6% 0.1007 76.93)",
+          "oklch(95% 0.1007 76.93)"
+        ]
+      },
+      "unknown-bg": {
+        "role": "secondary",
+        "displayName": "Unknown Bg",
+        "tonalRamp": [
+          "oklch(15% 0.0392 86.06)",
+          "oklch(26.4% 0.0392 86.06)",
+          "oklch(37.9% 0.0392 86.06)",
+          "oklch(49.3% 0.0392 86.06)",
+          "oklch(60.7% 0.0392 86.06)",
+          "oklch(72.1% 0.0392 86.06)",
+          "oklch(83.6% 0.0392 86.06)",
+          "oklch(95% 0.0392 86.06)"
+        ]
+      },
+      "unknown-tag-text": {
+        "role": "secondary",
+        "displayName": "Unknown Tag Text",
+        "tonalRamp": [
+          "oklch(15% 0.0977 73.13)",
+          "oklch(26.4% 0.0977 73.13)",
+          "oklch(37.9% 0.0977 73.13)",
+          "oklch(49.3% 0.0977 73.13)",
+          "oklch(60.7% 0.0977 73.13)",
+          "oklch(72.1% 0.0977 73.13)",
+          "oklch(83.6% 0.0977 73.13)",
+          "oklch(95% 0.0977 73.13)"
+        ]
+      },
+      "focus": {
+        "role": "neutral",
+        "displayName": "Focus",
+        "tonalRamp": [
+          "oklch(15% 0.1399 263.53)",
+          "oklch(26.4% 0.1399 263.53)",
+          "oklch(37.9% 0.1399 263.53)",
+          "oklch(49.3% 0.1399 263.53)",
+          "oklch(60.7% 0.1399 263.53)",
+          "oklch(72.1% 0.1399 263.53)",
+          "oklch(83.6% 0.1399 263.53)",
+          "oklch(95% 0.1399 263.53)"
+        ]
+      },
+      "selected": {
+        "role": "neutral",
+        "displayName": "Selected",
+        "tonalRamp": [
+          "oklch(15% 0.0173 264.49)",
+          "oklch(26.4% 0.0173 264.49)",
+          "oklch(37.9% 0.0173 264.49)",
+          "oklch(49.3% 0.0173 264.49)",
+          "oklch(60.7% 0.0173 264.49)",
+          "oklch(72.1% 0.0173 264.49)",
+          "oklch(83.6% 0.0173 264.49)",
+          "oklch(95% 0.0173 264.49)"
+        ]
+      },
+      "danger": {
+        "role": "secondary",
+        "displayName": "Danger",
+        "tonalRamp": [
+          "oklch(15% 0.1539 19.85)",
+          "oklch(26.4% 0.1539 19.85)",
+          "oklch(37.9% 0.1539 19.85)",
+          "oklch(49.3% 0.1539 19.85)",
+          "oklch(60.7% 0.1539 19.85)",
+          "oklch(72.1% 0.1539 19.85)",
+          "oklch(83.6% 0.1539 19.85)",
+          "oklch(95% 0.1539 19.85)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Page headings."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Section headings."
+      },
+      "section-title": {
+        "displayName": "Section Title",
+        "purpose": "Compact content headings."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Default reading text."
+      },
+      "button": {
+        "displayName": "Button",
+        "purpose": "Ordinary actions."
+      },
+      "tag": {
+        "displayName": "Tag",
+        "purpose": "Compact evidence tags."
+      }
+    },
+    "shadows": [
+      {
+        "name": "dialog",
+        "value": "0 24px 80px #0b1c3b38",
+        "purpose": "Focused modal task."
+      },
+      {
+        "name": "active-segment",
+        "value": "0 2px 5px #1b355013",
+        "purpose": "Selected segmented control."
+      }
+    ],
+    "motion": [
+      {
+        "name": "control-transition",
+        "value": "150ms",
+        "purpose": "Background, color, and border-color states."
+      },
+      {
+        "name": "dossier-reveal",
+        "value": "200ms ease-out",
+        "purpose": "Opacity and clip-path reveal."
+      },
+      {
+        "name": "drawer-transition",
+        "value": "200ms ease-out",
+        "purpose": "Sidebar transform."
+      },
+      {
+        "name": "loading-spin",
+        "value": "1.1s linear infinite",
+        "purpose": "Pending action indicator; suppressed with reduced motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "wide",
+        "value": "1600px"
+      },
+      {
+        "name": "compact-desktop",
+        "value": "1350px"
+      },
+      {
+        "name": "narrow-desktop",
+        "value": "1100px"
+      },
+      {
+        "name": "drawer",
+        "value": "900px"
+      },
+      {
+        "name": "phone",
+        "value": "520px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Observed primary action variant.",
+      "html": "<button class=\"ds-button-primary\">Добавить резюме</button>",
+      "css": ".ds-button-primary {display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:42px;padding:11px 17px;border:1px solid transparent;border-radius:6px;font:750 12px/1.4 \"Manrope Variable\",Manrope,system-ui,sans-serif;cursor:pointer;transition:background-color .15s,color .15s,border-color .15s;background:var(--blue,#2c58dc);color:#fff;} .ds-button-primary:disabled {opacity:.55;cursor:not-allowed;} .ds-button-primary:focus-visible {outline:3px solid #79a5ff;outline-offset:3px;} .ds-button-primary:hover:not(:disabled) {background:var(--blue-hover,#2147bc);}"
+    },
+    {
+      "name": "Secondary button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Observed secondary action variant.",
+      "html": "<button class=\"ds-button-secondary\">Добавить резюме</button>",
+      "css": ".ds-button-secondary {display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:42px;padding:11px 17px;border:1px solid transparent;border-radius:6px;font:750 12px/1.4 \"Manrope Variable\",Manrope,system-ui,sans-serif;cursor:pointer;transition:background-color .15s,color .15s,border-color .15s;background:#fff;color:#294eaa;border-color:#cdd8ef;} .ds-button-secondary:disabled {opacity:.55;cursor:not-allowed;} .ds-button-secondary:focus-visible {outline:3px solid #79a5ff;outline-offset:3px;} .ds-button-secondary:hover:not(:disabled) {background:#f1f5ff;border-color:#9eb5e8;}"
+    },
+    {
+      "name": "Ghost button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Observed ghost action variant.",
+      "html": "<button class=\"ds-button-ghost\">Добавить резюме</button>",
+      "css": ".ds-button-ghost {display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:42px;padding:11px 17px;border:1px solid transparent;border-radius:6px;font:750 12px/1.4 \"Manrope Variable\",Manrope,system-ui,sans-serif;cursor:pointer;transition:background-color .15s,color .15s,border-color .15s;background:transparent;color:var(--blue,#2c58dc);} .ds-button-ghost:disabled {opacity:.55;cursor:not-allowed;} .ds-button-ghost:focus-visible {outline:3px solid #79a5ff;outline-offset:3px;} .ds-button-ghost:hover:not(:disabled) {background:#edf2ff;}"
+    },
+    {
+      "name": "Danger button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Observed danger action variant.",
+      "html": "<button class=\"ds-button-danger\">Добавить резюме</button>",
+      "css": ".ds-button-danger {display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:42px;padding:11px 17px;border:1px solid transparent;border-radius:6px;font:750 12px/1.4 \"Manrope Variable\",Manrope,system-ui,sans-serif;cursor:pointer;transition:background-color .15s,color .15s,border-color .15s;background:#b33c45;color:#fff;} .ds-button-danger:disabled {opacity:.55;cursor:not-allowed;} .ds-button-danger:focus-visible {outline:3px solid #79a5ff;outline-offset:3px;}"
+    },
+    {
+      "name": "Text field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "Compact labeled professional input.",
+      "html": "<label class=\"ds-field\">Название вакансии<input placeholder=\"Backend-разработчик\"></label>",
+      "css": ".ds-field {display:flex;flex-direction:column;gap:8px;font:700 12px \"Manrope Variable\",Manrope,system-ui,sans-serif;color:#364963}.ds-field input {border:1px solid #cfd9e6;border-radius:5px;background:#fff;color:#233b58;padding:11px 12px;font:450 12px/1.6 \"Manrope Variable\",Manrope,system-ui,sans-serif;min-height:41px}.ds-field input::placeholder {color:#596b83}.ds-field input:focus-visible {outline:3px solid #79a5ff;outline-offset:3px;}"
+    },
+    {
+      "name": "Rail navigation",
+      "kind": "nav",
+      "refersTo": "nav-active",
+      "description": "Active item within the navy rail.",
+      "html": "<nav class=\"ds-rail\"><button class=\"ds-nav\">Кандидаты</button></nav>",
+      "css": ".ds-rail {background:var(--navy,#182838);padding:10px}.ds-nav {display:flex;align-items:center;min-height:45px;padding:12px 15px;border:0;border-radius:6px;background:#294c83;color:#fff;width:100%;font:550 13px/1.45 \"Manrope Variable\",Manrope,system-ui,sans-serif;text-align:left;cursor:pointer}.ds-nav:hover {background:#233a51}.ds-nav:focus-visible {outline:3px solid #79a5ff;outline-offset:3px;}"
+    },
+    {
+      "name": "Confirmed evidence tag",
+      "kind": "chip",
+      "refersTo": "tag-confirmed",
+      "description": "Non-interactive evidence status with a text label.",
+      "html": "<span class=\"ds-tag-confirmed\">Подтверждено</span>",
+      "css": ".ds-tag-confirmed {display:inline-flex;align-items:center;gap:4px;background:var(--green-bg,#e1f5eb);color:#176444;border:1px solid transparent;border-radius:4px;padding:4px 8px;font:550 11px/1.35 \"Manrope Variable\",Manrope,system-ui,sans-serif;overflow-wrap:anywhere}"
+    },
+    {
+      "name": "Unknown evidence tag",
+      "kind": "chip",
+      "refersTo": "tag-unknown",
+      "description": "Non-interactive evidence status with a text label.",
+      "html": "<span class=\"ds-tag-unknown\">Нужно уточнить</span>",
+      "css": ".ds-tag-unknown {display:inline-flex;align-items:center;gap:4px;background:var(--amber-bg,#fff2d6);color:#80550e;border:1px solid transparent;border-radius:4px;padding:4px 8px;font:550 11px/1.35 \"Manrope Variable\",Manrope,system-ui,sans-serif;overflow-wrap:anywhere}"
+    },
+    {
+      "name": "Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Flat white work container; padding belongs to its interior regions.",
+      "html": "<section class=\"ds-panel\"><div class=\"ds-panel-content\">Профессиональные навыки</div></section>",
+      "css": ".ds-panel {background:#fff;border:1px solid var(--line,#e2e7ef);border-radius:8px;color:var(--ink,#162237);font-family:\"Manrope Variable\",Manrope,system-ui,sans-serif}.ds-panel-content {padding:18px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Recruitment Dispatch Desk",
+    "overview": "The Recruitment Dispatch Desk pairs a stable ink-navy frame with cool light reading surfaces. Compact controls and strong Cyrillic headings support repeated scanning; evidence, unknowns, and explicit human decisions carry the visual emphasis.\n\nThe system is restrained and operational. Manrope supplies both headings and body text, white panels separate work from the cooler canvas, and small status tags communicate professional evidence without turning the interface into a field of saturated cards.",
+    "keyCharacteristics": [
+      "Stable navy navigation with light reading surfaces.",
+      "One neutral Cyrillic type family with a compact hierarchy.",
+      "Cobalt actions; green confirmed evidence; amber unknowns.",
+      "Flat panels and explicit responsive navigation."
+    ],
+    "rules": [
+      {
+        "name": "The Evidence Color Rule",
+        "body": "Use green for confirmed evidence and amber for information that needs clarification; keep the meaning visible in text.",
+        "section": "colors"
+      },
+      {
+        "name": "The Single Family Rule",
+        "body": "Use Manrope across headings, labels, and reading text; use weight and size to establish hierarchy.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat Workbench Rule",
+        "body": "Separate everyday panels with tone and thin borders; reserve the substantial shadow for dialogs.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do keep confirmed coverage separate from relative ranking values.",
+      "Do preserve visible keyboard focus and text labels alongside status color.",
+      "Do retain the explicit back path when mobile shows an individual dossier.",
+      "Do use SVG line icons and the shipped geometric brand mark."
+    ],
+    "donts": [
+      "Don't substitute a condensed display face for the neutral Cyrillic hierarchy.",
+      "Don't use green and amber as interchangeable decorative accents.",
+      "Don't extend dialog shadows to every workbench panel.",
+      "Don't replace inspectable evidence with an unexplained score."
+    ]
+  }
+}
