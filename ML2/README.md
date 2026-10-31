@@ -31,10 +31,12 @@ CSV сохраняются: модуль не восстанавливает о�
 ./.venv-label-studio/bin/python -m ML2.run --demo --output-dir data/annotations/ml2_demo_v1
 ```
 
-Подготовить список пар без вызова платного API:
+Подготовить новый список пар без вызова платного API (используйте новую папку):
 
 ```bash
-./.venv-label-studio/bin/python -m ML2.run --prepare-only
+./.venv-label-studio/bin/python -m ML2.run --prepare-only \
+  --resumes data/processed/resumes.csv \
+  --output-dir data/annotations/ml2_auto_document_ids_v1
 ```
 
 Повторный запуск с теми же данными использует кэш. Изменение текста, схемы,
@@ -67,9 +69,29 @@ CSV сохраняются: модуль не восстанавливает о�
 
 ## Входные данные и выбор пар
 
-- `data/resumes/processed/resumes.csv`: `resume_id`, `text`, необязательный `skills`.
+- CSV резюме (`--resumes`, по умолчанию `data/resumes/processed/resumes.csv`):
+  для нового NLP-контракта — `document_id`, `text`, `text_sha256`;
+  необязательные `resume_id`, `skills`, `source_sha256`, `text_version`.
 - `data/processed/vacancies_with_skills.csv`: `vacancy_id`, `title`, `requirements`,
   `experience`, `responsibilities`, `text`, необязательный `skills`.
+
+В новом CSV `cv_id` берётся из `document_id`, даже если есть старый `resume_id`.
+Пустой `document_id` или повторяющийся итоговый ID отклоняется. Для legacy CSV
+без колонки `document_id` сохранён прежний порядок: `resume_id`, затем `cv_id`,
+затем ID по хешу текста. Загрузчик сохраняет доступные `document_id`, `resume_id`,
+`source_sha256` и `text_version` вместе с резюме.
+
+Исходные текстовые поля CSV читаются без `strip`, замены пробелов или переносов
+строк, включая CRLF. `text_sha256` рассчитывается по точному UTF-8 тексту;
+если колонка уже передана, её значение должно совпадать с расчётом. Неверный
+или пустой заявленный хеш отклоняется. В legacy CSV без этой колонки хеш
+вычисляется при загрузке. Нормализация названий навыков выполняется отдельно.
+
+Сохранённые 220 пар, экспорты Label Studio, train/validation/test и модель первой
+версии не мигрируются и не перезаписываются. Новые пары с `document_id` создавайте
+в новом `--output-dir`: их ID и текстовые хеши могут отличаться от старого пилота.
+Команды `ML2.evaluate` и `ML2.rerank --cv-id resume_0005` продолжают работать
+с прежним замороженным набором.
 
 Текущая версия выбирает пять наиболее близких вакансий с помощью локального
 BM25 и пересечения словарных навыков. Выбор воспроизводим и не требует готового

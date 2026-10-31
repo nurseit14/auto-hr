@@ -25,3 +25,18 @@ data/processed/full_cv_text_review.txt
 data/processed/possible_duplicates.csv
 data/processed/resume_extraction_report.csv
 data/processed/resumes_before_freeze.csv
+
+# Integrated local MVP
+.venv/
+frontend/node_modules/
+frontend/dist/
+backend/runtime/
+runtime/
+.pytest_cache/
+*.tsbuildinfo
+.impeccable/review/
+.impeccable/build/
+.impeccable/mocks/
+.impeccable/regions*.json
+.impeccable/regions-measurement-note.md
+.impeccable/surface-body.md

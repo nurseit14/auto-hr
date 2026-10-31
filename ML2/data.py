@@ -16,11 +16,14 @@ def digest(value) -> str:
 
 
 def read_csv(path: Path) -> list[dict]:
+    """Read source cells verbatim, including whitespace and embedded newlines."""
     with path.open(encoding="utf-8-sig", newline="") as stream:
-        return [{k: (v or "").strip() for k, v in row.items() if k} for row in csv.DictReader(stream)]
+        return [{k: (v or "") for k, v in row.items() if k} for row in csv.DictReader(stream)]
 
 
 def skills(value: str) -> set[str]:
+    # Normalize skill labels only; source document text must remain unchanged.
+    value = value.strip()
     if value.startswith("["):
         try:
             items = ast.literal_eval(value)
@@ -40,12 +43,25 @@ def load_resumes(path: Path) -> list[dict]:
     output, seen = [], set()
     for row in rows:
         text = row["text"]
-        cv_id = row.get("resume_id") or row.get("cv_id") or "cv_" + digest(text)[:16]
+        document_id = row.get("document_id", "").strip()
+        if "document_id" in row and not document_id:
+            raise ValueError("Resume CSV contains an empty document_id")
+        # Canonical NLP identity takes precedence over legacy sequential IDs.
+        # Legacy files without this column remain readable without migration.
+        cv_id = (document_id or row.get("resume_id", "").strip()
+                 or row.get("cv_id", "").strip() or "cv_" + digest(text)[:16])
         if cv_id in seen:
             raise ValueError(f"Duplicate CV ID: {cv_id}")
         seen.add(cv_id)
-        output.append({"cv_id": cv_id, "text": text, "skills": sorted(skills(row.get("skills", ""))),
-                       "text_sha256": digest(text)})
+        text_hash = digest(text)
+        if "text_sha256" in row and row["text_sha256"].strip() != text_hash:
+            raise ValueError(f"CV {cv_id}: text_sha256 does not match the exact source text")
+        resume = {"cv_id": cv_id, "text": text, "skills": sorted(skills(row.get("skills", ""))),
+                  "text_sha256": text_hash}
+        for field in ("document_id", "resume_id", "source_sha256", "text_version"):
+            if field in row:
+                resume[field] = row[field].strip()
+        output.append(resume)
     return output
 
 
@@ -59,10 +75,11 @@ def make_vacancy(row: dict) -> dict:
     text = row.get("text", "")
     if text:
         fields.append(("Сохранённый текст", text))
-    display = "\n\n".join(f"{key}:\n{value}" for key, value in fields if value)
+    display = "\n\n".join(f"{key}:\n{value}" for key, value in fields if value.strip())
     if not display.strip():
         raise ValueError("Vacancy has no source text")
-    vid = row.get("vacancy_id") or row.get("id") or "vac_" + digest(display)[:16]
+    vid = (row.get("vacancy_id", "").strip() or row.get("id", "").strip()
+           or "vac_" + digest(display)[:16])
     return {"vacancy_id": vid, "title": row.get("title", ""),
             "experience": row.get("experience", ""), "requirements": row.get("requirements", ""),
             "responsibilities": row.get("responsibilities", ""), "text": text,

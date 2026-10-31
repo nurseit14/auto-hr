@@ -1,0 +1,13 @@
+services:
+  auto-hr:
+    build: .
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      AUTO_HR_DB: /app/runtime/auto_hr.sqlite3
+    volumes:
+      - auto-hr-data:/app/runtime
+    restart: unless-stopped
+
+volumes:
+  auto-hr-data:
