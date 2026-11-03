@@ -36,6 +36,9 @@ FEATURE_LABELS = {
     "mandatory_skill_confirmation": "Обязательные навыки",
     "industry_coverage": "Отраслевой опыт",
     "communication_confirmation": "Коммуникация",
+    "required_skill_coverage": "Нужные навыки без пожеланий",
+    "demonstrated_skill_coverage": "Навыки в описанных задачах",
+    "relevant_experience_fulfillment": "Выполнение профильного стажа",
 }
 
 

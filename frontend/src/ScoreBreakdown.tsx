@@ -12,10 +12,13 @@ const sourceLabels: Record<ScoreEvidence["source"], string> = {
   vacancy: "Требования вакансии",
 };
 const mainFeatures = [
+  "required_skill_coverage",
+  "demonstrated_skill_coverage",
   "skill_coverage",
   "mandatory_skill_confirmation",
   "role_compatibility",
   "experience_compatibility",
+  "relevant_experience_fulfillment",
   "seniority_compatibility",
   "task_coverage",
 ];

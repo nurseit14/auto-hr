@@ -6,6 +6,8 @@ import pytest
 from fastapi.testclient import TestClient
 
 from backend.app import create_app
+from ML2.features import FEATURE_NAMES, FEATURE_VERSION
+from ML2.ranker import MODEL_VERSION
 
 
 @pytest.fixture
@@ -33,9 +35,9 @@ def shortlist(client, vacancy_id="11"):
 
 def assert_additive(row):
     breakdown = row["score_breakdown"]
-    assert breakdown["model_version"] == "ml2-pairwise-linear-v2"
-    assert breakdown["feature_version"] == "professional-signals-v2"
-    assert len(breakdown["contributions"]) == 12
+    assert breakdown["model_version"] == MODEL_VERSION
+    assert breakdown["feature_version"] == FEATURE_VERSION
+    assert [item["feature"] for item in breakdown["contributions"]] == FEATURE_NAMES
     assert math.isclose(breakdown["base_score"] + sum(item["contribution"] for item in breakdown["contributions"]),
                         breakdown["raw_score"], abs_tol=1e-10)
     assert math.isclose(breakdown["raw_score"] + sum(item["contribution"] for item in breakdown["adjustments"]),
@@ -84,6 +86,55 @@ def test_actual_data_engineering_evidence_improves_rank_and_is_explained(client)
     skill_items = [item for item in breakdown["contributions"] if item["feature"] in {"skill_coverage", "skill_jaccard"}]
     assert sum(item["contribution"] for item in skill_items) > 0
     assert any(item["evidence"] for item in skill_items)
+
+
+def test_needed_skills_and_described_work_drive_candidate_order(client):
+    response = client.post("/api/vacancies", json={
+        "title": "Middle Backend Developer", "company": "Проверка нужных навыков",
+        "requirements": "Python, FastAPI. Optional: React.",
+        "experience": "От 3 лет", "city": "Алматы",
+    })
+    assert response.status_code == 201, response.text
+    vacancy_id = response.json()["id"]
+    worked = candidate(client, "Middle Backend developer. Work experience: 3 years. "
+                       "Built Python services with FastAPI.", vacancy_id, "Работал с нужным стеком")
+    listed = candidate(client, "Middle Backend developer. Work experience: 3 years. "
+                       "Skills: Python, FastAPI.", vacancy_id, "Перечислил нужный стек")
+    optional = candidate(client, "Middle frontend developer. Work experience: 8 years. "
+                         "Built React user interfaces.", vacancy_id, "Только желательный навык")
+    rows = {row["candidate"]["id"]: row for row in shortlist(client, vacancy_id)}
+    assert rows[worked["id"]]["score"] > rows[listed["id"]]["score"] > rows[optional["id"]]["score"]
+    explanation = assert_additive(rows[worked["id"]])
+    parts = {item["feature"]: item for item in explanation["contributions"]}
+    assert parts["required_skill_coverage"]["value"] == 1
+    assert parts["demonstrated_skill_coverage"]["value"] == 1
+    assert parts["required_skill_coverage"]["contribution"] > 0
+    assert parts["demonstrated_skill_coverage"]["contribution"] > 0
+    assert any("Built Python" in proof["quote"] and proof["source"] == "resume"
+               for proof in parts["demonstrated_skill_coverage"]["evidence"])
+
+
+def test_denied_tasks_do_not_create_profile_and_denied_skills_are_not_confirmed(client):
+    denied_profile = candidate(client, "Senior frontend developer. Work experience: 9 years. "
+                               "React TypeScript. Опыта построения потоков данных нет.")
+    row = next(row for row in shortlist(client) if row["candidate"]["id"] == denied_profile["id"])
+    assert row["score"] == 0
+    assert row["score_breakdown"]["experience"]["relevant_years"] is None
+    signals = {item["feature"]: item for item in row["score_breakdown"]["contributions"]}
+    assert signals["role_compatibility"]["value"] == 0
+    response = client.post("/api/vacancies", json={
+        "title": "Backend Developer", "company": "Проверка отрицаний",
+        "requirements": "Python and Docker.", "city": "Алматы",
+    })
+    assert response.status_code == 201, response.text
+    vacancy_id = response.json()["id"]
+    candidate(client, "Backend developer. I used Python and have not used Docker.", vacancy_id)
+    row = shortlist(client, vacancy_id)[0]
+    assert row["matched_skills"] == ["python"]
+    assert "docker" in row["uncertain_skills"]
+    details = assert_additive(row)
+    parts = {item["feature"]: item for item in details["contributions"]}
+    assert parts["required_skill_coverage"]["value"] == .5
 
 
 def test_mixed_career_does_not_transfer_frontend_years_or_level_to_backend(client):

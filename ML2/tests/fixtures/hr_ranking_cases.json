@@ -1,0 +1,760 @@
+{
+  "schema_version": "autohr-synthetic-hr-ranking-v1",
+  "authored_date": "2026-11-03",
+  "provenance": "Independently authored engineering examples, frozen before ML2 v3 model selection. No real candidates or professional HR adjudication.",
+  "label_policy": "Relevance encodes available screening evidence for this synthetic exercise, not human worth, ability, hiring probability or independently verified competence. Unknown evidence receives low screening priority, not an assertion of inability.",
+  "usage": "Evaluation only. Do not train on these cases or select hyperparameters by their scores. If later used to fix implementation errors, report that they became regression examples.",
+  "metrics": "Macro vacancy-query NDCG@5 with linear gains and expected tied ordering; macro comparable-pair accuracy; strict predeclared preference success with ties credited one half.",
+  "cases": [
+    {
+      "id": "python_backend",
+      "vacancy": {
+        "title": "Middle Python Backend Developer",
+        "experience": "От 3 до 6 лет",
+        "requirements": "Required: Python, FastAPI, PostgreSQL, Docker.",
+        "responsibilities": "Build backend services, REST API endpoints and transactional database migrations.",
+        "description": "Build backend services, REST API endpoints and transactional database migrations."
+      },
+      "candidates": [
+        {
+          "id": "strong",
+          "text": "Middle Python Backend Developer — 5 years. Built backend services and REST API endpoints with Python and FastAPI. Used PostgreSQL transactions and migrations; shipped Docker containers in production.",
+          "relevance": 3,
+          "rationale": "Explicit five-year matching role, all required technologies and concrete relevant delivered tasks."
+        },
+        {
+          "id": "partial",
+          "text": "Middle Python Backend Developer — 3 years. Implemented Python FastAPI services and PostgreSQL migrations for a billing product. Have not used Docker.",
+          "relevance": 2,
+          "rationale": "Explicit three-year matching role, delivered relevant tasks and most technologies; one requirement explicitly unsupported."
+        },
+        {
+          "id": "junior",
+          "text": "Junior Python Backend Developer — 1 year. Built a working Python FastAPI REST API with PostgreSQL, Docker, integration tests and user authentication.",
+          "relevance": 1,
+          "rationale": "Relevant junior project evidence with required technologies; explicit one year below vacancy minimum and lower stated level."
+        },
+        {
+          "id": "keywords",
+          "text": "Candidate profile. Technologies listed: Python, FastAPI, PostgreSQL, Docker. No professional project description or duration supplied.",
+          "relevance": 0,
+          "rationale": "Bare technology list without evidence of tasks, professional role or duration: insufficient screening evidence, not proof of inability."
+        },
+        {
+          "id": "unrelated",
+          "text": "Senior frontend developer — 9 years. Built React TypeScript user interfaces, HTML CSS components and browser accessibility tooling.",
+          "relevance": 0,
+          "rationale": "Long tenure in a different profession does not establish fit for this vacancy."
+        },
+        {
+          "id": "learning",
+          "text": "Aspiring Middle Python Backend Developer. I want to learn Python, FastAPI, PostgreSQL, Docker. I have no experience in this profession and have never built production systems.",
+          "relevance": 0,
+          "rationale": "Learning intent and explicitly absent experience are not professional evidence."
+        }
+      ],
+      "preferences": [
+        {
+          "higher": "strong",
+          "lower": "partial",
+          "reason": "Complete required evidence above explicitly incomplete requirements at minimum tenure."
+        },
+        {
+          "higher": "strong",
+          "lower": "junior",
+          "reason": "Comparable relevant technologies with sufficient versus explicitly insufficient tenure and level."
+        },
+        {
+          "higher": "junior",
+          "lower": "unrelated",
+          "reason": "Relevant project evidence above unrelated general seniority."
+        },
+        {
+          "higher": "strong",
+          "lower": "keywords",
+          "reason": "Delivered relevant work above an unsupported keyword list."
+        },
+        {
+          "higher": "partial",
+          "lower": "learning",
+          "reason": "Delivered relevant work above aspiration."
+        }
+      ]
+    },
+    {
+      "id": "react_frontend",
+      "vacancy": {
+        "title": "Middle Frontend Developer",
+        "experience": "От 3 до 6 лет",
+        "requirements": "Required: React, TypeScript, HTML, CSS.",
+        "responsibilities": "Develop accessible user interfaces, reusable browser components and frontend applications.",
+        "description": "Develop accessible user interfaces, reusable browser components and frontend applications."
+      },
+      "candidates": [
+        {
+          "id": "strong",
+          "text": "Middle Frontend Developer — 5 years. Developed production frontend applications with React and TypeScript. Built accessible HTML CSS interfaces and reusable components, profiled browser rendering.",
+          "relevance": 3,
+          "rationale": "Explicit five-year matching role, all required technologies and concrete relevant delivered tasks."
+        },
+        {
+          "id": "partial",
+          "text": "Middle Frontend Developer — 3 years. Delivered React TypeScript user interfaces and HTML semantic forms. CSS layout work was handled by a teammate; I have no practical CSS experience.",
+          "relevance": 2,
+          "rationale": "Explicit three-year matching role, delivered relevant tasks and most technologies; one requirement explicitly unsupported."
+        },
+        {
+          "id": "junior",
+          "text": "Junior Frontend Developer — 1 year. Built React TypeScript frontend applications using semantic HTML and CSS. Added keyboard navigation and component tests.",
+          "relevance": 1,
+          "rationale": "Relevant junior project evidence with required technologies; explicit one year below vacancy minimum and lower stated level."
+        },
+        {
+          "id": "keywords",
+          "text": "Candidate profile. Technologies listed: React, TypeScript, HTML, CSS. No professional project description or duration supplied.",
+          "relevance": 0,
+          "rationale": "Bare technology list without evidence of tasks, professional role or duration: insufficient screening evidence, not proof of inability."
+        },
+        {
+          "id": "unrelated",
+          "text": "Senior Python backend developer — 9 years. Implemented FastAPI services, PostgreSQL migrations and Docker deployments.",
+          "relevance": 0,
+          "rationale": "Long tenure in a different profession does not establish fit for this vacancy."
+        },
+        {
+          "id": "learning",
+          "text": "Aspiring Middle Frontend Developer. I want to learn React, TypeScript, HTML, CSS. I have no experience in this profession and have never built production systems.",
+          "relevance": 0,
+          "rationale": "Learning intent and explicitly absent experience are not professional evidence."
+        }
+      ],
+      "preferences": [
+        {
+          "higher": "strong",
+          "lower": "partial",
+          "reason": "Complete required evidence above explicitly incomplete requirements at minimum tenure."
+        },
+        {
+          "higher": "strong",
+          "lower": "junior",
+          "reason": "Comparable relevant technologies with sufficient versus explicitly insufficient tenure and level."
+        },
+        {
+          "higher": "junior",
+          "lower": "unrelated",
+          "reason": "Relevant project evidence above unrelated general seniority."
+        },
+        {
+          "higher": "strong",
+          "lower": "keywords",
+          "reason": "Delivered relevant work above an unsupported keyword list."
+        },
+        {
+          "higher": "partial",
+          "lower": "learning",
+          "reason": "Delivered relevant work above aspiration."
+        }
+      ]
+    },
+    {
+      "id": "data_engineer",
+      "vacancy": {
+        "title": "Middle Data Engineer",
+        "experience": "От 3 до 6 лет",
+        "requirements": "Required: Python, SQL, Apache Spark, Airflow.",
+        "responsibilities": "Build ETL data pipelines, data transformations and a data warehouse with scheduled ingestion.",
+        "description": "Build ETL data pipelines, data transformations and a data warehouse with scheduled ingestion."
+      },
+      "candidates": [
+        {
+          "id": "strong",
+          "text": "Middle Data Engineer — 5 years. Built ETL data pipelines and a data warehouse with Python and SQL. Maintained Apache Spark transformations and Airflow ingestion DAGs in production.",
+          "relevance": 3,
+          "rationale": "Explicit five-year matching role, all required technologies and concrete relevant delivered tasks."
+        },
+        {
+          "id": "partial",
+          "text": "Middle Data Engineer — 3 years. Built Python SQL ETL pipelines and Apache Spark transformations for a data warehouse. Have not worked with Airflow.",
+          "relevance": 2,
+          "rationale": "Explicit three-year matching role, delivered relevant tasks and most technologies; one requirement explicitly unsupported."
+        },
+        {
+          "id": "junior",
+          "text": "Junior Data Engineer — 1 year. Implemented Python SQL ETL pipelines and Airflow ingestion for a data warehouse. Used Apache Spark to transform event data.",
+          "relevance": 1,
+          "rationale": "Relevant junior project evidence with required technologies; explicit one year below vacancy minimum and lower stated level."
+        },
+        {
+          "id": "keywords",
+          "text": "Candidate profile. Technologies listed: Python, SQL, Apache Spark, Airflow. No professional project description or duration supplied.",
+          "relevance": 0,
+          "rationale": "Bare technology list without evidence of tasks, professional role or duration: insufficient screening evidence, not proof of inability."
+        },
+        {
+          "id": "unrelated",
+          "text": "Senior frontend developer — 9 years. Built React TypeScript browser interfaces with HTML and CSS. No data engineering work.",
+          "relevance": 0,
+          "rationale": "Long tenure in a different profession does not establish fit for this vacancy."
+        },
+        {
+          "id": "learning",
+          "text": "Aspiring Middle Data Engineer. I want to learn Python, SQL, Apache Spark, Airflow. I have no experience in this profession and have never built production systems.",
+          "relevance": 0,
+          "rationale": "Learning intent and explicitly absent experience are not professional evidence."
+        }
+      ],
+      "preferences": [
+        {
+          "higher": "strong",
+          "lower": "partial",
+          "reason": "Complete required evidence above explicitly incomplete requirements at minimum tenure."
+        },
+        {
+          "higher": "strong",
+          "lower": "junior",
+          "reason": "Comparable relevant technologies with sufficient versus explicitly insufficient tenure and level."
+        },
+        {
+          "higher": "junior",
+          "lower": "unrelated",
+          "reason": "Relevant project evidence above unrelated general seniority."
+        },
+        {
+          "higher": "strong",
+          "lower": "keywords",
+          "reason": "Delivered relevant work above an unsupported keyword list."
+        },
+        {
+          "higher": "partial",
+          "lower": "learning",
+          "reason": "Delivered relevant work above aspiration."
+        }
+      ]
+    },
+    {
+      "id": "data_analyst",
+      "vacancy": {
+        "title": "Middle Data Analyst",
+        "experience": "От 3 до 6 лет",
+        "requirements": "Required: SQL, Python, Tableau, Excel.",
+        "responsibilities": "Analyse data, investigate business metrics and create stakeholder visualizations and dashboards.",
+        "description": "Analyse data, investigate business metrics and create stakeholder visualizations and dashboards."
+      },
+      "candidates": [
+        {
+          "id": "strong",
+          "text": "Middle Data Analyst — 5 years. Analysed business data with SQL and Python. Built Tableau dashboards and Excel reports to investigate retention metrics and explain findings to product stakeholders.",
+          "relevance": 3,
+          "rationale": "Explicit five-year matching role, all required technologies and concrete relevant delivered tasks."
+        },
+        {
+          "id": "partial",
+          "text": "Middle Data Analyst — 3 years. Analysed customer data in SQL and Python, built Excel reports and investigated product metrics. Tableau is a tool I have not used.",
+          "relevance": 2,
+          "rationale": "Explicit three-year matching role, delivered relevant tasks and most technologies; one requirement explicitly unsupported."
+        },
+        {
+          "id": "junior",
+          "text": "Junior Data Analyst — 1 year. Analysed customer data with SQL and Python. Created Tableau visualizations and Excel dashboards for a product research project.",
+          "relevance": 1,
+          "rationale": "Relevant junior project evidence with required technologies; explicit one year below vacancy minimum and lower stated level."
+        },
+        {
+          "id": "keywords",
+          "text": "Candidate profile. Technologies listed: SQL, Python, Tableau, Excel. No professional project description or duration supplied.",
+          "relevance": 0,
+          "rationale": "Bare technology list without evidence of tasks, professional role or duration: insufficient screening evidence, not proof of inability."
+        },
+        {
+          "id": "unrelated",
+          "text": "Senior DevOps engineer — 9 years. Maintained Kubernetes clusters, Terraform infrastructure and Linux deployments.",
+          "relevance": 0,
+          "rationale": "Long tenure in a different profession does not establish fit for this vacancy."
+        },
+        {
+          "id": "learning",
+          "text": "Aspiring Middle Data Analyst. I want to learn SQL, Python, Tableau, Excel. I have no experience in this profession and have never built production systems.",
+          "relevance": 0,
+          "rationale": "Learning intent and explicitly absent experience are not professional evidence."
+        }
+      ],
+      "preferences": [
+        {
+          "higher": "strong",
+          "lower": "partial",
+          "reason": "Complete required evidence above explicitly incomplete requirements at minimum tenure."
+        },
+        {
+          "higher": "strong",
+          "lower": "junior",
+          "reason": "Comparable relevant technologies with sufficient versus explicitly insufficient tenure and level."
+        },
+        {
+          "higher": "junior",
+          "lower": "unrelated",
+          "reason": "Relevant project evidence above unrelated general seniority."
+        },
+        {
+          "higher": "strong",
+          "lower": "keywords",
+          "reason": "Delivered relevant work above an unsupported keyword list."
+        },
+        {
+          "higher": "partial",
+          "lower": "learning",
+          "reason": "Delivered relevant work above aspiration."
+        }
+      ]
+    },
+    {
+      "id": "qa_automation",
+      "vacancy": {
+        "title": "Middle QA Automation Engineer",
+        "experience": "От 3 до 6 лет",
+        "requirements": "Required: Python, Selenium, SQL, Git.",
+        "responsibilities": "Design automated testing, regression suites, test plans and defect reports for web services.",
+        "description": "Design automated testing, regression suites, test plans and defect reports for web services."
+      },
+      "candidates": [
+        {
+          "id": "strong",
+          "text": "Middle QA Automation Engineer — 5 years. Built automated testing and Selenium regression suites in Python. Used SQL to verify database state and Git to review test changes. Wrote test plans and investigated defects.",
+          "relevance": 3,
+          "rationale": "Explicit five-year matching role, all required technologies and concrete relevant delivered tasks."
+        },
+        {
+          "id": "partial",
+          "text": "Middle QA Automation Engineer — 3 years. Maintained Python Selenium regression suites and Git test branches. Wrote test plans and defect reports. No practical SQL experience.",
+          "relevance": 2,
+          "rationale": "Explicit three-year matching role, delivered relevant tasks and most technologies; one requirement explicitly unsupported."
+        },
+        {
+          "id": "junior",
+          "text": "Junior QA Automation Engineer — 1 year. Built Python Selenium automated testing for a web application. Used SQL fixtures and Git, wrote test plans and regression reports.",
+          "relevance": 1,
+          "rationale": "Relevant junior project evidence with required technologies; explicit one year below vacancy minimum and lower stated level."
+        },
+        {
+          "id": "keywords",
+          "text": "Candidate profile. Technologies listed: Python, Selenium, SQL, Git. No professional project description or duration supplied.",
+          "relevance": 0,
+          "rationale": "Bare technology list without evidence of tasks, professional role or duration: insufficient screening evidence, not proof of inability."
+        },
+        {
+          "id": "unrelated",
+          "text": "Senior UI/UX designer — 9 years. Built Figma prototypes, visual design systems and user research reports.",
+          "relevance": 0,
+          "rationale": "Long tenure in a different profession does not establish fit for this vacancy."
+        },
+        {
+          "id": "learning",
+          "text": "Aspiring Middle QA Automation Engineer. I want to learn Python, Selenium, SQL, Git. I have no experience in this profession and have never built production systems.",
+          "relevance": 0,
+          "rationale": "Learning intent and explicitly absent experience are not professional evidence."
+        }
+      ],
+      "preferences": [
+        {
+          "higher": "strong",
+          "lower": "partial",
+          "reason": "Complete required evidence above explicitly incomplete requirements at minimum tenure."
+        },
+        {
+          "higher": "strong",
+          "lower": "junior",
+          "reason": "Comparable relevant technologies with sufficient versus explicitly insufficient tenure and level."
+        },
+        {
+          "higher": "junior",
+          "lower": "unrelated",
+          "reason": "Relevant project evidence above unrelated general seniority."
+        },
+        {
+          "higher": "strong",
+          "lower": "keywords",
+          "reason": "Delivered relevant work above an unsupported keyword list."
+        },
+        {
+          "higher": "partial",
+          "lower": "learning",
+          "reason": "Delivered relevant work above aspiration."
+        }
+      ]
+    },
+    {
+      "id": "devops",
+      "vacancy": {
+        "title": "Middle DevOps Engineer",
+        "experience": "От 3 до 6 лет",
+        "requirements": "Required: Linux, Docker, Kubernetes, Terraform.",
+        "responsibilities": "Manage production deployment, infrastructure automation, monitoring and CI/CD pipelines.",
+        "description": "Manage production deployment, infrastructure automation, monitoring and CI/CD pipelines."
+      },
+      "candidates": [
+        {
+          "id": "strong",
+          "text": "Middle DevOps Engineer — 5 years. Managed Linux production deployment with Docker and Kubernetes. Automated infrastructure with Terraform and maintained CI/CD pipelines and monitoring.",
+          "relevance": 3,
+          "rationale": "Explicit five-year matching role, all required technologies and concrete relevant delivered tasks."
+        },
+        {
+          "id": "partial",
+          "text": "Middle DevOps Engineer — 3 years. Managed Linux Docker services, Kubernetes deployment and production monitoring. Have not used Terraform.",
+          "relevance": 2,
+          "rationale": "Explicit three-year matching role, delivered relevant tasks and most technologies; one requirement explicitly unsupported."
+        },
+        {
+          "id": "junior",
+          "text": "Junior DevOps Engineer — 1 year. Deployed Linux Docker applications in Kubernetes. Used Terraform to reproduce infrastructure and maintained CI/CD pipelines.",
+          "relevance": 1,
+          "rationale": "Relevant junior project evidence with required technologies; explicit one year below vacancy minimum and lower stated level."
+        },
+        {
+          "id": "keywords",
+          "text": "Candidate profile. Technologies listed: Linux, Docker, Kubernetes, Terraform. No professional project description or duration supplied.",
+          "relevance": 0,
+          "rationale": "Bare technology list without evidence of tasks, professional role or duration: insufficient screening evidence, not proof of inability."
+        },
+        {
+          "id": "unrelated",
+          "text": "Senior Data Analyst — 9 years. Produced Tableau dashboards, SQL analyses and Excel reports for commercial teams.",
+          "relevance": 0,
+          "rationale": "Long tenure in a different profession does not establish fit for this vacancy."
+        },
+        {
+          "id": "learning",
+          "text": "Aspiring Middle DevOps Engineer. I want to learn Linux, Docker, Kubernetes, Terraform. I have no experience in this profession and have never built production systems.",
+          "relevance": 0,
+          "rationale": "Learning intent and explicitly absent experience are not professional evidence."
+        }
+      ],
+      "preferences": [
+        {
+          "higher": "strong",
+          "lower": "partial",
+          "reason": "Complete required evidence above explicitly incomplete requirements at minimum tenure."
+        },
+        {
+          "higher": "strong",
+          "lower": "junior",
+          "reason": "Comparable relevant technologies with sufficient versus explicitly insufficient tenure and level."
+        },
+        {
+          "higher": "junior",
+          "lower": "unrelated",
+          "reason": "Relevant project evidence above unrelated general seniority."
+        },
+        {
+          "higher": "strong",
+          "lower": "keywords",
+          "reason": "Delivered relevant work above an unsupported keyword list."
+        },
+        {
+          "higher": "partial",
+          "lower": "learning",
+          "reason": "Delivered relevant work above aspiration."
+        }
+      ]
+    },
+    {
+      "id": "java_backend",
+      "vacancy": {
+        "title": "Middle Java Backend Developer",
+        "experience": "От 3 до 6 лет",
+        "requirements": "Required: Java, Spring Boot, PostgreSQL, Kafka.",
+        "responsibilities": "Implement backend microservices, transaction processing and asynchronous event delivery.",
+        "description": "Implement backend microservices, transaction processing and asynchronous event delivery."
+      },
+      "candidates": [
+        {
+          "id": "strong",
+          "text": "Middle Java Backend Developer — 5 years. Implemented Java Spring Boot backend microservices. Used PostgreSQL transactions and Kafka events for asynchronous payment processing.",
+          "relevance": 3,
+          "rationale": "Explicit five-year matching role, all required technologies and concrete relevant delivered tasks."
+        },
+        {
+          "id": "partial",
+          "text": "Middle Java Backend Developer — 3 years. Delivered Java Spring Boot backend microservices and PostgreSQL transactions. Have not used Kafka.",
+          "relevance": 2,
+          "rationale": "Explicit three-year matching role, delivered relevant tasks and most technologies; one requirement explicitly unsupported."
+        },
+        {
+          "id": "junior",
+          "text": "Junior Java Backend Developer — 1 year. Built Java Spring Boot backend microservices with PostgreSQL. Used Kafka to process asynchronous events and wrote integration tests.",
+          "relevance": 1,
+          "rationale": "Relevant junior project evidence with required technologies; explicit one year below vacancy minimum and lower stated level."
+        },
+        {
+          "id": "keywords",
+          "text": "Candidate profile. Technologies listed: Java, Spring Boot, PostgreSQL, Kafka. No professional project description or duration supplied.",
+          "relevance": 0,
+          "rationale": "Bare technology list without evidence of tasks, professional role or duration: insufficient screening evidence, not proof of inability."
+        },
+        {
+          "id": "unrelated",
+          "text": "Senior frontend developer — 9 years. Built React TypeScript interfaces and HTML CSS component libraries.",
+          "relevance": 0,
+          "rationale": "Long tenure in a different profession does not establish fit for this vacancy."
+        },
+        {
+          "id": "learning",
+          "text": "Aspiring Middle Java Backend Developer. I want to learn Java, Spring Boot, PostgreSQL, Kafka. I have no experience in this profession and have never built production systems.",
+          "relevance": 0,
+          "rationale": "Learning intent and explicitly absent experience are not professional evidence."
+        }
+      ],
+      "preferences": [
+        {
+          "higher": "strong",
+          "lower": "partial",
+          "reason": "Complete required evidence above explicitly incomplete requirements at minimum tenure."
+        },
+        {
+          "higher": "strong",
+          "lower": "junior",
+          "reason": "Comparable relevant technologies with sufficient versus explicitly insufficient tenure and level."
+        },
+        {
+          "higher": "junior",
+          "lower": "unrelated",
+          "reason": "Relevant project evidence above unrelated general seniority."
+        },
+        {
+          "higher": "strong",
+          "lower": "keywords",
+          "reason": "Delivered relevant work above an unsupported keyword list."
+        },
+        {
+          "higher": "partial",
+          "lower": "learning",
+          "reason": "Delivered relevant work above aspiration."
+        }
+      ]
+    },
+    {
+      "id": "ml_engineer",
+      "vacancy": {
+        "title": "Middle ML Engineer",
+        "experience": "От 3 до 6 лет",
+        "requirements": "Required: Python, PyTorch, Scikit-learn, Docker.",
+        "responsibilities": "Train machine learning models, validate experiments and deploy model inference services.",
+        "description": "Train machine learning models, validate experiments and deploy model inference services."
+      },
+      "candidates": [
+        {
+          "id": "strong",
+          "text": "Middle ML Engineer — 5 years. Trained machine learning models with Python PyTorch and Scikit-learn. Validated experiments using held-out data and deployed Docker inference services.",
+          "relevance": 3,
+          "rationale": "Explicit five-year matching role, all required technologies and concrete relevant delivered tasks."
+        },
+        {
+          "id": "partial",
+          "text": "Middle ML Engineer — 3 years. Trained Python PyTorch models and validated experiments with Scikit-learn. Have not used Docker for deployment.",
+          "relevance": 2,
+          "rationale": "Explicit three-year matching role, delivered relevant tasks and most technologies; one requirement explicitly unsupported."
+        },
+        {
+          "id": "junior",
+          "text": "Junior ML Engineer — 1 year. Trained Python PyTorch models, compared Scikit-learn baselines and deployed a Docker inference service for a research project.",
+          "relevance": 1,
+          "rationale": "Relevant junior project evidence with required technologies; explicit one year below vacancy minimum and lower stated level."
+        },
+        {
+          "id": "keywords",
+          "text": "Candidate profile. Technologies listed: Python, PyTorch, Scikit-learn, Docker. No professional project description or duration supplied.",
+          "relevance": 0,
+          "rationale": "Bare technology list without evidence of tasks, professional role or duration: insufficient screening evidence, not proof of inability."
+        },
+        {
+          "id": "unrelated",
+          "text": "Senior frontend developer — 9 years. Built React TypeScript web interfaces, HTML CSS components and browser performance tooling.",
+          "relevance": 0,
+          "rationale": "Long tenure in a different profession does not establish fit for this vacancy."
+        },
+        {
+          "id": "learning",
+          "text": "Aspiring Middle ML Engineer. I want to learn Python, PyTorch, Scikit-learn, Docker. I have no experience in this profession and have never built production systems.",
+          "relevance": 0,
+          "rationale": "Learning intent and explicitly absent experience are not professional evidence."
+        }
+      ],
+      "preferences": [
+        {
+          "higher": "strong",
+          "lower": "partial",
+          "reason": "Complete required evidence above explicitly incomplete requirements at minimum tenure."
+        },
+        {
+          "higher": "strong",
+          "lower": "junior",
+          "reason": "Comparable relevant technologies with sufficient versus explicitly insufficient tenure and level."
+        },
+        {
+          "higher": "junior",
+          "lower": "unrelated",
+          "reason": "Relevant project evidence above unrelated general seniority."
+        },
+        {
+          "higher": "strong",
+          "lower": "keywords",
+          "reason": "Delivered relevant work above an unsupported keyword list."
+        },
+        {
+          "higher": "partial",
+          "lower": "learning",
+          "reason": "Delivered relevant work above aspiration."
+        }
+      ]
+    },
+    {
+      "id": "ru_backend",
+      "vacancy": {
+        "title": "Middle Backend-разработчик",
+        "experience": "От 3 до 6 лет",
+        "requirements": "Required: Python, Django, PostgreSQL, Redis.",
+        "responsibilities": "Разрабатывать серверные сервисы, REST API и оптимизировать запросы базы данных.",
+        "description": "Разрабатывать серверные сервисы, REST API и оптимизировать запросы базы данных."
+      },
+      "candidates": [
+        {
+          "id": "strong",
+          "text": "Middle backend-разработчик — 5 лет. Разрабатывал серверные сервисы и REST API на Python и Django. Оптимизировал PostgreSQL запросы и Redis кеширование в рабочем продукте.",
+          "relevance": 3,
+          "rationale": "Explicit five-year matching role, all required technologies and concrete relevant delivered tasks."
+        },
+        {
+          "id": "partial",
+          "text": "Middle backend-разработчик — 3 года. Разрабатывал Python Django серверные сервисы и REST API, оптимизировал PostgreSQL запросы. С Redis не работал.",
+          "relevance": 2,
+          "rationale": "Explicit three-year matching role, delivered relevant tasks and most technologies; one requirement explicitly unsupported."
+        },
+        {
+          "id": "junior",
+          "text": "Junior backend-разработчик — 1 год. Создал Python Django серверный сервис с REST API, PostgreSQL и Redis. Написал интеграционные тесты и развернул проект.",
+          "relevance": 1,
+          "rationale": "Relevant junior project evidence with required technologies; explicit one year below vacancy minimum and lower stated level."
+        },
+        {
+          "id": "keywords",
+          "text": "Candidate profile. Technologies listed: Python, Django, PostgreSQL, Redis. No professional project description or duration supplied.",
+          "relevance": 0,
+          "rationale": "Bare technology list without evidence of tasks, professional role or duration: insufficient screening evidence, not proof of inability."
+        },
+        {
+          "id": "unrelated",
+          "text": "Senior frontend developer — 9 лет. Разрабатывал React TypeScript интерфейсы, HTML CSS компоненты и клиентские приложения.",
+          "relevance": 0,
+          "rationale": "Long tenure in a different profession does not establish fit for this vacancy."
+        },
+        {
+          "id": "learning",
+          "text": "Aspiring Middle Backend-разработчик. I want to learn Python, Django, PostgreSQL, Redis. I have no experience in this profession and have never built production systems.",
+          "relevance": 0,
+          "rationale": "Learning intent and explicitly absent experience are not professional evidence."
+        }
+      ],
+      "preferences": [
+        {
+          "higher": "strong",
+          "lower": "partial",
+          "reason": "Complete required evidence above explicitly incomplete requirements at minimum tenure."
+        },
+        {
+          "higher": "strong",
+          "lower": "junior",
+          "reason": "Comparable relevant technologies with sufficient versus explicitly insufficient tenure and level."
+        },
+        {
+          "higher": "junior",
+          "lower": "unrelated",
+          "reason": "Relevant project evidence above unrelated general seniority."
+        },
+        {
+          "higher": "strong",
+          "lower": "keywords",
+          "reason": "Delivered relevant work above an unsupported keyword list."
+        },
+        {
+          "higher": "partial",
+          "lower": "learning",
+          "reason": "Delivered relevant work above aspiration."
+        }
+      ]
+    },
+    {
+      "id": "ru_data",
+      "vacancy": {
+        "title": "Middle инженер данных",
+        "experience": "От 3 до 6 лет",
+        "requirements": "Required: Python, SQL, SAP, Tableau.",
+        "responsibilities": "Строить потоки данных, ETL и трансформации данных для аналитического хранилища.",
+        "description": "Строить потоки данных, ETL и трансформации данных для аналитического хранилища."
+      },
+      "candidates": [
+        {
+          "id": "strong",
+          "text": "Middle инженер данных — 5 лет. Строил ETL, потоки данных и трансформации данных для хранилища. Использовал Python SQL, интегрировал SAP и готовил Tableau витрины для аналитиков.",
+          "relevance": 3,
+          "rationale": "Explicit five-year matching role, all required technologies and concrete relevant delivered tasks."
+        },
+        {
+          "id": "partial",
+          "text": "Middle инженер данных — 3 года. Строил ETL и потоки данных, использовал Python SQL для хранилища, интегрировал SAP. Tableau только изучаю.",
+          "relevance": 2,
+          "rationale": "Explicit three-year matching role, delivered relevant tasks and most technologies; one requirement explicitly unsupported."
+        },
+        {
+          "id": "junior",
+          "text": "Junior инженер данных — 1 год. Создал ETL и трансформации данных с Python SQL. Интегрировал SAP выгрузки и подготовил Tableau витрину для учебного проекта.",
+          "relevance": 1,
+          "rationale": "Relevant junior project evidence with required technologies; explicit one year below vacancy minimum and lower stated level."
+        },
+        {
+          "id": "keywords",
+          "text": "Candidate profile. Technologies listed: Python, SQL, SAP, Tableau. No professional project description or duration supplied.",
+          "relevance": 0,
+          "rationale": "Bare technology list without evidence of tasks, professional role or duration: insufficient screening evidence, not proof of inability."
+        },
+        {
+          "id": "unrelated",
+          "text": "Senior frontend developer — 9 лет. Создавал React TypeScript клиентские интерфейсы и компоненты HTML CSS. Опыта построения потоков данных нет.",
+          "relevance": 0,
+          "rationale": "Long tenure in a different profession does not establish fit for this vacancy."
+        },
+        {
+          "id": "learning",
+          "text": "Aspiring Middle инженер данных. I want to learn Python, SQL, SAP, Tableau. I have no experience in this profession and have never built production systems.",
+          "relevance": 0,
+          "rationale": "Learning intent and explicitly absent experience are not professional evidence."
+        }
+      ],
+      "preferences": [
+        {
+          "higher": "strong",
+          "lower": "partial",
+          "reason": "Complete required evidence above explicitly incomplete requirements at minimum tenure."
+        },
+        {
+          "higher": "strong",
+          "lower": "junior",
+          "reason": "Comparable relevant technologies with sufficient versus explicitly insufficient tenure and level."
+        },
+        {
+          "higher": "junior",
+          "lower": "unrelated",
+          "reason": "Relevant project evidence above unrelated general seniority."
+        },
+        {
+          "higher": "strong",
+          "lower": "keywords",
+          "reason": "Delivered relevant work above an unsupported keyword list."
+        },
+        {
+          "higher": "partial",
+          "lower": "learning",
+          "reason": "Delivered relevant work above aspiration."
+        }
+      ]
+    }
+  ]
+}

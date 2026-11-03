@@ -17,14 +17,25 @@ def expected_dcg(labels, scores, k=5):
     return result
 
 
-def evaluate(rows, scores, k=5):
+def evaluate(rows, scores, k=5, group_by="cv_id"):
+    if group_by not in {"cv_id", "vacancy_id"}:
+        raise ValueError("Ranking queries must be CVs or vacancies")
     if len(rows) != len(scores) or not all(math.isfinite(float(s)) for s in scores):
         raise ValueError("One finite score is required per row")
+    input_count = len(rows)
+    if group_by == "vacancy_id":
+        # One person must not occupy multiple slots in a HR ranking metric.
+        # Pick a stable source ID without consulting labels or scores.
+        canonical = {}
+        for row, score in sorted(zip(rows, scores), key=lambda item: str(item[0]["cv_id"])):
+            key = (row["vacancy_id"], row.get("candidate_group_id", row["cv_id"]))
+            canonical.setdefault(key, (row, score))
+        rows, scores = zip(*canonical.values()) if canonical else ([], [])
     queries = defaultdict(list)
     for row, score in zip(rows, scores):
         if row.get("relevance") is None:
             raise ValueError("Unknown relevance is excluded from ranking evaluation")
-        queries[row["cv_id"]].append((int(row["relevance"]), float(score)))
+        queries[row[group_by]].append((int(row["relevance"]), float(score)))
     ndcgs, informative_ndcgs, accuracies, top1s = [], [], [], []
     details = []
     for cid, values in sorted(queries.items()):
@@ -47,11 +58,17 @@ def evaluate(rows, scores, k=5):
         top1 = sum(labels[i] == max(labels) for i in top_indices) / len(top_indices)
         if informative:
             top1s.append(top1)
-        details.append({"cv_id": cid, "ndcg": ndcg, "informative": informative,
+        details.append({group_by: cid, "ndcg": ndcg, "informative": informative,
                         "pairwise_accuracy": accuracy, "top1_best_label_credit": top1})
     mean = lambda values: sum(values) / len(values) if values else None
-    return {f"ndcg_at_{k}": mean(ndcgs), f"ndcg_at_{k}_informative": mean(informative_ndcgs),
+    result = {f"ndcg_at_{k}": mean(ndcgs), f"ndcg_at_{k}_informative": mean(informative_ndcgs),
             "pairwise_accuracy": mean(accuracies), "top1_best_label_credit_informative": mean(top1s),
             "queries": len(queries), "informative_queries": len(informative_ndcgs),
             "all_weak_queries_excluded_from_ndcg": sum(d["ndcg"] is None for d in details),
             "by_query": details}
+    if group_by == "vacancy_id":
+        result.update({"input_pairs": input_count, "evaluated_pairs": len(rows),
+                       "duplicate_candidate_versions_excluded": input_count - len(rows),
+                       "multi_candidate_queries": sum(len(values) > 1 for values in queries.values()),
+                       "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"})
+    return result

@@ -1,0 +1,84 @@
+{
+  "schema_version": "autohr-synthetic-hr-comparison-v1",
+  "fixture_sha256": "f730bd256cd915e5caa0ed8fce0777b4a822ab232b80ef1a53fd40e9cf694a28",
+  "fixture_frozen_before_v3_selection": true,
+  "v3_evaluated_after_model_lock": true,
+  "evaluation_provenance": "Independently authored synthetic engineering expectations, not professional HR adjudication or real users. Model configuration was locked without these labels/scores.",
+  "v2": {
+    "schema_version": "autohr-synthetic-hr-evaluation-v1",
+    "evaluated_at": "2026-11-03T10:30:18.811284+00:00",
+    "fixture_sha256": "f730bd256cd915e5caa0ed8fce0777b4a822ab232b80ef1a53fd40e9cf694a28",
+    "fixture_schema": "autohr-synthetic-hr-ranking-v1",
+    "model_sha256": "0c2c02a9897a46d1b777b158ef1ad1eec43071ac5049c686d68c63e9a8ebddcb",
+    "model_version": "ml2-pairwise-linear-v2",
+    "feature_version": "professional-signals-v2",
+    "score_policy_version": "relevant-experience-shortfall-v1",
+    "vacancy_queries": 10,
+    "candidate_pairs": 60,
+    "metrics": {
+      "ndcg_at_5": 0.9690205336644399,
+      "ndcg_at_5_informative": 0.9690205336644399,
+      "pairwise_accuracy": 0.8916666666666666,
+      "top1_best_label_credit_informative": 0.8,
+      "queries": 10,
+      "informative_queries": 10,
+      "all_weak_queries_excluded_from_ndcg": 0
+    },
+    "predeclared_preferences": {
+      "count": 50,
+      "strict_correct": 46,
+      "ties": 4,
+      "incorrect": 0,
+      "macro_credit": 0.96
+    },
+    "limitations": [
+      "Synthetic engineering expectations, not independent professional HR labels or real hiring outcomes",
+      "Only ten authored IT vacancy cases; not an estimate of population or language-specific accuracy",
+      "Screening-evidence labels describe available text, not actual human ability or candidate rejection",
+      "Evaluation-only fixture; do not use these scores to select model hyperparameters",
+      "Any later bug fixes informed by these examples turn them into regression cases, requiring a new independent evaluation"
+    ]
+  },
+  "v3": {
+    "schema_version": "autohr-synthetic-hr-evaluation-v1",
+    "evaluated_at": "2026-11-03T10:35:22.837779+00:00",
+    "fixture_sha256": "f730bd256cd915e5caa0ed8fce0777b4a822ab232b80ef1a53fd40e9cf694a28",
+    "fixture_schema": "autohr-synthetic-hr-ranking-v1",
+    "model_sha256": "33b6548c1be0e42a152cb29edbf66a41ef0201ca18e3df56a5c06a6ffb61fff0",
+    "model_version": "ml2-pairwise-linear-v3",
+    "feature_version": "professional-signals-v3",
+    "score_policy_version": "relevant-experience-shortfall-v1",
+    "vacancy_queries": 10,
+    "candidate_pairs": 60,
+    "metrics": {
+      "ndcg_at_5": 0.9651452592482699,
+      "ndcg_at_5_informative": 0.9651452592482699,
+      "pairwise_accuracy": 0.8875,
+      "top1_best_label_credit_informative": 0.75,
+      "queries": 10,
+      "informative_queries": 10,
+      "all_weak_queries_excluded_from_ndcg": 0
+    },
+    "predeclared_preferences": {
+      "count": 50,
+      "strict_correct": 46,
+      "ties": 1,
+      "incorrect": 3,
+      "macro_credit": 0.93
+    },
+    "limitations": [
+      "Synthetic engineering expectations, not independent professional HR labels or real hiring outcomes",
+      "Only ten authored IT vacancy cases; not an estimate of population or language-specific accuracy",
+      "Screening-evidence labels describe available text, not actual human ability or candidate rejection",
+      "Evaluation-only fixture; do not use these scores to select model hyperparameters",
+      "Any later bug fixes informed by these examples turn them into regression cases, requiring a new independent evaluation"
+    ]
+  },
+  "limitations": [
+    "Synthetic engineering expectations, not independent professional HR labels or real hiring outcomes",
+    "Only ten authored IT vacancy cases; not an estimate of population or language-specific accuracy",
+    "Screening-evidence labels describe available text, not actual human ability or candidate rejection",
+    "Evaluation-only fixture; do not use these scores to select model hyperparameters",
+    "Any later bug fixes informed by these examples turn them into regression cases, requiring a new independent evaluation"
+  ]
+}

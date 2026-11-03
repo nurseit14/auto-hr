@@ -1,0 +1,37 @@
+{
+  "schema_version": "autohr-synthetic-hr-evaluation-v1",
+  "evaluated_at": "2026-11-03T10:30:18.811284+00:00",
+  "fixture_sha256": "f730bd256cd915e5caa0ed8fce0777b4a822ab232b80ef1a53fd40e9cf694a28",
+  "fixture_schema": "autohr-synthetic-hr-ranking-v1",
+  "model_sha256": "0c2c02a9897a46d1b777b158ef1ad1eec43071ac5049c686d68c63e9a8ebddcb",
+  "model_version": "ml2-pairwise-linear-v2",
+  "feature_version": "professional-signals-v2",
+  "score_policy_version": "relevant-experience-shortfall-v1",
+  "vacancy_queries": 10,
+  "candidate_pairs": 60,
+  "metrics": {
+    "ndcg_at_5": 0.9690205336644399,
+    "ndcg_at_5_informative": 0.9690205336644399,
+    "pairwise_accuracy": 0.8916666666666666,
+    "top1_best_label_credit_informative": 0.8,
+    "queries": 10,
+    "informative_queries": 10,
+    "all_weak_queries_excluded_from_ndcg": 0
+  },
+  "predeclared_preferences": {
+    "count": 50,
+    "strict_correct": 46,
+    "ties": 4,
+    "incorrect": 0,
+    "macro_credit": 0.96
+  },
+  "limitations": [
+    "Synthetic engineering expectations, not independent professional HR labels or real hiring outcomes",
+    "Only ten authored IT vacancy cases; not an estimate of population or language-specific accuracy",
+    "Screening-evidence labels describe available text, not actual human ability or candidate rejection",
+    "Evaluation-only fixture; do not use these scores to select model hyperparameters",
+    "Any later bug fixes informed by these examples turn them into regression cases, requiring a new independent evaluation"
+  ],
+  "baseline_source_commit": "18b827c2a7b0f48357fb1ff99c631c3a7d3263a3",
+  "evaluation_role": "Frozen v2 baseline; fixture was authored and hashed before model-v3 selection, then evaluated using an isolated v2 source/model snapshot."
+}

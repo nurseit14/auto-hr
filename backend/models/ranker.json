@@ -1,8 +1,8 @@
 {
-  "model_version": "ml2-pairwise-linear-v2",
-  "feature_version": "professional-signals-v2",
+  "model_version": "ml2-pairwise-linear-v3",
+  "feature_version": "professional-signals-v3",
   "score_policy_version": "relevant-experience-shortfall-v1",
-  "feature_fingerprint": "da235c98a5c56d40802e6a164af5613f9cab7108451c85d78faed087c759080d",
+  "feature_fingerprint": "c283105833784b363350a24294e76be2fc6a5de42736ddc542d0d2b0159224fa",
   "feature_names": [
     "skill_coverage",
     "skill_jaccard",
@@ -15,9 +15,15 @@
     "language_compatibility",
     "mandatory_skill_confirmation",
     "industry_coverage",
-    "communication_confirmation"
+    "communication_confirmation",
+    "required_skill_coverage",
+    "demonstrated_skill_coverage",
+    "relevant_experience_fulfillment"
   ],
   "mean": [
+    0.0,
+    0.0,
+    0.0,
     0.0,
     0.0,
     0.0,
@@ -34,57 +40,72 @@
   "scale": [
     0.4254576874622146,
     0.14867284690949087,
-    0.3314463337410328,
-    0.3396461676632132,
-    0.07237215318451636,
+    0.3373367783451712,
+    0.38987131200608005,
+    0.11874911687058672,
     1.0,
-    0.1441960741642103,
-    0.1854486798469534,
+    0.14546563078560565,
+    0.18678753333856737,
     1.0,
     0.032024964247718356,
-    0.19503088151638212,
-    0.1377687516391137
+    0.20765776696040092,
+    0.1377687516391137,
+    0.43556130550556643,
+    0.17476366471098226,
+    1.0
   ],
   "weights": [
-    0.00415581362443666,
-    0.008807878894201567,
+    0.04528263837826951,
+    0.010718508241799169,
     0.0,
-    0.006685162518891589,
-    0.01200290210321987,
+    0.10253067449446521,
+    0.07840270660683021,
+    0.0,
+    0.04771863639134594,
+    0.011890768249412672,
     0.0,
     0.0,
     0.0,
     0.0,
-    0.0,
-    0.0,
+    0.08096869655022058,
+    0.052134051454649666,
     0.0
   ],
   "score_semantics": "Relative linear evidence score plus a declared relevant-experience-shortfall adjustment; not probability or a 0–3 annotation grade",
   "metadata": {
-    "l2": 10.0,
-    "iterations": 10,
-    "preference_pairs": 132,
-    "training_objective": 0.6916404407270117,
+    "l2": 1.0,
+    "iterations": 41,
+    "preference_pairs": 166,
+    "training_objective": 0.6662208920249701,
+    "hr_direction_weight": 0.5,
+    "grade_gap_weighting": false,
     "score_origin": "Zero feature vector is zero evidence score; pairwise learning is translation invariant",
     "training_feature_mean": [
       0.41818181818181815,
       0.12176277859348478,
-      0.18633486943164362,
-      0.163778801843318,
-      -0.009493087557603688,
+      0.1861582181259601,
+      0.24556067588325659,
+      0.0008294930875576036,
       0.0,
-      0.015483870967741935,
-      0.039569892473118276,
+      0.014516129032258065,
+      0.040860215053763436,
       0.0,
       0.0025806451612903226,
-      0.04129032258064516,
-      0.01935483870967742
+      0.04516129032258064,
+      0.01935483870967742,
+      0.4044951822371177,
+      0.04635944700460829,
+      0.0
     ],
     "score_policy_version": "relevant-experience-shortfall-v1",
     "policy_semantics": "Declared rule, not a learned weight: an explicit relevant-experience shortfall scales only a positive linear score by the fulfilled minimum fraction; unknowns and negative bases are unchanged",
-    "trained_at": "2026-11-03T10:05:46.986641+00:00",
+    "trained_at": "2026-11-03T10:38:39.564167+00:00",
     "train_pairs": 155,
     "train_candidate_groups": 30,
+    "training_direction_pair_counts": {
+      "cv_to_jobs": 132,
+      "job_to_candidates": 34
+    },
     "dataset_fingerprints": {
       "pairs_all.jsonl": "53ec02c515edb27b9d54269aa224f25855d481aeccdd86f0b7d8d1764fa93306",
       "train.jsonl": "351ea17acf0a7582a96e643fbb52d5b6e528419c8237bb203b561254bcf7fb54",
@@ -95,7 +116,30 @@
       "split_assignment.json": "f89a54e3d002a387f53df71cd0574f13c84ca54a241d40bfc010e171a473b7b9"
     },
     "dataset_source_sha256": "ff0bd0527c79f485447c8308b4bc08c78c07b03202c007caabf8935d4dcbc5b8",
-    "selection_metric": "validation ndcg_at_5_informative; pairwise accuracy; stronger L2",
+    "selection_metric": "Previously locked train-group-CV configuration, refit after a heldout-informed extraction correctness fix; no hyperparameter reselection",
+    "model_selection": {
+      "folds": 3,
+      "seed": 42,
+      "selected": {
+        "l2": 1.0,
+        "hr_weight": 0.5,
+        "grade_gap": false,
+        "cv_macro_ndcg": 0.8517114037819695,
+        "cv_macro_pairwise_accuracy": 0.7032217011383679,
+        "direction_ndcg": {
+          "cv_to_jobs": 0.7886115125639344,
+          "job_to_candidates": 0.9148112950000046
+        },
+        "direction_pairwise_accuracy": {
+          "cv_to_jobs": 0.5897767356100689,
+          "job_to_candidates": 0.8166666666666668
+        }
+      },
+      "configuration_count": 0,
+      "fixed_configuration_recheck": true,
+      "validation_used_for_selection": false,
+      "test_used_for_selection": false
+    },
     "validation_prediction_policy": "relevant-experience-shortfall-v1",
     "label_semantics": {
       "0": {
@@ -116,6 +160,24 @@
       }
     },
     "feature_policy": "Role-aware technical evidence gates level and explicitly scoped experience; mixed totals are not allocated; no identity, contacts, demographics, annotation explanations or scores as inputs",
-    "experimental": true
+    "experimental": true,
+    "development_provenance": {
+      "change_type": "heldout-informed extraction correctness fix, not hyperparameter optimization",
+      "fixed_cases": [
+        "English auxiliary/postfix skill negation",
+        "Russian postfix no-experience clause"
+      ],
+      "original_model_sha256": "33b6548c1be0e42a152cb29edbf66a41ef0201ca18e3df56a5c06a6ffb61fff0",
+      "original_selection_sha256": "8dc138aa243eb4e7ddc2129f21d0d2381fe8e025eb2b313ceb2319a01df7b920",
+      "original_feature_source_sha256": "d6b08bf17d2c23fd1706cf8ad3f577de767f58cb76770341ce1076adc386c7fc",
+      "original_hr_holdout_status": "Now a regression set because its failures informed the negation fix",
+      "hyperparameters_reselected": false,
+      "locked_configuration": {
+        "l2": 1.0,
+        "hr_weight": 0.5,
+        "grade_gap": false
+      },
+      "new_blind_hr_holdout_used_for_fitting_or_selection": false
+    }
   }
 }

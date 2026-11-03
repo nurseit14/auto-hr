@@ -1,0 +1,216 @@
+{
+  "schema_version": "autohr-synthetic-hr-comparison-v2",
+  "current_model_sha256": "8d25007a756e6fe58417ac762abce002075b29024408c922d0d2628111189d2c",
+  "current_model_version": "ml2-pairwise-linear-v3",
+  "evaluation_order": [
+    "Initial fixture frozen before first v3 selection; v2 snapshot baseline and initial locked v3 evaluated.",
+    "Initial evaluation revealed negation bugs. Those cases became regression checks.",
+    "One bounded extraction-correctness fix was approved, without hyperparameter changes.",
+    "Fresh second fixture authored and hashed before corrected model publication; author knew initial bug class.",
+    "Corrected model locked with same l2=1, hr_weight=0.5, grade_gap=False; second fixture evaluated once, with no further tuning."
+  ],
+  "initial_blind_engineering_evaluation": {
+    "schema_version": "autohr-synthetic-hr-comparison-v1",
+    "fixture_sha256": "f730bd256cd915e5caa0ed8fce0777b4a822ab232b80ef1a53fd40e9cf694a28",
+    "fixture_frozen_before_v3_selection": true,
+    "v3_evaluated_after_model_lock": true,
+    "evaluation_provenance": "Independently authored synthetic engineering expectations, not professional HR adjudication or real users. Model configuration was locked without these labels/scores.",
+    "v2": {
+      "schema_version": "autohr-synthetic-hr-evaluation-v1",
+      "evaluated_at": "2026-11-03T10:30:18.811284+00:00",
+      "fixture_sha256": "f730bd256cd915e5caa0ed8fce0777b4a822ab232b80ef1a53fd40e9cf694a28",
+      "fixture_schema": "autohr-synthetic-hr-ranking-v1",
+      "model_sha256": "0c2c02a9897a46d1b777b158ef1ad1eec43071ac5049c686d68c63e9a8ebddcb",
+      "model_version": "ml2-pairwise-linear-v2",
+      "feature_version": "professional-signals-v2",
+      "score_policy_version": "relevant-experience-shortfall-v1",
+      "vacancy_queries": 10,
+      "candidate_pairs": 60,
+      "metrics": {
+        "ndcg_at_5": 0.9690205336644399,
+        "ndcg_at_5_informative": 0.9690205336644399,
+        "pairwise_accuracy": 0.8916666666666666,
+        "top1_best_label_credit_informative": 0.8,
+        "queries": 10,
+        "informative_queries": 10,
+        "all_weak_queries_excluded_from_ndcg": 0
+      },
+      "predeclared_preferences": {
+        "count": 50,
+        "strict_correct": 46,
+        "ties": 4,
+        "incorrect": 0,
+        "macro_credit": 0.96
+      },
+      "limitations": [
+        "Synthetic engineering expectations, not independent professional HR labels or real hiring outcomes",
+        "Only ten authored IT vacancy cases; not an estimate of population or language-specific accuracy",
+        "Screening-evidence labels describe available text, not actual human ability or candidate rejection",
+        "Evaluation-only fixture; do not use these scores to select model hyperparameters",
+        "Any later bug fixes informed by these examples turn them into regression cases, requiring a new independent evaluation"
+      ]
+    },
+    "v3": {
+      "schema_version": "autohr-synthetic-hr-evaluation-v1",
+      "evaluated_at": "2026-11-03T10:35:22.837779+00:00",
+      "fixture_sha256": "f730bd256cd915e5caa0ed8fce0777b4a822ab232b80ef1a53fd40e9cf694a28",
+      "fixture_schema": "autohr-synthetic-hr-ranking-v1",
+      "model_sha256": "33b6548c1be0e42a152cb29edbf66a41ef0201ca18e3df56a5c06a6ffb61fff0",
+      "model_version": "ml2-pairwise-linear-v3",
+      "feature_version": "professional-signals-v3",
+      "score_policy_version": "relevant-experience-shortfall-v1",
+      "vacancy_queries": 10,
+      "candidate_pairs": 60,
+      "metrics": {
+        "ndcg_at_5": 0.9651452592482699,
+        "ndcg_at_5_informative": 0.9651452592482699,
+        "pairwise_accuracy": 0.8875,
+        "top1_best_label_credit_informative": 0.75,
+        "queries": 10,
+        "informative_queries": 10,
+        "all_weak_queries_excluded_from_ndcg": 0
+      },
+      "predeclared_preferences": {
+        "count": 50,
+        "strict_correct": 46,
+        "ties": 1,
+        "incorrect": 3,
+        "macro_credit": 0.93
+      },
+      "limitations": [
+        "Synthetic engineering expectations, not independent professional HR labels or real hiring outcomes",
+        "Only ten authored IT vacancy cases; not an estimate of population or language-specific accuracy",
+        "Screening-evidence labels describe available text, not actual human ability or candidate rejection",
+        "Evaluation-only fixture; do not use these scores to select model hyperparameters",
+        "Any later bug fixes informed by these examples turn them into regression cases, requiring a new independent evaluation"
+      ]
+    },
+    "limitations": [
+      "Synthetic engineering expectations, not independent professional HR labels or real hiring outcomes",
+      "Only ten authored IT vacancy cases; not an estimate of population or language-specific accuracy",
+      "Screening-evidence labels describe available text, not actual human ability or candidate rejection",
+      "Evaluation-only fixture; do not use these scores to select model hyperparameters",
+      "Any later bug fixes informed by these examples turn them into regression cases, requiring a new independent evaluation"
+    ]
+  },
+  "original_fixture_after_fix_regression": {
+    "status": "Holdout-informed regression check, not independent evidence",
+    "evaluation": {
+      "schema_version": "autohr-synthetic-hr-evaluation-v1",
+      "evaluated_at": "2026-11-03T10:39:47.983912+00:00",
+      "fixture_sha256": "f730bd256cd915e5caa0ed8fce0777b4a822ab232b80ef1a53fd40e9cf694a28",
+      "fixture_schema": "autohr-synthetic-hr-ranking-v1",
+      "model_sha256": "8d25007a756e6fe58417ac762abce002075b29024408c922d0d2628111189d2c",
+      "model_version": "ml2-pairwise-linear-v3",
+      "feature_version": "professional-signals-v3",
+      "score_policy_version": "relevant-experience-shortfall-v1",
+      "vacancy_queries": 10,
+      "candidate_pairs": 60,
+      "metrics": {
+        "ndcg_at_5": 0.9854419388428785,
+        "ndcg_at_5_informative": 0.9854419388428785,
+        "pairwise_accuracy": 0.9166666666666666,
+        "top1_best_label_credit_informative": 1.0,
+        "queries": 10,
+        "informative_queries": 10,
+        "all_weak_queries_excluded_from_ndcg": 0
+      },
+      "predeclared_preferences": {
+        "count": 50,
+        "strict_correct": 50,
+        "ties": 0,
+        "incorrect": 0,
+        "macro_credit": 1.0
+      },
+      "limitations": [
+        "Synthetic engineering expectations, not independent professional HR labels or real hiring outcomes",
+        "Only ten authored IT vacancy cases; not an estimate of population or language-specific accuracy",
+        "Screening-evidence labels describe available text, not actual human ability or candidate rejection",
+        "Evaluation-only fixture; do not use these scores to select model hyperparameters",
+        "Any later bug fixes informed by these examples turn them into regression cases, requiring a new independent evaluation"
+      ]
+    }
+  },
+  "fresh_engineering_evaluation": {
+    "status": "Fresh synthetic fixture frozen before corrected model publication; author knew prior bug class. Not real HR adjudication.",
+    "fixture_sha256": "7cd71500656d31b8d82ce8aa181e67d1352604b03ab3bf24ca7051cd25b301d6",
+    "v2": {
+      "schema_version": "autohr-synthetic-hr-evaluation-v1",
+      "evaluated_at": "2026-11-03T10:37:35.577782+00:00",
+      "fixture_sha256": "7cd71500656d31b8d82ce8aa181e67d1352604b03ab3bf24ca7051cd25b301d6",
+      "fixture_schema": "autohr-synthetic-hr-ranking-v1",
+      "model_sha256": "0c2c02a9897a46d1b777b158ef1ad1eec43071ac5049c686d68c63e9a8ebddcb",
+      "model_version": "ml2-pairwise-linear-v2",
+      "feature_version": "professional-signals-v2",
+      "score_policy_version": "relevant-experience-shortfall-v1",
+      "vacancy_queries": 8,
+      "candidate_pairs": 48,
+      "metrics": {
+        "ndcg_at_5": 0.9480821345247966,
+        "ndcg_at_5_informative": 0.9480821345247966,
+        "pairwise_accuracy": 0.8489583333333333,
+        "top1_best_label_credit_informative": 0.5625,
+        "queries": 8,
+        "informative_queries": 8,
+        "all_weak_queries_excluded_from_ndcg": 0
+      },
+      "predeclared_preferences": {
+        "count": 40,
+        "strict_correct": 33,
+        "ties": 7,
+        "incorrect": 0,
+        "macro_credit": 0.9125
+      },
+      "limitations": [
+        "Synthetic engineering expectations, not independent professional HR labels or real hiring outcomes",
+        "Only ten authored IT vacancy cases; not an estimate of population or language-specific accuracy",
+        "Screening-evidence labels describe available text, not actual human ability or candidate rejection",
+        "Evaluation-only fixture; do not use these scores to select model hyperparameters",
+        "Any later bug fixes informed by these examples turn them into regression cases, requiring a new independent evaluation"
+      ]
+    },
+    "v3": {
+      "schema_version": "autohr-synthetic-hr-evaluation-v1",
+      "evaluated_at": "2026-11-03T10:39:47.216914+00:00",
+      "fixture_sha256": "7cd71500656d31b8d82ce8aa181e67d1352604b03ab3bf24ca7051cd25b301d6",
+      "fixture_schema": "autohr-synthetic-hr-ranking-v1",
+      "model_sha256": "8d25007a756e6fe58417ac762abce002075b29024408c922d0d2628111189d2c",
+      "model_version": "ml2-pairwise-linear-v3",
+      "feature_version": "professional-signals-v3",
+      "score_policy_version": "relevant-experience-shortfall-v1",
+      "vacancy_queries": 8,
+      "candidate_pairs": 48,
+      "metrics": {
+        "ndcg_at_5": 0.971579033034683,
+        "ndcg_at_5_informative": 0.971579033034683,
+        "pairwise_accuracy": 0.9010416666666666,
+        "top1_best_label_credit_informative": 0.8125,
+        "queries": 8,
+        "informative_queries": 8,
+        "all_weak_queries_excluded_from_ndcg": 0
+      },
+      "predeclared_preferences": {
+        "count": 40,
+        "strict_correct": 38,
+        "ties": 1,
+        "incorrect": 1,
+        "macro_credit": 0.9625
+      },
+      "limitations": [
+        "Synthetic engineering expectations, not independent professional HR labels or real hiring outcomes",
+        "Only ten authored IT vacancy cases; not an estimate of population or language-specific accuracy",
+        "Screening-evidence labels describe available text, not actual human ability or candidate rejection",
+        "Evaluation-only fixture; do not use these scores to select model hyperparameters",
+        "Any later bug fixes informed by these examples turn them into regression cases, requiring a new independent evaluation"
+      ]
+    }
+  },
+  "limitations": [
+    "All cases are synthetic engineering expectations, not real HR labels, user testing or hiring outcomes.",
+    "First fixture informed the negation correction and is a regression suite after that correction.",
+    "Second fixture was hidden from model/feature agents and evaluated after the final model lock; its author knew the original bug class.",
+    "Only 8 fresh IT vacancy cases and 48 candidate pairs; no population or language-specific accuracy claim.",
+    "Unknown evidence is not proof of inability; relevance labels encode screening evidence only.",
+    "No further feature or model tuning was performed in response to the final fresh-fixture results."
+  ]
+}

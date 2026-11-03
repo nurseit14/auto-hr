@@ -13,12 +13,14 @@ from NLP.skill_extractor import extract_skills
 from NLP.skills_dictionary import SKILL_ALIASES
 
 
-FEATURE_VERSION = "professional-signals-v2"
+FEATURE_VERSION = "professional-signals-v3"
 FEATURE_NAMES = ["skill_coverage", "skill_jaccard", "task_coverage", "role_compatibility",
                  "seniority_compatibility", "experience_compatibility",
                  "education_level_compatibility", "education_field_coverage",
                  "language_compatibility", "mandatory_skill_confirmation",
-                 "industry_coverage", "communication_confirmation"]
+                 "industry_coverage", "communication_confirmation",
+                 "required_skill_coverage", "demonstrated_skill_coverage",
+                 "relevant_experience_fulfillment"]
 
 
 def feature_fingerprint():
@@ -75,6 +77,17 @@ TASKS = {
 # a specialised job. For example, Git/REST API alone are not Data Engineering.
 COMMON_SKILLS = {"git", "github", "gitlab", "rest api", "agile", "scrum", "jira", "confluence"}
 SPECIALISED_TASKS = {"data_pipelines", "backend_systems", "frontend_interfaces", "ml_models", "networks"}
+# Task evidence can establish a professional area even when a CV uses a
+# different job title. It does not establish years or a seniority by itself.
+TASK_ROLES = {"data_pipelines": "data_engineering", "backend_systems": "backend",
+              "frontend_interfaces": "frontend", "ml_models": "data_science",
+              "networks": "telecom"}
+OPTIONAL_REQUIREMENT = re.compile(r"желател\w*|будет\s+плюсом|преимуществ\w*|необязател\w*|"
+                                  r"\boptional\b|\bpreferred\b|\bnice[ -]to[ -]have\b|\ba plus\b", re.I)
+WORK_ACTION = re.compile(r"\b(?:built|build|developed|implemented|created|maintained|deployed|"
+                         r"designed|optimized|integrated|automated|tested|delivered|migrated|used)\b|"
+                         r"разработ\w*|созда\w*|внедр\w*|поддержива\w*|настро\w*|разверн\w*|"
+                         r"разв[её]рн\w*|оптимизир\w*|автоматизир\w*|интегрир\w*|тестирова\w*", re.I)
 INDUSTRIES = {
     "finance": r"banking|finance|financial|accounting|банк|финанс|бухгалтер|\bopex\b",
     "education": r"education|образован|обучен|university|университет",
@@ -132,17 +145,86 @@ def roles(text):
 def statements(text):
     """Small source spans, retaining context instead of treating a CV as a bag."""
     return [part.strip() for part in re.split(
-        r"\n+|(?<=[.!?;])\s+|,?\s+(?:но|однако|but|however)\s+", text, flags=re.I) if part.strip()]
+        r"\n+|(?<=[.!?;])\s+|,?\s+(?:но|однако|but|however)\s+|"
+        r",?\s+and\s+(?=(?:(?:i|we)\s+)?(?:(?:have|has|had|did|do)\s+not|haven't|hasn't|hadn't|didn't|don't|never)\s+(?:use|used|work|worked|build|built))",
+        text, flags=re.I) if part.strip()]
+
+
+def required_skill_evidence(fields):
+    """Keep requirements distinct from explicit wishes and generic source text.
+
+    Absence of a skill in a CV remains unknown. This selects what a vacancy
+    asks for; it does not turn missing requirements into negative labels.
+    """
+    output = {}
+    title = professional_text(fields["title"])
+    for skill in extract_skills(title):
+        output.setdefault(skill, []).append({"quote": title[:400], "source": "vacancy"})
+    optional_section = False
+    for part in statements(professional_text(fields["requirements"])):
+        if re.match(r"(?:обязател\w*|требован\w*|must[ -]have|required)\s*[:：]", part, re.I):
+            optional_section = False
+        optional = OPTIONAL_REQUIREMENT.search(part)
+        if optional:
+            # "Python, SQL; желательно Docker" must retain Python and SQL.
+            required_part = part[:optional.start()].rstrip(" ,;:—–-")
+            trailing = part[optional.end():].strip(" ().,;:—–-")
+            if required_part and not trailing:
+                # In "Docker (optional)" the modifier describes the skill
+                # before it, unlike prefix "желательно Docker".
+                prior = required_part.rsplit(",", 1)[0] if "," in required_part else ""
+                required_part = prior if re.search(r"\brequired\b|\bmust\b|обязател\w*", prior, re.I) else ""
+            if not optional_section:
+                for skill in extract_skills(required_part):
+                    output.setdefault(skill, []).append({"quote": required_part[:400], "source": "vacancy"})
+            optional_section = not required_part and bool(re.search(r"[:：]\s*$", part))
+            continue
+        if optional_section:
+            continue
+        for skill in extract_skills(part):
+            output.setdefault(skill, []).append({"quote": part[:400], "source": "vacancy"})
+    if not output and not fields["requirements"].strip():
+        # Some datasets have no structured requirements. Fall back only then;
+        # an explicit optional-only section must not become mandatory again.
+        for field in ("responsibilities", "text"):
+            for part in statements(professional_text(fields[field])):
+                if OPTIONAL_REQUIREMENT.search(part):
+                    continue
+                for skill in extract_skills(part):
+                    output.setdefault(skill, []).append({"quote": part[:400], "source": "vacancy"})
+    return output
+
+
+def role_coverage(candidate_roles, required_roles):
+    """Fullstack explicitly includes both web layers; other roles stay distinct."""
+    candidate = set(candidate_roles)
+    required = set(required_roles)
+    if "fullstack" in candidate:
+        candidate.update(("backend", "frontend"))
+    if "fullstack" in required:
+        required.discard("fullstack")
+        required.update(("backend", "frontend"))
+    if candidate & {"backend", "frontend", "fullstack"}:
+        candidate.add("software")
+    return coverage(candidate, required)
 
 
 def uncertain_skill_mention(text, skill):
     """A shared weak/negative list predicate governs only its skill mentions."""
-    weak_before = r"(?:\b(?:learning|learn|beginner(?: in)?|basic(?: knowledge of)?|no experience(?: with| in)?|never used)\b|изучаю|изучить|осваиваю|освоить|базов\w*(?: знани\w*)?|не работал(?: с| в)?|не использовал|нет опыта(?: работы)?(?: с| в)?|не знаю|знаком(?:ство)? с)\s*$|(?:never (?:built|created|developed|worked)|не (?:строил|разрабатывал|создавал|делал|занимался))[^.!?;]{0,100}$"
+    weak_before = r"(?:\b(?:learning|learn|beginner(?: in)?|basic(?: knowledge of)?|no experience(?: with| in)?|never used)\b|изучаю|изучить|осваиваю|освоить|базов\w*(?: знани\w*)?|не работал(?: с| в)?|не использовал|нет опыта(?: работы)?(?: с| в)?|не знаю|знаком(?:ство)? с)\s*$|(?:(?:(?:have|has|had|did|do)\s+not|haven't|hasn't|hadn't|didn't|don't|never)\s+(?:use[ds]?|work(?:ed)?(?:\s+(?:with|in))?)|never (?:built|created|developed)|не (?:строил|разрабатывал|создавал|делал|занимался))[^.!?;]{0,100}$"
     weak_after = r"^\s*[:—–-]?\s*(?:только\s+)?(?:изучаю|осваиваю|не работал|не использовал|не знаю|нет опыта|\b(?:beginner|basic|learning|no experience|never used)\b)"
+    denied_after = re.compile(
+        r"^\s*[:—–-]?\s*(?:(?:is|was)\s+(?:a[n]?\s+)?(?:tool|technology|framework|language|database)\s+(?:(?:that|which)\s+)?)?"
+        r"(?:(?:i|we|he|she)\s+)?(?:(?:have|has|had|did|do)\s+not|haven't|hasn't|hadn't|didn't|don't|never)\s+(?:use[ds]?|work(?:ed)?|built|created|developed)\b|"
+        r"^\s*[:—–-]?\s*(?:(?:опыт\w*|практик\w*)[^.!?;]{0,50})?\bнет\b", re.I)
     flags = []
     for alias in {skill, *SKILL_ALIASES.get(skill, [])}:
         for match in re.finditer(rf"(?<!\w){re.escape(alias)}(?!\w)", text, flags=re.I):
             before, after = text[:match.start()], text[match.end():]
+            # Check an entity's direct relative clause before stripping other
+            # technologies: "used Python and have not used Docker" must not
+            # transfer Docker's denial back to Python.
+            direct_denial = bool(denied_after.search(after))
             if re.search(r"(?:не знаю|не работал|не использовал|изучаю|осваиваю|never used|no experience)\s*,\s*$", before, re.I):
                 before = before.rsplit(",", 1)[-1]
             for other in set(extract_skills(before + " " + after)) - {skill}:
@@ -151,7 +233,7 @@ def uncertain_skill_mention(text, skill):
                     after = re.sub(rf"(?<!\w){re.escape(name)}(?!\w)", " ", after, flags=re.I)
             before = re.sub(r"(?:\s|[,/&]|\b(?:and|or|и|или)\b)+$", " ", before, flags=re.I)
             after = re.sub(r"^(?:\s|[,/&]|\b(?:and|or|и|или)\b)+", " ", after, flags=re.I)
-            flags.append(bool(re.search(weak_before, before, re.I) or re.search(weak_after, after, re.I)))
+            flags.append(bool(direct_denial or re.search(weak_before, before, re.I) or re.search(weak_after, after, re.I)))
     return bool(flags) and all(flags)
 
 
@@ -166,7 +248,8 @@ def skill_evidence(text):
 
 def positive_statement(part):
     return not re.search(
-        r"не работал|нет опыта|never worked|no experience|never (?:built|used|created|developed)|"
+        r"не работал|нет опыта|опыт\w*[^.!?;]{0,100}\bнет\b|never worked|no experience|never (?:built|used|created|developed)|"
+        r"\b(?:(?:have|has|had|did|do)\s+not|haven't|hasn't|hadn't|didn't|don't)\s+(?:use[ds]?|work(?:ed)?|build|built|create[ds]?|develop(?:ed)?)\b|"
         r"не (?:строил|разрабатывал|создавал|делал|занимался)|not (?:a |an )?(?:data|backend|frontend)|"
         r"хочу стать|планирую стать|хочу изучить|планирую изучить|хочу освоить|изучаю|осваиваю|"
         r"aspiring|want to (?:be|become|learn)|looking to (?:become|learn)|plan to learn|"
@@ -370,29 +453,37 @@ def extract_features(cv_text, vacancy):
     title = professional_text(fields["title"])
     evidence = skill_evidence(cv)
     have, need = set(evidence), set(extract_skills(vt))
+    required_evidence = required_skill_evidence(fields)
+    required_skills = set(required_evidence)
     cr, vr = positive_roles(cv), roles(title)
-    raw_role = coverage(cr, vr)
-    core_need = need - COMMON_SKILLS
+    core_need = (required_skills or need) - COMMON_SKILLS
     core_coverage = coverage(have, core_need)
     positive_cv = "\n".join(part for part in statements(cv) if positive_statement(part))
     cv_tasks, vacancy_tasks = detected(positive_cv, TASKS), detected(vt, TASKS)
     specialised_tasks = vacancy_tasks & SPECIALISED_TASKS
     specific_tasks = coverage(cv_tasks, specialised_tasks)
+    task_roles = {TASK_ROLES[name] for name in cv_tasks & specialised_tasks}
+    raw_role = role_coverage(cr | task_roles, vr)
     support = max(core_coverage, specific_tasks)
     # Titles, generic years and ubiquitous tools cannot manufacture relevance.
     # Technical evidence changes the experience/level signal continuously too.
     supported = bool(raw_role > 0 and support > 0)
     role = raw_role * support
-    role_reason = ("Профиль вакансии подтверждён ролью и связанными технологиями или задачами."
+    role_reason = ("Профиль вакансии подтверждён названием совместимой роли или профильными задачами вместе с техническими свидетельствами."
                    if supported else "Профиль вакансии не подтверждён одновременно ролью и связанными технологиями или задачами.")
-    cl, level_evidence = relevant_seniority(cv, vr, cr)
+    scoped_roles = set(vr)
+    if vr and vr <= {"backend", "frontend"}:
+        scoped_roles.add("fullstack")
+    elif vr == {"software"}:
+        scoped_roles.update(("backend", "frontend", "fullstack"))
+    cl, level_evidence = relevant_seniority(cv, scoped_roles, cr)
     vl = seniority(title)
     level = 0.
     if supported and vl and cl:
         # A range such as Middle/Senior accepts its lower bound.
         level = (1. if max(cl) >= min(vl) else -(min(vl) - max(cl)) / 4) * role
     cy, vy = claimed_years(cv), required_years(fields["experience"])
-    ry, experience_reason, experience_evidence = relevant_experience(cv, vr, cr, supported)
+    ry, experience_reason, experience_evidence = relevant_experience(cv, scoped_roles, cr, supported)
     experience = 0.
     if vy is None:
         experience_reason = "Вакансия не указывает минимальный стаж; длительность показана для проверки и не повышает этот признак."
@@ -419,17 +510,31 @@ def extract_features(cv_text, vacancy):
     # professional context; it must not outrank a missing technical profile.
     context = max(role, core_coverage, specific_tasks)
     task_score = coverage(cv_tasks, vacancy_tasks) * context
+    demonstrated = {}
+    for part in statements(cv):
+        if not positive_statement(part) or not WORK_ACTION.search(part):
+            continue
+        for skill in set(extract_skills(part)) & have & required_skills:
+            if not uncertain_skill_mention(part, skill):
+                demonstrated.setdefault(skill, []).append({"quote": part[:400], "source": "resume"})
+    fulfillment = (min(1., ry / vy) * role
+                   if supported and ry is not None and vy is not None and vy > 0 else 0.)
     values = [coverage(have, need), len(have & need) / max(1, len(have | need)),
               task_score, role, level, experience,
               education * context,
               coverage(detected(cv, EDUCATION_FIELDS), detected(req, EDUCATION_FIELDS)) * context if vd else 0.,
               (sum(language_scores) / len(language_scores)) * context if language_scores else 0.,
               coverage(have, mandatory), coverage(detected(cv, INDUSTRIES), detected(req, INDUSTRIES)) * context,
-              float(communication_needed and communication_have) * context]
+              float(communication_needed and communication_have) * context,
+              coverage(have, required_skills), coverage(set(demonstrated), required_skills),
+              fulfillment]
     matched = sorted(have & need)
     matched_evidence = [quote for skill in matched for quote in evidence[skill]][:4]
     role_evidence = [{"quote": part[:400], "source": "resume"} for part in statements(cv)
                      if positive_roles(part) & vr][:3]
+    if task_roles & vr:
+        role_evidence += [{"quote": part[:400], "source": "resume"} for part in statements(cv)
+                          if positive_statement(part) and detected(part, TASKS) & specialised_tasks][:2]
     reasons = {
         "skill_coverage": f"Подтверждено {len(matched)} из {len(need)} обнаруженных навыков вакансии. Отсутствие упоминания — неизвестность.",
         "skill_jaccard": "Совпавшие навыки сопоставлены с объединением навыков резюме и вакансии.",
@@ -444,6 +549,11 @@ def extract_features(cv_text, vacancy):
         "mandatory_skill_confirmation": f"Подтверждено {len(have & mandatory)} из {len(mandatory)} распознанных явно обязательных навыков.",
         "industry_coverage": "Совпадение явно названной отрасли учитывается в связанном профессиональном контексте.",
         "communication_confirmation": "Коммуникация учитывается, когда она требуется вакансией и упомянута в связанном профессиональном контексте.",
+        "required_skill_coverage": f"Подтверждено {len(have & required_skills)} из {len(required_skills)} распознанных навыков названия и требований; явно желательные навыки исключены.",
+        "demonstrated_skill_coverage": f"Для {len(demonstrated)} из {len(required_skills)} нужных навыков найдены описания выполненных задач; простой список навыков не заменяет такое описание.",
+        "relevant_experience_fulfillment": (f"Подтверждено {ry:g} профильных лет при минимуме {vy:g}; выполнение минимума учитывается вместе с профессиональными подтверждениями."
+                                            if supported and ry is not None and vy is not None and vy > 0 else
+                                            "Выполнение профильного стажа неизвестно или минимум не задан; неизвестность не означает нулевой стаж."),
     }
     feature_evidence = {name: [] for name in FEATURE_NAMES}
     for name in ("skill_coverage", "skill_jaccard"):
@@ -452,6 +562,9 @@ def extract_features(cv_text, vacancy):
     feature_evidence["role_compatibility"] = role_evidence + matched_evidence[:2]
     feature_evidence["seniority_compatibility"] = level_evidence if supported else []
     feature_evidence["experience_compatibility"] = experience_evidence
+    feature_evidence["required_skill_coverage"] = [quote for skill in sorted(have & required_skills) for quote in evidence[skill]][:4]
+    feature_evidence["demonstrated_skill_coverage"] = [quote for skill in sorted(demonstrated) for quote in demonstrated[skill]][:4]
+    feature_evidence["relevant_experience_fulfillment"] = experience_evidence
     for name, patterns in (("task_coverage", TASKS), ("industry_coverage", INDUSTRIES), ("education_field_coverage", EDUCATION_FIELDS)):
         feature_evidence[name] = [{"quote": part[:400], "source": "resume"} for part in statements(cv)
                                   if positive_statement(part) and detected(part, patterns) & detected(vt, patterns)][:3]
@@ -474,6 +587,8 @@ def extract_features(cv_text, vacancy):
              "experience_reason": experience_reason, "experience_evidence": experience_evidence,
              "role_reason": role_reason, "relevance_supported": supported,
              "technical_support": support, "core_skill_coverage": core_coverage,
+             "required_skills": sorted(required_skills),
+             "demonstrated_skills": sorted(demonstrated),
              "feature_reasons": reasons, "feature_evidence": feature_evidence, "warnings": warnings,
              "languages_compared": sorted(set(languages_cv) & set(languages_req)),
              "signals": dict(zip(FEATURE_NAMES, values))}

@@ -1,0 +1,611 @@
+{
+  "schema_version": "autohr-synthetic-hr-ranking-v1",
+  "fixture_revision": 2,
+  "authored_date": "2026-11-03",
+  "provenance": "Second independently authored synthetic engineering exercise, frozen after an initial evaluation found negation bugs but before the corrected v3 model was published. Different vacancy stacks and story texts. No professional HR adjudication or real candidates.",
+  "label_policy": "Labels encode available screening evidence only: 3 established complete work,2 relevant work with incomplete requirement evidence,1 relevant junior work below explicit tenure,0 insufficient professional evidence. They are not hiring probabilities or statements of actual human ability.",
+  "usage": "Evaluation only. Do not train or select model parameters using these labels or scores. Author knew the initial bug class; this is a bounded engineering check, not an unbiased clinical or population study.",
+  "metrics": "Macro vacancy-query NDCG@5 with linear gains and tied-order expectation; macro comparable-pair accuracy; strict predeclared preferences with ties credited one half.",
+  "cases": [
+    {
+      "id": "go_services",
+      "vacancy": {
+        "title": "Middle Go Backend Developer",
+        "experience": "От 3 лет",
+        "requirements": "Required: Go, PostgreSQL, Redis, Docker.",
+        "responsibilities": "Maintain backend microservices for logistics, caching and transaction processing.",
+        "description": "Maintain backend microservices for logistics, caching and transaction processing."
+      },
+      "candidates": [
+        {
+          "id": "established",
+          "text": "Middle Go Backend Developer — 5 years. Built Go backend microservices for a logistics platform. Used PostgreSQL transactions, Redis caching and Docker releases to process delivery events.",
+          "relevance": 3,
+          "rationale": "Explicit five-year matching role, all required tools in concrete delivered professional tasks."
+        },
+        {
+          "id": "incomplete",
+          "text": "Middle Go Backend Developer — 3 years. Maintained Go backend microservices, PostgreSQL orders and Redis cache invalidation. Container packaging was performed by another team; Docker experience is not described.",
+          "relevance": 2,
+          "rationale": "Three-year matching role and delivered tasks; one requirement has no personal evidence. Unknown evidence is not a claim of inability."
+        },
+        {
+          "id": "early_career",
+          "text": "Junior Go Backend Developer — 1 year. Created a Go backend delivery API, persisted orders in PostgreSQL and used Redis caching. Packaged Docker releases and wrote service tests.",
+          "relevance": 1,
+          "rationale": "Concrete relevant project evidence and tools, but one year and junior level below stated minimum."
+        },
+        {
+          "id": "tool_list",
+          "text": "Professional skills: Go, PostgreSQL, Redis, Docker. No task descriptions, role history or duration are supplied.",
+          "relevance": 0,
+          "rationale": "An unsupported tool list provides insufficient evidence of professional tasks or duration."
+        },
+        {
+          "id": "other_profession",
+          "text": "Senior Data Analyst — 8 years. Investigated sales retention in Tableau, built Excel reports and presented statistics to commercial stakeholders.",
+          "relevance": 0,
+          "rationale": "Experience belongs to another profession and does not establish this vacancy profile."
+        },
+        {
+          "id": "career_intent",
+          "text": "I am looking to become a Middle Go Backend Developer. I plan to learn Go, PostgreSQL, Redis, Docker. Training is planned; no completed project or professional duration is supplied.",
+          "relevance": 0,
+          "rationale": "Future learning and career intent do not establish completed work."
+        }
+      ],
+      "preferences": [
+        {
+          "higher": "established",
+          "lower": "incomplete",
+          "reason": "Full personal evidence above incomplete required tools at minimum tenure."
+        },
+        {
+          "higher": "established",
+          "lower": "early_career",
+          "reason": "Established relevant work above comparable junior work with explicitly insufficient tenure."
+        },
+        {
+          "higher": "early_career",
+          "lower": "other_profession",
+          "reason": "Relevant practical work above long unrelated tenure."
+        },
+        {
+          "higher": "established",
+          "lower": "tool_list",
+          "reason": "Delivered work above an unsupported technology list."
+        },
+        {
+          "higher": "incomplete",
+          "lower": "career_intent",
+          "reason": "Delivered relevant tasks above future learning intent."
+        }
+      ]
+    },
+    {
+      "id": "angular_ui",
+      "vacancy": {
+        "title": "Middle Frontend Developer",
+        "experience": "От 3 лет",
+        "requirements": "Required: Angular, TypeScript, HTML, CSS.",
+        "responsibilities": "Build frontend applications and accessible user interfaces for internal operations.",
+        "description": "Build frontend applications and accessible user interfaces for internal operations."
+      },
+      "candidates": [
+        {
+          "id": "established",
+          "text": "Middle Frontend Developer — 5 years. Delivered Angular TypeScript frontend applications for a warehouse team. Built accessible HTML CSS interfaces, keyboard interactions and reusable form components.",
+          "relevance": 3,
+          "rationale": "Explicit five-year matching role, all required tools in concrete delivered professional tasks."
+        },
+        {
+          "id": "incomplete",
+          "text": "Middle Frontend Developer — 3 years. Implemented Angular TypeScript user interfaces and HTML forms for operations staff. Styling was supplied by a design team; CSS work is not described.",
+          "relevance": 2,
+          "rationale": "Three-year matching role and delivered tasks; one requirement has no personal evidence. Unknown evidence is not a claim of inability."
+        },
+        {
+          "id": "early_career",
+          "text": "Junior Frontend Developer — 1 year. Built an Angular TypeScript frontend application for inventory. Implemented accessible HTML CSS forms and tested keyboard navigation.",
+          "relevance": 1,
+          "rationale": "Concrete relevant project evidence and tools, but one year and junior level below stated minimum."
+        },
+        {
+          "id": "tool_list",
+          "text": "Professional skills: Angular, TypeScript, HTML, CSS. No task descriptions, role history or duration are supplied.",
+          "relevance": 0,
+          "rationale": "An unsupported tool list provides insufficient evidence of professional tasks or duration."
+        },
+        {
+          "id": "other_profession",
+          "text": "Senior DevOps Engineer — 8 years. Managed Terraform infrastructure and Kubernetes Linux clusters with deployment monitoring.",
+          "relevance": 0,
+          "rationale": "Experience belongs to another profession and does not establish this vacancy profile."
+        },
+        {
+          "id": "career_intent",
+          "text": "I am looking to become a Middle Frontend Developer. I plan to learn Angular, TypeScript, HTML, CSS. Training is planned; no completed project or professional duration is supplied.",
+          "relevance": 0,
+          "rationale": "Future learning and career intent do not establish completed work."
+        }
+      ],
+      "preferences": [
+        {
+          "higher": "established",
+          "lower": "incomplete",
+          "reason": "Full personal evidence above incomplete required tools at minimum tenure."
+        },
+        {
+          "higher": "established",
+          "lower": "early_career",
+          "reason": "Established relevant work above comparable junior work with explicitly insufficient tenure."
+        },
+        {
+          "higher": "early_career",
+          "lower": "other_profession",
+          "reason": "Relevant practical work above long unrelated tenure."
+        },
+        {
+          "higher": "established",
+          "lower": "tool_list",
+          "reason": "Delivered work above an unsupported technology list."
+        },
+        {
+          "higher": "incomplete",
+          "lower": "career_intent",
+          "reason": "Delivered relevant tasks above future learning intent."
+        }
+      ]
+    },
+    {
+      "id": "business_intelligence",
+      "vacancy": {
+        "title": "Middle BI Analyst",
+        "experience": "От 3 лет",
+        "requirements": "Required: SQL, Power BI, Excel, Python.",
+        "responsibilities": "Analyse operational data, validate business metrics and build business intelligence dashboards.",
+        "description": "Analyse operational data, validate business metrics and build business intelligence dashboards."
+      },
+      "candidates": [
+        {
+          "id": "established",
+          "text": "Middle BI Analyst — 5 years. Analysed operations data with SQL and Python. Built Power BI dashboards and Excel validation reports that reconciled warehouse metrics with finance.",
+          "relevance": 3,
+          "rationale": "Explicit five-year matching role, all required tools in concrete delivered professional tasks."
+        },
+        {
+          "id": "incomplete",
+          "text": "Middle BI Analyst — 3 years. Analysed operational metrics with SQL and Python and built Excel validation reports. Power BI dashboards were delivered by colleagues; own Power BI practice is not described.",
+          "relevance": 2,
+          "rationale": "Three-year matching role and delivered tasks; one requirement has no personal evidence. Unknown evidence is not a claim of inability."
+        },
+        {
+          "id": "early_career",
+          "text": "Junior BI Analyst — 1 year. Analysed service data using SQL and Python, created Power BI dashboards and reconciled metrics in Excel.",
+          "relevance": 1,
+          "rationale": "Concrete relevant project evidence and tools, but one year and junior level below stated minimum."
+        },
+        {
+          "id": "tool_list",
+          "text": "Professional skills: SQL, Power BI, Excel, Python. No task descriptions, role history or duration are supplied.",
+          "relevance": 0,
+          "rationale": "An unsupported tool list provides insufficient evidence of professional tasks or duration."
+        },
+        {
+          "id": "other_profession",
+          "text": "Senior Java Backend Developer — 8 years. Maintained Spring Boot backend services and Kafka event processing for a billing system.",
+          "relevance": 0,
+          "rationale": "Experience belongs to another profession and does not establish this vacancy profile."
+        },
+        {
+          "id": "career_intent",
+          "text": "I am looking to become a Middle BI Analyst. I plan to learn SQL, Power BI, Excel, Python. Training is planned; no completed project or professional duration is supplied.",
+          "relevance": 0,
+          "rationale": "Future learning and career intent do not establish completed work."
+        }
+      ],
+      "preferences": [
+        {
+          "higher": "established",
+          "lower": "incomplete",
+          "reason": "Full personal evidence above incomplete required tools at minimum tenure."
+        },
+        {
+          "higher": "established",
+          "lower": "early_career",
+          "reason": "Established relevant work above comparable junior work with explicitly insufficient tenure."
+        },
+        {
+          "higher": "early_career",
+          "lower": "other_profession",
+          "reason": "Relevant practical work above long unrelated tenure."
+        },
+        {
+          "higher": "established",
+          "lower": "tool_list",
+          "reason": "Delivered work above an unsupported technology list."
+        },
+        {
+          "higher": "incomplete",
+          "lower": "career_intent",
+          "reason": "Delivered relevant tasks above future learning intent."
+        }
+      ]
+    },
+    {
+      "id": "network_operations",
+      "vacancy": {
+        "title": "Middle Network Engineer",
+        "experience": "От 3 лет",
+        "requirements": "Required: Linux, TCP/IP, Python, Git.",
+        "responsibilities": "Troubleshoot routing, TCP/IP networks and automate network configuration changes.",
+        "description": "Troubleshoot routing, TCP/IP networks and automate network configuration changes."
+      },
+      "candidates": [
+        {
+          "id": "established",
+          "text": "Middle Network Engineer — 5 years. Maintained TCP/IP routing and Linux network services at a regional provider. Automated configuration checks with Python and reviewed network changes through Git.",
+          "relevance": 3,
+          "rationale": "Explicit five-year matching role, all required tools in concrete delivered professional tasks."
+        },
+        {
+          "id": "incomplete",
+          "text": "Middle Network Engineer — 3 years. Troubleshot TCP/IP routing and Linux network services. Used Python configuration checks; version-control experience is not described.",
+          "relevance": 2,
+          "rationale": "Three-year matching role and delivered tasks; one requirement has no personal evidence. Unknown evidence is not a claim of inability."
+        },
+        {
+          "id": "early_career",
+          "text": "Junior Network Engineer — 1 year. Configured Linux TCP/IP networks for a lab deployment, automated routing checks with Python and tracked configuration changes in Git.",
+          "relevance": 1,
+          "rationale": "Concrete relevant project evidence and tools, but one year and junior level below stated minimum."
+        },
+        {
+          "id": "tool_list",
+          "text": "Professional skills: Linux, TCP/IP, Python, Git. No task descriptions, role history or duration are supplied.",
+          "relevance": 0,
+          "rationale": "An unsupported tool list provides insufficient evidence of professional tasks or duration."
+        },
+        {
+          "id": "other_profession",
+          "text": "Senior UI/UX Designer — 8 years. Delivered Figma prototypes, visual design systems and user-interview research for a retail product.",
+          "relevance": 0,
+          "rationale": "Experience belongs to another profession and does not establish this vacancy profile."
+        },
+        {
+          "id": "career_intent",
+          "text": "I am looking to become a Middle Network Engineer. I plan to learn Linux, TCP/IP, Python, Git. Training is planned; no completed project or professional duration is supplied.",
+          "relevance": 0,
+          "rationale": "Future learning and career intent do not establish completed work."
+        }
+      ],
+      "preferences": [
+        {
+          "higher": "established",
+          "lower": "incomplete",
+          "reason": "Full personal evidence above incomplete required tools at minimum tenure."
+        },
+        {
+          "higher": "established",
+          "lower": "early_career",
+          "reason": "Established relevant work above comparable junior work with explicitly insufficient tenure."
+        },
+        {
+          "higher": "early_career",
+          "lower": "other_profession",
+          "reason": "Relevant practical work above long unrelated tenure."
+        },
+        {
+          "higher": "established",
+          "lower": "tool_list",
+          "reason": "Delivered work above an unsupported technology list."
+        },
+        {
+          "higher": "incomplete",
+          "lower": "career_intent",
+          "reason": "Delivered relevant tasks above future learning intent."
+        }
+      ]
+    },
+    {
+      "id": "android_mobile",
+      "vacancy": {
+        "title": "Middle Android Developer",
+        "experience": "От 3 лет",
+        "requirements": "Required: Kotlin, Android, SQL, Git.",
+        "responsibilities": "Implement mobile features, offline persistence and tested application releases.",
+        "description": "Implement mobile features, offline persistence and tested application releases."
+      },
+      "candidates": [
+        {
+          "id": "established",
+          "text": "Middle Android Developer — 5 years. Built Kotlin Android applications for field technicians. Implemented offline SQL persistence, reviewed Git changes and tested mobile feature releases.",
+          "relevance": 3,
+          "rationale": "Explicit five-year matching role, all required tools in concrete delivered professional tasks."
+        },
+        {
+          "id": "incomplete",
+          "text": "Middle Android Developer — 3 years. Developed Kotlin Android applications and reviewed Git changes for a field-service team. Offline persistence was handled by another developer; own SQL work is not described.",
+          "relevance": 2,
+          "rationale": "Three-year matching role and delivered tasks; one requirement has no personal evidence. Unknown evidence is not a claim of inability."
+        },
+        {
+          "id": "early_career",
+          "text": "Junior Android Developer — 1 year. Created Kotlin Android mobile features, added SQL offline storage and used Git to review application release changes.",
+          "relevance": 1,
+          "rationale": "Concrete relevant project evidence and tools, but one year and junior level below stated minimum."
+        },
+        {
+          "id": "tool_list",
+          "text": "Professional skills: Kotlin, Android, SQL, Git. No task descriptions, role history or duration are supplied.",
+          "relevance": 0,
+          "rationale": "An unsupported tool list provides insufficient evidence of professional tasks or duration."
+        },
+        {
+          "id": "other_profession",
+          "text": "Senior Data Engineer — 8 years. Maintained Airflow ETL data pipelines and Apache Spark transformations for an analytics warehouse.",
+          "relevance": 0,
+          "rationale": "Experience belongs to another profession and does not establish this vacancy profile."
+        },
+        {
+          "id": "career_intent",
+          "text": "I am looking to become a Middle Android Developer. I plan to learn Kotlin, Android, SQL, Git. Training is planned; no completed project or professional duration is supplied.",
+          "relevance": 0,
+          "rationale": "Future learning and career intent do not establish completed work."
+        }
+      ],
+      "preferences": [
+        {
+          "higher": "established",
+          "lower": "incomplete",
+          "reason": "Full personal evidence above incomplete required tools at minimum tenure."
+        },
+        {
+          "higher": "established",
+          "lower": "early_career",
+          "reason": "Established relevant work above comparable junior work with explicitly insufficient tenure."
+        },
+        {
+          "higher": "early_career",
+          "lower": "other_profession",
+          "reason": "Relevant practical work above long unrelated tenure."
+        },
+        {
+          "higher": "established",
+          "lower": "tool_list",
+          "reason": "Delivered work above an unsupported technology list."
+        },
+        {
+          "higher": "incomplete",
+          "lower": "career_intent",
+          "reason": "Delivered relevant tasks above future learning intent."
+        }
+      ]
+    },
+    {
+      "id": "php_commerce",
+      "vacancy": {
+        "title": "Middle PHP Backend Developer",
+        "experience": "От 3 лет",
+        "requirements": "Required: PHP, Laravel, MySQL, Docker.",
+        "responsibilities": "Develop backend microservices, database migrations and reliable checkout transactions.",
+        "description": "Develop backend microservices, database migrations and reliable checkout transactions."
+      },
+      "candidates": [
+        {
+          "id": "established",
+          "text": "Middle PHP Backend Developer — 5 years. Developed PHP Laravel backend microservices for checkout. Optimized MySQL transactions and migrations, deployed Docker services and investigated payment incidents.",
+          "relevance": 3,
+          "rationale": "Explicit five-year matching role, all required tools in concrete delivered professional tasks."
+        },
+        {
+          "id": "incomplete",
+          "text": "Middle PHP Backend Developer — 3 years. Built PHP Laravel backend checkout services and optimized MySQL database migrations. Infrastructure releases were handled externally; own Docker work is not described.",
+          "relevance": 2,
+          "rationale": "Three-year matching role and delivered tasks; one requirement has no personal evidence. Unknown evidence is not a claim of inability."
+        },
+        {
+          "id": "early_career",
+          "text": "Junior PHP Backend Developer — 1 year. Created PHP Laravel backend checkout services with MySQL. Added transaction tests and deployed Docker containers for a demonstration shop.",
+          "relevance": 1,
+          "rationale": "Concrete relevant project evidence and tools, but one year and junior level below stated minimum."
+        },
+        {
+          "id": "tool_list",
+          "text": "Professional skills: PHP, Laravel, MySQL, Docker. No task descriptions, role history or duration are supplied.",
+          "relevance": 0,
+          "rationale": "An unsupported tool list provides insufficient evidence of professional tasks or duration."
+        },
+        {
+          "id": "other_profession",
+          "text": "Senior Frontend Developer — 8 years. Built Vue.js TypeScript user interfaces and reusable browser components for an internal portal.",
+          "relevance": 0,
+          "rationale": "Experience belongs to another profession and does not establish this vacancy profile."
+        },
+        {
+          "id": "career_intent",
+          "text": "I am looking to become a Middle PHP Backend Developer. I plan to learn PHP, Laravel, MySQL, Docker. Training is planned; no completed project or professional duration is supplied.",
+          "relevance": 0,
+          "rationale": "Future learning and career intent do not establish completed work."
+        }
+      ],
+      "preferences": [
+        {
+          "higher": "established",
+          "lower": "incomplete",
+          "reason": "Full personal evidence above incomplete required tools at minimum tenure."
+        },
+        {
+          "higher": "established",
+          "lower": "early_career",
+          "reason": "Established relevant work above comparable junior work with explicitly insufficient tenure."
+        },
+        {
+          "higher": "early_career",
+          "lower": "other_profession",
+          "reason": "Relevant practical work above long unrelated tenure."
+        },
+        {
+          "higher": "established",
+          "lower": "tool_list",
+          "reason": "Delivered work above an unsupported technology list."
+        },
+        {
+          "higher": "incomplete",
+          "lower": "career_intent",
+          "reason": "Delivered relevant tasks above future learning intent."
+        }
+      ]
+    },
+    {
+      "id": "ru_cloud_platform",
+      "vacancy": {
+        "title": "Middle DevOps Engineer",
+        "experience": "От 3 лет",
+        "requirements": "Required: AWS, Terraform, Linux, Kubernetes.",
+        "responsibilities": "Автоматизировать облачную инфраструктуру, развёртывание сервисов и мониторинг production.",
+        "description": "Автоматизировать облачную инфраструктуру, развёртывание сервисов и мониторинг production."
+      },
+      "candidates": [
+        {
+          "id": "established",
+          "text": "Middle DevOps Engineer — 5 лет. Автоматизировал AWS инфраструктуру через Terraform. Поддерживал Linux Kubernetes кластеры, развёртывание сервисов и мониторинг production для команды платежей.",
+          "relevance": 3,
+          "rationale": "Explicit five-year matching role, all required tools in concrete delivered professional tasks."
+        },
+        {
+          "id": "incomplete",
+          "text": "Middle DevOps Engineer — 3 года. Поддерживал AWS Linux инфраструктуру и Kubernetes кластеры, настраивал развёртывание и мониторинг. Terraform сопровождал другой инженер; собственные задачи с Terraform не описаны.",
+          "relevance": 2,
+          "rationale": "Three-year matching role and delivered tasks; one requirement has no personal evidence. Unknown evidence is not a claim of inability."
+        },
+        {
+          "id": "early_career",
+          "text": "Junior DevOps Engineer — 1 год. Создал AWS инфраструктуру через Terraform, развернул Linux Kubernetes кластер и настроил мониторинг сервисов для лабораторного проекта.",
+          "relevance": 1,
+          "rationale": "Concrete relevant project evidence and tools, but one year and junior level below stated minimum."
+        },
+        {
+          "id": "tool_list",
+          "text": "Professional skills: AWS, Terraform, Linux, Kubernetes. No task descriptions, role history or duration are supplied.",
+          "relevance": 0,
+          "rationale": "An unsupported tool list provides insufficient evidence of professional tasks or duration."
+        },
+        {
+          "id": "other_profession",
+          "text": "Senior бизнес-аналитик — 8 лет. Описывал процессы продаж, согласовывал требования с заказчиками и готовил проектную документацию.",
+          "relevance": 0,
+          "rationale": "Experience belongs to another profession and does not establish this vacancy profile."
+        },
+        {
+          "id": "career_intent",
+          "text": "I am looking to become a Middle DevOps Engineer. I plan to learn AWS, Terraform, Linux, Kubernetes. Training is planned; no completed project or professional duration is supplied.",
+          "relevance": 0,
+          "rationale": "Future learning and career intent do not establish completed work."
+        }
+      ],
+      "preferences": [
+        {
+          "higher": "established",
+          "lower": "incomplete",
+          "reason": "Full personal evidence above incomplete required tools at minimum tenure."
+        },
+        {
+          "higher": "established",
+          "lower": "early_career",
+          "reason": "Established relevant work above comparable junior work with explicitly insufficient tenure."
+        },
+        {
+          "higher": "early_career",
+          "lower": "other_profession",
+          "reason": "Relevant practical work above long unrelated tenure."
+        },
+        {
+          "higher": "established",
+          "lower": "tool_list",
+          "reason": "Delivered work above an unsupported technology list."
+        },
+        {
+          "higher": "incomplete",
+          "lower": "career_intent",
+          "reason": "Delivered relevant tasks above future learning intent."
+        }
+      ]
+    },
+    {
+      "id": "ru_support",
+      "vacancy": {
+        "title": "Middle IT Specialist",
+        "experience": "От 3 лет",
+        "requirements": "Required: Windows, Linux, SQL, Python.",
+        "responsibilities": "Оказывать техническую поддержку, диагностировать инциденты и автоматизировать проверки.",
+        "description": "Оказывать техническую поддержку, диагностировать инциденты и автоматизировать проверки."
+      },
+      "candidates": [
+        {
+          "id": "established",
+          "text": "Middle IT Specialist — 5 лет. Оказывал техническую поддержку Windows Linux рабочих мест, диагностировал инциденты доступа. Использовал SQL для проверки записей и Python для автоматизации диагностики.",
+          "relevance": 3,
+          "rationale": "Explicit five-year matching role, all required tools in concrete delivered professional tasks."
+        },
+        {
+          "id": "incomplete",
+          "text": "Middle IT Specialist — 3 года. Оказывал техническую поддержку Windows Linux систем, диагностировал инциденты и использовал SQL проверки. Автоматизацию вёл коллега; собственные задачи на Python не описаны.",
+          "relevance": 2,
+          "rationale": "Three-year matching role and delivered tasks; one requirement has no personal evidence. Unknown evidence is not a claim of inability."
+        },
+        {
+          "id": "early_career",
+          "text": "Junior IT Specialist — 1 год. Поддерживал Windows Linux системы, выполнял SQL проверки и создал Python скрипты для диагностики пользовательских инцидентов.",
+          "relevance": 1,
+          "rationale": "Concrete relevant project evidence and tools, but one year and junior level below stated minimum."
+        },
+        {
+          "id": "tool_list",
+          "text": "Professional skills: Windows, Linux, SQL, Python. No task descriptions, role history or duration are supplied.",
+          "relevance": 0,
+          "rationale": "An unsupported tool list provides insufficient evidence of professional tasks or duration."
+        },
+        {
+          "id": "other_profession",
+          "text": "Senior frontend developer — 8 лет. Реализовывал React TypeScript интерфейсы, HTML CSS формы и клиентские компоненты дизайн-системы.",
+          "relevance": 0,
+          "rationale": "Experience belongs to another profession and does not establish this vacancy profile."
+        },
+        {
+          "id": "career_intent",
+          "text": "I am looking to become a Middle IT Specialist. I plan to learn Windows, Linux, SQL, Python. Training is planned; no completed project or professional duration is supplied.",
+          "relevance": 0,
+          "rationale": "Future learning and career intent do not establish completed work."
+        }
+      ],
+      "preferences": [
+        {
+          "higher": "established",
+          "lower": "incomplete",
+          "reason": "Full personal evidence above incomplete required tools at minimum tenure."
+        },
+        {
+          "higher": "established",
+          "lower": "early_career",
+          "reason": "Established relevant work above comparable junior work with explicitly insufficient tenure."
+        },
+        {
+          "higher": "early_career",
+          "lower": "other_profession",
+          "reason": "Relevant practical work above long unrelated tenure."
+        },
+        {
+          "higher": "established",
+          "lower": "tool_list",
+          "reason": "Delivered work above an unsupported technology list."
+        },
+        {
+          "higher": "incomplete",
+          "lower": "career_intent",
+          "reason": "Delivered relevant tasks above future learning intent."
+        }
+      ]
+    }
+  ]
+}

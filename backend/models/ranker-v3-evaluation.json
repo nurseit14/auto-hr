@@ -1,0 +1,2709 @@
+{
+  "schema_version": "ml2-v3-aggregate-evaluation-v2",
+  "model_version": "ml2-pairwise-linear-v3",
+  "feature_version": "professional-signals-v3",
+  "score_policy_version": "relevant-experience-shortfall-v1",
+  "model_sha256": "8d25007a756e6fe58417ac762abce002075b29024408c922d0d2628111189d2c",
+  "selection_lock": {
+    "locked_at": "2026-11-03T10:38:39.566583+00:00",
+    "model_sha256": "8d25007a756e6fe58417ac762abce002075b29024408c922d0d2628111189d2c",
+    "selected": {
+      "l2": 1.0,
+      "hr_weight": 0.5,
+      "grade_gap": false,
+      "cv_macro_ndcg": 0.8517114037819695,
+      "cv_macro_pairwise_accuracy": 0.7032217011383679,
+      "direction_ndcg": {
+        "cv_to_jobs": 0.7886115125639344,
+        "job_to_candidates": 0.9148112950000046
+      },
+      "direction_pairwise_accuracy": {
+        "cv_to_jobs": 0.5897767356100689,
+        "job_to_candidates": 0.8166666666666668
+      }
+    },
+    "test_used_for_selection": false,
+    "independent_hr_benchmark_used_for_selection": false,
+    "development_provenance": {
+      "change_type": "heldout-informed extraction correctness fix, not hyperparameter optimization",
+      "fixed_cases": [
+        "English auxiliary/postfix skill negation",
+        "Russian postfix no-experience clause"
+      ],
+      "original_model_sha256": "33b6548c1be0e42a152cb29edbf66a41ef0201ca18e3df56a5c06a6ffb61fff0",
+      "original_selection_sha256": "8dc138aa243eb4e7ddc2129f21d0d2381fe8e025eb2b313ceb2319a01df7b920",
+      "original_feature_source_sha256": "d6b08bf17d2c23fd1706cf8ad3f577de767f58cb76770341ce1076adc386c7fc",
+      "original_hr_holdout_status": "Now a regression set because its failures informed the negation fix",
+      "hyperparameters_reselected": false,
+      "locked_configuration": {
+        "l2": 1.0,
+        "hr_weight": 0.5,
+        "grade_gap": false
+      },
+      "new_blind_hr_holdout_used_for_fitting_or_selection": false
+    }
+  },
+  "trained_at": "2026-11-03T10:38:39.564167+00:00",
+  "dataset_fingerprints": {
+    "pairs_all.jsonl": "53ec02c515edb27b9d54269aa224f25855d481aeccdd86f0b7d8d1764fa93306",
+    "train.jsonl": "351ea17acf0a7582a96e643fbb52d5b6e528419c8237bb203b561254bcf7fb54",
+    "validation.jsonl": "d251c91e8834d586952d73941d7957d8c636d234e2a547d22bb0d534395f5b3f",
+    "test.jsonl": "b478071cb9f43f3c719922c6f1cff5eeb944e164f31625b3b0603df4615e81c7",
+    "manifest.json": "df293d6780355197e774034e7e62ae3d0e4a9439b88dbdaaef96049116a6d30e",
+    "candidate_groups.json": "f3b76283dc74d3e28ad3942d22bbd85472c08d9b14263058a0ba94ba50a6b4c9",
+    "split_assignment.json": "f89a54e3d002a387f53df71cd0574f13c84ca54a241d40bfc010e171a473b7b9"
+  },
+  "dataset_summary": {
+    "train_pairs": 155,
+    "validation_pairs": 30,
+    "test_pairs": 30,
+    "train_candidate_groups": 30,
+    "historical_test_cv_queries": 6,
+    "training_preference_pairs": {
+      "cv_to_jobs": 132,
+      "job_to_candidates": 34
+    }
+  },
+  "selection_plan": "Fixed previously locked l2=1,HRmix=.5,gradegap=False. Single-configuration threefold recheck after a heldout-informed negation correctness fix; no hyperparameter reselection.",
+  "development_provenance": {
+    "change_type": "heldout-informed extraction correctness fix, not hyperparameter optimization",
+    "fixed_cases": [
+      "English auxiliary/postfix skill negation",
+      "Russian postfix no-experience clause"
+    ],
+    "original_model_sha256": "33b6548c1be0e42a152cb29edbf66a41ef0201ca18e3df56a5c06a6ffb61fff0",
+    "original_selection_sha256": "8dc138aa243eb4e7ddc2129f21d0d2381fe8e025eb2b313ceb2319a01df7b920",
+    "original_feature_source_sha256": "d6b08bf17d2c23fd1706cf8ad3f577de767f58cb76770341ce1076adc386c7fc",
+    "original_hr_holdout_status": "Now a regression set because its failures informed the negation fix",
+    "hyperparameters_reselected": false,
+    "locked_configuration": {
+      "l2": 1.0,
+      "hr_weight": 0.5,
+      "grade_gap": false
+    },
+    "new_blind_hr_holdout_used_for_fitting_or_selection": false
+  },
+  "baseline_group_cross_validation": {
+    "description": "Frozen v2 source from git18b827c, separately refit in each identical candidate-group fold at its shipped l2=10; validation uses original shipped v2 weights. No historical test or synthetic benchmark read.",
+    "fold_metrics": [
+      {
+        "cv_to_jobs": {
+          "ndcg_at_5": 0.749953554307866,
+          "ndcg_at_5_informative": 0.749953554307866,
+          "pairwise_accuracy": 0.5454545454545454,
+          "top1_best_label_credit_informative": 0.4818181818181818,
+          "queries": 11,
+          "informative_queries": 11,
+          "all_weak_queries_excluded_from_ndcg": 0
+        },
+        "job_to_candidates": {
+          "ndcg_at_5": 0.9829594069327737,
+          "ndcg_at_5_informative": 0.8551549589285763,
+          "pairwise_accuracy": 0.75,
+          "top1_best_label_credit_informative": 0.6666666666666666,
+          "queries": 41,
+          "informative_queries": 2,
+          "all_weak_queries_excluded_from_ndcg": 24,
+          "input_pairs": 55,
+          "evaluated_pairs": 54,
+          "duplicate_candidate_versions_excluded": 1,
+          "multi_candidate_queries": 10,
+          "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+        }
+      },
+      {
+        "cv_to_jobs": {
+          "ndcg_at_5": 0.7866787078139016,
+          "ndcg_at_5_informative": 0.7629763420154462,
+          "pairwise_accuracy": 0.525462962962963,
+          "top1_best_label_credit_informative": 0.5333333333333333,
+          "queries": 10,
+          "informative_queries": 9,
+          "all_weak_queries_excluded_from_ndcg": 0
+        },
+        "job_to_candidates": {
+          "ndcg_at_5": 0.9824252263605456,
+          "ndcg_at_5_informative": 0.6309297535714575,
+          "pairwise_accuracy": 0.0,
+          "top1_best_label_credit_informative": 0.0,
+          "queries": 46,
+          "informative_queries": 1,
+          "all_weak_queries_excluded_from_ndcg": 25,
+          "input_pairs": 50,
+          "evaluated_pairs": 50,
+          "duplicate_candidate_versions_excluded": 0,
+          "multi_candidate_queries": 4,
+          "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+        }
+      },
+      {
+        "cv_to_jobs": {
+          "ndcg_at_5": 0.8560198855936141,
+          "ndcg_at_5_informative": 0.8148827100489324,
+          "pairwise_accuracy": 0.5238095238095238,
+          "top1_best_label_credit_informative": 0.42857142857142855,
+          "queries": 10,
+          "informative_queries": 7,
+          "all_weak_queries_excluded_from_ndcg": 1
+        },
+        "job_to_candidates": {
+          "ndcg_at_5": 0.9769331095982161,
+          "ndcg_at_5_informative": 0.8892789260714373,
+          "pairwise_accuracy": 0.7,
+          "top1_best_label_credit_informative": 0.7,
+          "queries": 38,
+          "informative_queries": 5,
+          "all_weak_queries_excluded_from_ndcg": 14,
+          "input_pairs": 50,
+          "evaluated_pairs": 50,
+          "duplicate_candidate_versions_excluded": 0,
+          "multi_candidate_queries": 10,
+          "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+        }
+      }
+    ],
+    "summary": {
+      "cv_to_jobs": {
+        "ndcg": 0.7759375354574148,
+        "pairwise_accuracy": 0.5315756774090108
+      },
+      "job_to_candidates": {
+        "ndcg": 0.7917878795238238,
+        "pairwise_accuracy": 0.48333333333333334
+      }
+    },
+    "cv_macro_ndcg": 0.7838627074906193,
+    "validation": {
+      "cv_to_jobs": {
+        "ndcg_at_5": 0.9565893466078877,
+        "ndcg_at_5_informative": 0.942119128810517,
+        "pairwise_accuracy": 0.625,
+        "top1_best_label_credit_informative": 0.7333333333333334,
+        "queries": 6,
+        "informative_queries": 3,
+        "all_weak_queries_excluded_from_ndcg": 2
+      },
+      "job_to_candidates": {
+        "ndcg_at_5": 0.9806873278571435,
+        "ndcg_at_5_informative": 0.8551549589285763,
+        "pairwise_accuracy": 0.75,
+        "top1_best_label_credit_informative": 0.6666666666666666,
+        "queries": 25,
+        "informative_queries": 2,
+        "all_weak_queries_excluded_from_ndcg": 10,
+        "input_pairs": 30,
+        "evaluated_pairs": 30,
+        "duplicate_candidate_versions_excluded": 0,
+        "multi_candidate_queries": 4,
+        "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+      }
+    }
+  },
+  "v2_historical_forward_metrics": {
+    "train": {
+      "skill_overlap": {
+        "ndcg_at_5": 0.7773488429518728,
+        "ndcg_at_5_informative": 0.7526098255020808,
+        "pairwise_accuracy": 0.5362654320987654,
+        "top1_best_label_credit_informative": 0.44074074074074077,
+        "queries": 31,
+        "informative_queries": 27,
+        "all_weak_queries_excluded_from_ndcg": 1
+      },
+      "original_shortlist_order": {
+        "ndcg_at_5": 0.7872814201294738,
+        "ndcg_at_5_informative": 0.7636460223660819,
+        "pairwise_accuracy": 0.5972222222222222,
+        "top1_best_label_credit_informative": 0.5185185185185185,
+        "queries": 31,
+        "informative_queries": 27,
+        "all_weak_queries_excluded_from_ndcg": 1
+      },
+      "trained_ml2": {
+        "ndcg_at_5": 0.8020668232064568,
+        "ndcg_at_5_informative": 0.7800742480071742,
+        "pairwise_accuracy": 0.5516975308641976,
+        "top1_best_label_credit_informative": 0.5037037037037037,
+        "queries": 31,
+        "informative_queries": 27,
+        "all_weak_queries_excluded_from_ndcg": 1
+      }
+    },
+    "validation": {
+      "skill_overlap": {
+        "ndcg_at_5": 0.9565893466078877,
+        "ndcg_at_5_informative": 0.942119128810517,
+        "pairwise_accuracy": 0.625,
+        "top1_best_label_credit_informative": 0.7333333333333334,
+        "queries": 6,
+        "informative_queries": 3,
+        "all_weak_queries_excluded_from_ndcg": 2
+      },
+      "original_shortlist_order": {
+        "ndcg_at_5": 0.9569010918389727,
+        "ndcg_at_5_informative": 0.9425347891186302,
+        "pairwise_accuracy": 0.5833333333333334,
+        "top1_best_label_credit_informative": 0.6666666666666666,
+        "queries": 6,
+        "informative_queries": 3,
+        "all_weak_queries_excluded_from_ndcg": 2
+      },
+      "trained_ml2": {
+        "ndcg_at_5": 0.9565893466078877,
+        "ndcg_at_5_informative": 0.942119128810517,
+        "pairwise_accuracy": 0.625,
+        "top1_best_label_credit_informative": 0.7333333333333334,
+        "queries": 6,
+        "informative_queries": 3,
+        "all_weak_queries_excluded_from_ndcg": 2
+      }
+    },
+    "test": {
+      "skill_overlap": {
+        "ndcg_at_5": 0.6990205643101722,
+        "ndcg_at_5_informative": 0.6990205643101722,
+        "pairwise_accuracy": 0.44841269841269843,
+        "top1_best_label_credit_informative": 0.19999999999999998,
+        "queries": 6,
+        "informative_queries": 6,
+        "all_weak_queries_excluded_from_ndcg": 0
+      },
+      "original_shortlist_order": {
+        "ndcg_at_5": 0.6734775647850731,
+        "ndcg_at_5_informative": 0.6734775647850731,
+        "pairwise_accuracy": 0.39087301587301587,
+        "top1_best_label_credit_informative": 0.16666666666666666,
+        "queries": 6,
+        "informative_queries": 6,
+        "all_weak_queries_excluded_from_ndcg": 0
+      },
+      "trained_ml2": {
+        "ndcg_at_5": 0.7142410243350934,
+        "ndcg_at_5_informative": 0.7142410243350934,
+        "pairwise_accuracy": 0.5317460317460317,
+        "top1_best_label_credit_informative": 0.3666666666666667,
+        "queries": 6,
+        "informative_queries": 6,
+        "all_weak_queries_excluded_from_ndcg": 0
+      }
+    }
+  },
+  "v2_historical_test_comparison_after_model_lock": {
+    "description": "Frozen shipped v2 source+weights from git18b827c, historical test computed only after finalv3model was locked andpublished; descriptivecomparisonnotselection.",
+    "metrics": {
+      "cv_to_jobs": {
+        "ndcg_at_5": 0.7142410243350934,
+        "ndcg_at_5_informative": 0.7142410243350934,
+        "pairwise_accuracy": 0.5317460317460317,
+        "top1_best_label_credit_informative": 0.3666666666666667,
+        "queries": 6,
+        "informative_queries": 6,
+        "all_weak_queries_excluded_from_ndcg": 0
+      },
+      "job_to_candidates": {
+        "ndcg_at_5": 0.9858049905219791,
+        "ndcg_at_5_informative": 0.9077324383928644,
+        "pairwise_accuracy": 0.75,
+        "top1_best_label_credit_informative": 0.75,
+        "queries": 26,
+        "informative_queries": 2,
+        "all_weak_queries_excluded_from_ndcg": 13,
+        "input_pairs": 30,
+        "evaluated_pairs": 30,
+        "duplicate_candidate_versions_excluded": 0,
+        "multi_candidate_queries": 4,
+        "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+      }
+    }
+  },
+  "v3": {
+    "model_version": "ml2-pairwise-linear-v3",
+    "experimental": true,
+    "score_policy_version": "relevant-experience-shortfall-v1",
+    "score_policy": "Positive linear evidence is multiplied by the explicitly established relevant-experience minimum fulfillment; unknown duration and negative linear bases are unchanged. This is a declared rule, not a learned coefficient.",
+    "dataset_fingerprints": {
+      "pairs_all.jsonl": "53ec02c515edb27b9d54269aa224f25855d481aeccdd86f0b7d8d1764fa93306",
+      "train.jsonl": "351ea17acf0a7582a96e643fbb52d5b6e528419c8237bb203b561254bcf7fb54",
+      "validation.jsonl": "d251c91e8834d586952d73941d7957d8c636d234e2a547d22bb0d534395f5b3f",
+      "test.jsonl": "b478071cb9f43f3c719922c6f1cff5eeb944e164f31625b3b0603df4615e81c7",
+      "manifest.json": "df293d6780355197e774034e7e62ae3d0e4a9439b88dbdaaef96049116a6d30e",
+      "candidate_groups.json": "f3b76283dc74d3e28ad3942d22bbd85472c08d9b14263058a0ba94ba50a6b4c9",
+      "split_assignment.json": "f89a54e3d002a387f53df71cd0574f13c84ca54a241d40bfc010e171a473b7b9"
+    },
+    "evaluation_scope": "new candidates; vacancies may recur; five-pair annotated shortlist only",
+    "metric_policy": "Linear relevance gains 0/1/2; expected DCG for tied scores; all-weak queries excluded from NDCG; informative queries have differing labels",
+    "cross_validation_search": [],
+    "fixed_configuration_cross_validation_recheck": {
+      "l2": 1.0,
+      "hr_weight": 0.5,
+      "grade_gap": false,
+      "cv_macro_ndcg": 0.8517114037819695,
+      "cv_macro_pairwise_accuracy": 0.7032217011383679,
+      "direction_ndcg": {
+        "cv_to_jobs": 0.7886115125639344,
+        "job_to_candidates": 0.9148112950000046
+      },
+      "direction_pairwise_accuracy": {
+        "cv_to_jobs": 0.5897767356100689,
+        "job_to_candidates": 0.8166666666666668
+      },
+      "fold_metrics": [
+        {
+          "cv_to_jobs": {
+            "ndcg_at_5": 0.749953554307866,
+            "ndcg_at_5_informative": 0.749953554307866,
+            "pairwise_accuracy": 0.5454545454545454,
+            "top1_best_label_credit_informative": 0.4818181818181818,
+            "queries": 11,
+            "informative_queries": 11,
+            "all_weak_queries_excluded_from_ndcg": 0
+          },
+          "job_to_candidates": {
+            "ndcg_at_5": 0.9829594069327737,
+            "ndcg_at_5_informative": 0.8551549589285763,
+            "pairwise_accuracy": 0.75,
+            "top1_best_label_credit_informative": 0.6666666666666666,
+            "queries": 41,
+            "informative_queries": 2,
+            "all_weak_queries_excluded_from_ndcg": 24,
+            "input_pairs": 55,
+            "evaluated_pairs": 54,
+            "duplicate_candidate_versions_excluded": 1,
+            "multi_candidate_queries": 10,
+            "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+          }
+        },
+        {
+          "cv_to_jobs": {
+            "ndcg_at_5": 0.8119854320395117,
+            "ndcg_at_5_informative": 0.7910949244883463,
+            "pairwise_accuracy": 0.6643518518518519,
+            "top1_best_label_credit_informative": 0.4222222222222222,
+            "queries": 10,
+            "informative_queries": 9,
+            "all_weak_queries_excluded_from_ndcg": 0
+          },
+          "job_to_candidates": {
+            "ndcg_at_5": 1.0,
+            "ndcg_at_5_informative": 1.0,
+            "pairwise_accuracy": 1.0,
+            "top1_best_label_credit_informative": 1.0,
+            "queries": 46,
+            "informative_queries": 1,
+            "all_weak_queries_excluded_from_ndcg": 25,
+            "input_pairs": 50,
+            "evaluated_pairs": 50,
+            "duplicate_candidate_versions_excluded": 0,
+            "multi_candidate_queries": 4,
+            "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+          }
+        },
+        {
+          "cv_to_jobs": {
+            "ndcg_at_5": 0.863722490252126,
+            "ndcg_at_5_informative": 0.8247860588955905,
+            "pairwise_accuracy": 0.5595238095238095,
+            "top1_best_label_credit_informative": 0.42857142857142855,
+            "queries": 10,
+            "informative_queries": 7,
+            "all_weak_queries_excluded_from_ndcg": 1
+          },
+          "job_to_candidates": {
+            "ndcg_at_5": 0.9769331095982161,
+            "ndcg_at_5_informative": 0.8892789260714373,
+            "pairwise_accuracy": 0.7,
+            "top1_best_label_credit_informative": 0.7,
+            "queries": 38,
+            "informative_queries": 5,
+            "all_weak_queries_excluded_from_ndcg": 14,
+            "input_pairs": 50,
+            "evaluated_pairs": 50,
+            "duplicate_candidate_versions_excluded": 0,
+            "multi_candidate_queries": 10,
+            "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+          }
+        }
+      ]
+    },
+    "development_provenance": {
+      "change_type": "heldout-informed extraction correctness fix, not hyperparameter optimization",
+      "fixed_cases": [
+        "English auxiliary/postfix skill negation",
+        "Russian postfix no-experience clause"
+      ],
+      "original_model_sha256": "33b6548c1be0e42a152cb29edbf66a41ef0201ca18e3df56a5c06a6ffb61fff0",
+      "original_selection_sha256": "8dc138aa243eb4e7ddc2129f21d0d2381fe8e025eb2b313ceb2319a01df7b920",
+      "original_feature_source_sha256": "d6b08bf17d2c23fd1706cf8ad3f577de767f58cb76770341ce1076adc386c7fc",
+      "original_hr_holdout_status": "Now a regression set because its failures informed the negation fix",
+      "hyperparameters_reselected": false,
+      "locked_configuration": {
+        "l2": 1.0,
+        "hr_weight": 0.5,
+        "grade_gap": false
+      },
+      "new_blind_hr_holdout_used_for_fitting_or_selection": false
+    },
+    "validation_search": [
+      {
+        "l2": 1.0,
+        "hr_weight": 0.5,
+        "grade_gap": false,
+        "metrics": {
+          "cv_to_jobs": {
+            "ndcg_at_5": 0.9321905934833814,
+            "ndcg_at_5_informative": 0.9095874579778419,
+            "pairwise_accuracy": 0.5416666666666666,
+            "top1_best_label_credit_informative": 0.5666666666666667,
+            "queries": 6,
+            "informative_queries": 3,
+            "all_weak_queries_excluded_from_ndcg": 2
+          },
+          "job_to_candidates": {
+            "ndcg_at_5": 0.9806873278571435,
+            "ndcg_at_5_informative": 0.8551549589285763,
+            "pairwise_accuracy": 0.75,
+            "top1_best_label_credit_informative": 0.6666666666666666,
+            "queries": 25,
+            "informative_queries": 2,
+            "all_weak_queries_excluded_from_ndcg": 10,
+            "input_pairs": 30,
+            "evaluated_pairs": 30,
+            "duplicate_candidate_versions_excluded": 0,
+            "multi_candidate_queries": 4,
+            "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+          }
+        }
+      }
+    ],
+    "selected_l2": 1.0,
+    "train": {
+      "skill_overlap": {
+        "ndcg_at_5": 0.7773488429518728,
+        "ndcg_at_5_informative": 0.7526098255020808,
+        "pairwise_accuracy": 0.5362654320987654,
+        "top1_best_label_credit_informative": 0.44074074074074077,
+        "queries": 31,
+        "informative_queries": 27,
+        "all_weak_queries_excluded_from_ndcg": 1
+      },
+      "original_shortlist_order": {
+        "ndcg_at_5": 0.7872814201294738,
+        "ndcg_at_5_informative": 0.7636460223660819,
+        "pairwise_accuracy": 0.5972222222222222,
+        "top1_best_label_credit_informative": 0.5185185185185185,
+        "queries": 31,
+        "informative_queries": 27,
+        "all_weak_queries_excluded_from_ndcg": 1
+      },
+      "trained_ml2": {
+        "ndcg_at_5": 0.8163974966747882,
+        "ndcg_at_5_informative": 0.7959972185275425,
+        "pairwise_accuracy": 0.6072530864197531,
+        "top1_best_label_credit_informative": 0.48518518518518516,
+        "queries": 31,
+        "informative_queries": 27,
+        "all_weak_queries_excluded_from_ndcg": 1
+      }
+    },
+    "validation": {
+      "skill_overlap": {
+        "ndcg_at_5": 0.9565893466078877,
+        "ndcg_at_5_informative": 0.942119128810517,
+        "pairwise_accuracy": 0.625,
+        "top1_best_label_credit_informative": 0.7333333333333334,
+        "queries": 6,
+        "informative_queries": 3,
+        "all_weak_queries_excluded_from_ndcg": 2
+      },
+      "original_shortlist_order": {
+        "ndcg_at_5": 0.9569010918389727,
+        "ndcg_at_5_informative": 0.9425347891186302,
+        "pairwise_accuracy": 0.5833333333333334,
+        "top1_best_label_credit_informative": 0.6666666666666666,
+        "queries": 6,
+        "informative_queries": 3,
+        "all_weak_queries_excluded_from_ndcg": 2
+      },
+      "trained_ml2": {
+        "ndcg_at_5": 0.9321905934833814,
+        "ndcg_at_5_informative": 0.9095874579778419,
+        "pairwise_accuracy": 0.5416666666666666,
+        "top1_best_label_credit_informative": 0.5666666666666667,
+        "queries": 6,
+        "informative_queries": 3,
+        "all_weak_queries_excluded_from_ndcg": 2
+      }
+    },
+    "test": {
+      "skill_overlap": {
+        "ndcg_at_5": 0.6990205643101722,
+        "ndcg_at_5_informative": 0.6990205643101722,
+        "pairwise_accuracy": 0.44841269841269843,
+        "top1_best_label_credit_informative": 0.19999999999999998,
+        "queries": 6,
+        "informative_queries": 6,
+        "all_weak_queries_excluded_from_ndcg": 0
+      },
+      "original_shortlist_order": {
+        "ndcg_at_5": 0.6734775647850731,
+        "ndcg_at_5_informative": 0.6734775647850731,
+        "pairwise_accuracy": 0.39087301587301587,
+        "top1_best_label_credit_informative": 0.16666666666666666,
+        "queries": 6,
+        "informative_queries": 6,
+        "all_weak_queries_excluded_from_ndcg": 0
+      },
+      "trained_ml2": {
+        "ndcg_at_5": 0.7170923440089787,
+        "ndcg_at_5_informative": 0.7170923440089787,
+        "pairwise_accuracy": 0.5734126984126985,
+        "top1_best_label_credit_informative": 0.3666666666666667,
+        "queries": 6,
+        "informative_queries": 6,
+        "all_weak_queries_excluded_from_ndcg": 0
+      }
+    },
+    "hr_ranking": {
+      "train": {
+        "skill_overlap": {
+          "ndcg_at_5": 0.9604015974776854,
+          "ndcg_at_5_informative": 0.855748676525854,
+          "pairwise_accuracy": 0.6130952380952381,
+          "top1_best_label_credit_informative": 0.6059523809523809,
+          "queries": 103,
+          "informative_queries": 14,
+          "all_weak_queries_excluded_from_ndcg": 52,
+          "input_pairs": 155,
+          "evaluated_pairs": 154,
+          "duplicate_candidate_versions_excluded": 1,
+          "multi_candidate_queries": 29,
+          "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+        },
+        "trained_ml2": {
+          "ndcg_at_5": 0.9720436558123661,
+          "ndcg_at_5_informative": 0.8981590318879054,
+          "pairwise_accuracy": 0.7142857142857143,
+          "top1_best_label_credit_informative": 0.713095238095238,
+          "queries": 103,
+          "informative_queries": 14,
+          "all_weak_queries_excluded_from_ndcg": 52,
+          "input_pairs": 155,
+          "evaluated_pairs": 154,
+          "duplicate_candidate_versions_excluded": 1,
+          "multi_candidate_queries": 29,
+          "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+        }
+      },
+      "validation": {
+        "skill_overlap": {
+          "ndcg_at_5": 0.9806873278571435,
+          "ndcg_at_5_informative": 0.8551549589285763,
+          "pairwise_accuracy": 0.75,
+          "top1_best_label_credit_informative": 0.6666666666666666,
+          "queries": 25,
+          "informative_queries": 2,
+          "all_weak_queries_excluded_from_ndcg": 10,
+          "input_pairs": 30,
+          "evaluated_pairs": 30,
+          "duplicate_candidate_versions_excluded": 0,
+          "multi_candidate_queries": 4,
+          "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+        },
+        "trained_ml2": {
+          "ndcg_at_5": 0.9806873278571435,
+          "ndcg_at_5_informative": 0.8551549589285763,
+          "pairwise_accuracy": 0.75,
+          "top1_best_label_credit_informative": 0.6666666666666666,
+          "queries": 25,
+          "informative_queries": 2,
+          "all_weak_queries_excluded_from_ndcg": 10,
+          "input_pairs": 30,
+          "evaluated_pairs": 30,
+          "duplicate_candidate_versions_excluded": 0,
+          "multi_candidate_queries": 4,
+          "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+        }
+      },
+      "test": {
+        "skill_overlap": {
+          "ndcg_at_5": 0.9858049905219791,
+          "ndcg_at_5_informative": 0.9077324383928644,
+          "pairwise_accuracy": 0.75,
+          "top1_best_label_credit_informative": 0.75,
+          "queries": 26,
+          "informative_queries": 2,
+          "all_weak_queries_excluded_from_ndcg": 13,
+          "input_pairs": 30,
+          "evaluated_pairs": 30,
+          "duplicate_candidate_versions_excluded": 0,
+          "multi_candidate_queries": 4,
+          "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+        },
+        "trained_ml2": {
+          "ndcg_at_5": 0.9858049905219791,
+          "ndcg_at_5_informative": 0.9077324383928644,
+          "pairwise_accuracy": 0.75,
+          "top1_best_label_credit_informative": 0.75,
+          "queries": 26,
+          "informative_queries": 2,
+          "all_weak_queries_excluded_from_ndcg": 13,
+          "input_pairs": 30,
+          "evaluated_pairs": 30,
+          "duplicate_candidate_versions_excluded": 0,
+          "multi_candidate_queries": 4,
+          "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+        }
+      }
+    },
+    "limitations": [
+      "Small pilot; test contains only six CV queries in the current dataset",
+      "Some test vacancies also occur in training; this is not an unseen-vacancy test",
+      "Original shortlist is BM25/skills, not an executed ML1 embedding baseline",
+      "Dictionary features do not reproduce every requirement judgment or generate new span annotations",
+      "Employment duration uses explicitly role-scoped statements or totals in one supported profile, not inferred job intervals",
+      "Zero input evidence anchors score at zero; positive scores remain uncalibrated relative evidence, not hiring probabilities",
+      "The explicit relevant-experience shortfall rule is engineering policy, not a learned coefficient; validation and reported metrics include this rule",
+      "Only ten good-fit pairs in the complete eligible dataset; mixed human/assistant review",
+      "Three train candidate-group folds selected the configuration before validation/test reporting; fixed validation is descriptive and did not select hyperparameters",
+      "HR-direction metrics are sparse; show informative and multi-candidate query counts, not singleton-inflated overall NDCG",
+      "The historical pilot test was already reused in earlier project development; it is not a pristine prospective holdout",
+      "This extraction correctness fix was informed by the first synthetic HR holdout; that first holdout is now a regression set, not independent quality evidence for the revised source"
+    ]
+  },
+  "initial_v3_before_negation_fix": {
+    "schema_version": "ml2-v3-aggregate-evaluation-v1",
+    "model_version": "ml2-pairwise-linear-v3",
+    "feature_version": "professional-signals-v3",
+    "score_policy_version": "relevant-experience-shortfall-v1",
+    "model_sha256": "33b6548c1be0e42a152cb29edbf66a41ef0201ca18e3df56a5c06a6ffb61fff0",
+    "selection_lock": {
+      "locked_at": "2026-11-03T10:34:28.545209+00:00",
+      "model_sha256": "33b6548c1be0e42a152cb29edbf66a41ef0201ca18e3df56a5c06a6ffb61fff0",
+      "selected": {
+        "l2": 1.0,
+        "hr_weight": 0.5,
+        "grade_gap": false,
+        "cv_macro_ndcg": 0.8517114037819695,
+        "cv_macro_pairwise_accuracy": 0.7032217011383679,
+        "direction_ndcg": {
+          "cv_to_jobs": 0.7886115125639344,
+          "job_to_candidates": 0.9148112950000046
+        },
+        "direction_pairwise_accuracy": {
+          "cv_to_jobs": 0.5897767356100689,
+          "job_to_candidates": 0.8166666666666668
+        }
+      },
+      "test_used_for_selection": false,
+      "independent_hr_benchmark_used_for_selection": false
+    },
+    "trained_at": "2026-11-03T10:34:28.542435+00:00",
+    "dataset_fingerprints": {
+      "pairs_all.jsonl": "53ec02c515edb27b9d54269aa224f25855d481aeccdd86f0b7d8d1764fa93306",
+      "train.jsonl": "351ea17acf0a7582a96e643fbb52d5b6e528419c8237bb203b561254bcf7fb54",
+      "validation.jsonl": "d251c91e8834d586952d73941d7957d8c636d234e2a547d22bb0d534395f5b3f",
+      "test.jsonl": "b478071cb9f43f3c719922c6f1cff5eeb944e164f31625b3b0603df4615e81c7",
+      "manifest.json": "df293d6780355197e774034e7e62ae3d0e4a9439b88dbdaaef96049116a6d30e",
+      "candidate_groups.json": "f3b76283dc74d3e28ad3942d22bbd85472c08d9b14263058a0ba94ba50a6b4c9",
+      "split_assignment.json": "f89a54e3d002a387f53df71cd0574f13c84ca54a241d40bfc010e171a473b7b9"
+    },
+    "dataset_summary": {
+      "train_pairs": 155,
+      "validation_pairs": 30,
+      "test_pairs": 30,
+      "train_candidate_groups": 30,
+      "historical_test_cv_queries": 6,
+      "training_preference_pairs": {
+        "cv_to_jobs": 132,
+        "job_to_candidates": 34
+      }
+    },
+    "selection_plan": "16 configurations; l2(.01,.1,1,10) x HRmix(0,.5) x gradegap(False,True);3deterministic candidate-group train folds; macro NDCG acrossbothdirections thenpairwise, strongerL2,simplerobjective; no validation/test/independentbenchmarkselection",
+    "baseline_group_cross_validation": {
+      "description": "Frozen v2 source from git18b827c, separately refit in each identical candidate-group fold at its shipped l2=10; validation uses original shipped v2 weights. No historical test or synthetic benchmark read.",
+      "fold_metrics": [
+        {
+          "cv_to_jobs": {
+            "ndcg_at_5": 0.749953554307866,
+            "ndcg_at_5_informative": 0.749953554307866,
+            "pairwise_accuracy": 0.5454545454545454,
+            "top1_best_label_credit_informative": 0.4818181818181818,
+            "queries": 11,
+            "informative_queries": 11,
+            "all_weak_queries_excluded_from_ndcg": 0
+          },
+          "job_to_candidates": {
+            "ndcg_at_5": 0.9829594069327737,
+            "ndcg_at_5_informative": 0.8551549589285763,
+            "pairwise_accuracy": 0.75,
+            "top1_best_label_credit_informative": 0.6666666666666666,
+            "queries": 41,
+            "informative_queries": 2,
+            "all_weak_queries_excluded_from_ndcg": 24,
+            "input_pairs": 55,
+            "evaluated_pairs": 54,
+            "duplicate_candidate_versions_excluded": 1,
+            "multi_candidate_queries": 10,
+            "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+          }
+        },
+        {
+          "cv_to_jobs": {
+            "ndcg_at_5": 0.7866787078139016,
+            "ndcg_at_5_informative": 0.7629763420154462,
+            "pairwise_accuracy": 0.525462962962963,
+            "top1_best_label_credit_informative": 0.5333333333333333,
+            "queries": 10,
+            "informative_queries": 9,
+            "all_weak_queries_excluded_from_ndcg": 0
+          },
+          "job_to_candidates": {
+            "ndcg_at_5": 0.9824252263605456,
+            "ndcg_at_5_informative": 0.6309297535714575,
+            "pairwise_accuracy": 0.0,
+            "top1_best_label_credit_informative": 0.0,
+            "queries": 46,
+            "informative_queries": 1,
+            "all_weak_queries_excluded_from_ndcg": 25,
+            "input_pairs": 50,
+            "evaluated_pairs": 50,
+            "duplicate_candidate_versions_excluded": 0,
+            "multi_candidate_queries": 4,
+            "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+          }
+        },
+        {
+          "cv_to_jobs": {
+            "ndcg_at_5": 0.8560198855936141,
+            "ndcg_at_5_informative": 0.8148827100489324,
+            "pairwise_accuracy": 0.5238095238095238,
+            "top1_best_label_credit_informative": 0.42857142857142855,
+            "queries": 10,
+            "informative_queries": 7,
+            "all_weak_queries_excluded_from_ndcg": 1
+          },
+          "job_to_candidates": {
+            "ndcg_at_5": 0.9769331095982161,
+            "ndcg_at_5_informative": 0.8892789260714373,
+            "pairwise_accuracy": 0.7,
+            "top1_best_label_credit_informative": 0.7,
+            "queries": 38,
+            "informative_queries": 5,
+            "all_weak_queries_excluded_from_ndcg": 14,
+            "input_pairs": 50,
+            "evaluated_pairs": 50,
+            "duplicate_candidate_versions_excluded": 0,
+            "multi_candidate_queries": 10,
+            "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+          }
+        }
+      ],
+      "summary": {
+        "cv_to_jobs": {
+          "ndcg": 0.7759375354574148,
+          "pairwise_accuracy": 0.5315756774090108
+        },
+        "job_to_candidates": {
+          "ndcg": 0.7917878795238238,
+          "pairwise_accuracy": 0.48333333333333334
+        }
+      },
+      "cv_macro_ndcg": 0.7838627074906193,
+      "validation": {
+        "cv_to_jobs": {
+          "ndcg_at_5": 0.9565893466078877,
+          "ndcg_at_5_informative": 0.942119128810517,
+          "pairwise_accuracy": 0.625,
+          "top1_best_label_credit_informative": 0.7333333333333334,
+          "queries": 6,
+          "informative_queries": 3,
+          "all_weak_queries_excluded_from_ndcg": 2
+        },
+        "job_to_candidates": {
+          "ndcg_at_5": 0.9806873278571435,
+          "ndcg_at_5_informative": 0.8551549589285763,
+          "pairwise_accuracy": 0.75,
+          "top1_best_label_credit_informative": 0.6666666666666666,
+          "queries": 25,
+          "informative_queries": 2,
+          "all_weak_queries_excluded_from_ndcg": 10,
+          "input_pairs": 30,
+          "evaluated_pairs": 30,
+          "duplicate_candidate_versions_excluded": 0,
+          "multi_candidate_queries": 4,
+          "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+        }
+      }
+    },
+    "v2_historical_forward_metrics": {
+      "train": {
+        "skill_overlap": {
+          "ndcg_at_5": 0.7773488429518728,
+          "ndcg_at_5_informative": 0.7526098255020808,
+          "pairwise_accuracy": 0.5362654320987654,
+          "top1_best_label_credit_informative": 0.44074074074074077,
+          "queries": 31,
+          "informative_queries": 27,
+          "all_weak_queries_excluded_from_ndcg": 1
+        },
+        "original_shortlist_order": {
+          "ndcg_at_5": 0.7872814201294738,
+          "ndcg_at_5_informative": 0.7636460223660819,
+          "pairwise_accuracy": 0.5972222222222222,
+          "top1_best_label_credit_informative": 0.5185185185185185,
+          "queries": 31,
+          "informative_queries": 27,
+          "all_weak_queries_excluded_from_ndcg": 1
+        },
+        "trained_ml2": {
+          "ndcg_at_5": 0.8020668232064568,
+          "ndcg_at_5_informative": 0.7800742480071742,
+          "pairwise_accuracy": 0.5516975308641976,
+          "top1_best_label_credit_informative": 0.5037037037037037,
+          "queries": 31,
+          "informative_queries": 27,
+          "all_weak_queries_excluded_from_ndcg": 1
+        }
+      },
+      "validation": {
+        "skill_overlap": {
+          "ndcg_at_5": 0.9565893466078877,
+          "ndcg_at_5_informative": 0.942119128810517,
+          "pairwise_accuracy": 0.625,
+          "top1_best_label_credit_informative": 0.7333333333333334,
+          "queries": 6,
+          "informative_queries": 3,
+          "all_weak_queries_excluded_from_ndcg": 2
+        },
+        "original_shortlist_order": {
+          "ndcg_at_5": 0.9569010918389727,
+          "ndcg_at_5_informative": 0.9425347891186302,
+          "pairwise_accuracy": 0.5833333333333334,
+          "top1_best_label_credit_informative": 0.6666666666666666,
+          "queries": 6,
+          "informative_queries": 3,
+          "all_weak_queries_excluded_from_ndcg": 2
+        },
+        "trained_ml2": {
+          "ndcg_at_5": 0.9565893466078877,
+          "ndcg_at_5_informative": 0.942119128810517,
+          "pairwise_accuracy": 0.625,
+          "top1_best_label_credit_informative": 0.7333333333333334,
+          "queries": 6,
+          "informative_queries": 3,
+          "all_weak_queries_excluded_from_ndcg": 2
+        }
+      },
+      "test": {
+        "skill_overlap": {
+          "ndcg_at_5": 0.6990205643101722,
+          "ndcg_at_5_informative": 0.6990205643101722,
+          "pairwise_accuracy": 0.44841269841269843,
+          "top1_best_label_credit_informative": 0.19999999999999998,
+          "queries": 6,
+          "informative_queries": 6,
+          "all_weak_queries_excluded_from_ndcg": 0
+        },
+        "original_shortlist_order": {
+          "ndcg_at_5": 0.6734775647850731,
+          "ndcg_at_5_informative": 0.6734775647850731,
+          "pairwise_accuracy": 0.39087301587301587,
+          "top1_best_label_credit_informative": 0.16666666666666666,
+          "queries": 6,
+          "informative_queries": 6,
+          "all_weak_queries_excluded_from_ndcg": 0
+        },
+        "trained_ml2": {
+          "ndcg_at_5": 0.7142410243350934,
+          "ndcg_at_5_informative": 0.7142410243350934,
+          "pairwise_accuracy": 0.5317460317460317,
+          "top1_best_label_credit_informative": 0.3666666666666667,
+          "queries": 6,
+          "informative_queries": 6,
+          "all_weak_queries_excluded_from_ndcg": 0
+        }
+      }
+    },
+    "v3": {
+      "model_version": "ml2-pairwise-linear-v3",
+      "experimental": true,
+      "score_policy_version": "relevant-experience-shortfall-v1",
+      "score_policy": "Positive linear evidence is multiplied by the explicitly established relevant-experience minimum fulfillment; unknown duration and negative linear bases are unchanged. This is a declared rule, not a learned coefficient.",
+      "dataset_fingerprints": {
+        "pairs_all.jsonl": "53ec02c515edb27b9d54269aa224f25855d481aeccdd86f0b7d8d1764fa93306",
+        "train.jsonl": "351ea17acf0a7582a96e643fbb52d5b6e528419c8237bb203b561254bcf7fb54",
+        "validation.jsonl": "d251c91e8834d586952d73941d7957d8c636d234e2a547d22bb0d534395f5b3f",
+        "test.jsonl": "b478071cb9f43f3c719922c6f1cff5eeb944e164f31625b3b0603df4615e81c7",
+        "manifest.json": "df293d6780355197e774034e7e62ae3d0e4a9439b88dbdaaef96049116a6d30e",
+        "candidate_groups.json": "f3b76283dc74d3e28ad3942d22bbd85472c08d9b14263058a0ba94ba50a6b4c9",
+        "split_assignment.json": "f89a54e3d002a387f53df71cd0574f13c84ca54a241d40bfc010e171a473b7b9"
+      },
+      "evaluation_scope": "new candidates; vacancies may recur; five-pair annotated shortlist only",
+      "metric_policy": "Linear relevance gains 0/1/2; expected DCG for tied scores; all-weak queries excluded from NDCG; informative queries have differing labels",
+      "cross_validation_search": [
+        {
+          "l2": 0.01,
+          "hr_weight": 0.0,
+          "grade_gap": false,
+          "cv_macro_ndcg": 0.8210882938292106,
+          "cv_macro_pairwise_accuracy": 0.6481170835337502,
+          "direction_ndcg": {
+            "cv_to_jobs": 0.7581211465274618,
+            "job_to_candidates": 0.8840554411309594
+          },
+          "direction_pairwise_accuracy": {
+            "cv_to_jobs": 0.5629008337341671,
+            "job_to_candidates": 0.7333333333333334
+          },
+          "fold_metrics": [
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.7191945568122935,
+                "ndcg_at_5_informative": 0.7191945568122935,
+                "pairwise_accuracy": 0.5303030303030303,
+                "top1_best_label_credit_informative": 0.3909090909090909,
+                "queries": 11,
+                "informative_queries": 11,
+                "all_weak_queries_excluded_from_ndcg": 0
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 0.9721043996848754,
+                "ndcg_at_5_informative": 0.7628873973214407,
+                "pairwise_accuracy": 0.5,
+                "top1_best_label_credit_informative": 0.41666666666666663,
+                "queries": 41,
+                "informative_queries": 2,
+                "all_weak_queries_excluded_from_ndcg": 24,
+                "input_pairs": 55,
+                "evaluated_pairs": 54,
+                "duplicate_candidate_versions_excluded": 1,
+                "multi_candidate_queries": 10,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            },
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.8119854320395117,
+                "ndcg_at_5_informative": 0.7910949244883463,
+                "pairwise_accuracy": 0.6643518518518519,
+                "top1_best_label_credit_informative": 0.4222222222222222,
+                "queries": 10,
+                "informative_queries": 9,
+                "all_weak_queries_excluded_from_ndcg": 0
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 1.0,
+                "ndcg_at_5_informative": 1.0,
+                "pairwise_accuracy": 1.0,
+                "top1_best_label_credit_informative": 1.0,
+                "queries": 46,
+                "informative_queries": 1,
+                "all_weak_queries_excluded_from_ndcg": 25,
+                "input_pairs": 50,
+                "evaluated_pairs": 50,
+                "duplicate_candidate_versions_excluded": 0,
+                "multi_candidate_queries": 4,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            },
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.8165019675524687,
+                "ndcg_at_5_informative": 0.7640739582817455,
+                "pairwise_accuracy": 0.49404761904761907,
+                "top1_best_label_credit_informative": 0.2857142857142857,
+                "queries": 10,
+                "informative_queries": 7,
+                "all_weak_queries_excluded_from_ndcg": 1
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 0.9769331095982161,
+                "ndcg_at_5_informative": 0.8892789260714373,
+                "pairwise_accuracy": 0.7,
+                "top1_best_label_credit_informative": 0.7,
+                "queries": 38,
+                "informative_queries": 5,
+                "all_weak_queries_excluded_from_ndcg": 14,
+                "input_pairs": 50,
+                "evaluated_pairs": 50,
+                "duplicate_candidate_versions_excluded": 0,
+                "multi_candidate_queries": 10,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            }
+          ]
+        },
+        {
+          "l2": 0.01,
+          "hr_weight": 0.0,
+          "grade_gap": true,
+          "cv_macro_ndcg": 0.8210882938292106,
+          "cv_macro_pairwise_accuracy": 0.6481170835337502,
+          "direction_ndcg": {
+            "cv_to_jobs": 0.7581211465274618,
+            "job_to_candidates": 0.8840554411309594
+          },
+          "direction_pairwise_accuracy": {
+            "cv_to_jobs": 0.5629008337341671,
+            "job_to_candidates": 0.7333333333333334
+          },
+          "fold_metrics": [
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.7191945568122935,
+                "ndcg_at_5_informative": 0.7191945568122935,
+                "pairwise_accuracy": 0.5303030303030303,
+                "top1_best_label_credit_informative": 0.3909090909090909,
+                "queries": 11,
+                "informative_queries": 11,
+                "all_weak_queries_excluded_from_ndcg": 0
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 0.9721043996848754,
+                "ndcg_at_5_informative": 0.7628873973214407,
+                "pairwise_accuracy": 0.5,
+                "top1_best_label_credit_informative": 0.41666666666666663,
+                "queries": 41,
+                "informative_queries": 2,
+                "all_weak_queries_excluded_from_ndcg": 24,
+                "input_pairs": 55,
+                "evaluated_pairs": 54,
+                "duplicate_candidate_versions_excluded": 1,
+                "multi_candidate_queries": 10,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            },
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.8119854320395117,
+                "ndcg_at_5_informative": 0.7910949244883463,
+                "pairwise_accuracy": 0.6643518518518519,
+                "top1_best_label_credit_informative": 0.4222222222222222,
+                "queries": 10,
+                "informative_queries": 9,
+                "all_weak_queries_excluded_from_ndcg": 0
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 1.0,
+                "ndcg_at_5_informative": 1.0,
+                "pairwise_accuracy": 1.0,
+                "top1_best_label_credit_informative": 1.0,
+                "queries": 46,
+                "informative_queries": 1,
+                "all_weak_queries_excluded_from_ndcg": 25,
+                "input_pairs": 50,
+                "evaluated_pairs": 50,
+                "duplicate_candidate_versions_excluded": 0,
+                "multi_candidate_queries": 4,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            },
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.8165019675524687,
+                "ndcg_at_5_informative": 0.7640739582817455,
+                "pairwise_accuracy": 0.49404761904761907,
+                "top1_best_label_credit_informative": 0.2857142857142857,
+                "queries": 10,
+                "informative_queries": 7,
+                "all_weak_queries_excluded_from_ndcg": 1
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 0.9769331095982161,
+                "ndcg_at_5_informative": 0.8892789260714373,
+                "pairwise_accuracy": 0.7,
+                "top1_best_label_credit_informative": 0.7,
+                "queries": 38,
+                "informative_queries": 5,
+                "all_weak_queries_excluded_from_ndcg": 14,
+                "input_pairs": 50,
+                "evaluated_pairs": 50,
+                "duplicate_candidate_versions_excluded": 0,
+                "multi_candidate_queries": 10,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            }
+          ]
+        },
+        {
+          "l2": 0.01,
+          "hr_weight": 0.5,
+          "grade_gap": false,
+          "cv_macro_ndcg": 0.8319853724077864,
+          "cv_macro_pairwise_accuracy": 0.6575968013468014,
+          "direction_ndcg": {
+            "cv_to_jobs": 0.7799153036846133,
+            "job_to_candidates": 0.8840554411309594
+          },
+          "direction_pairwise_accuracy": {
+            "cv_to_jobs": 0.5818602693602694,
+            "job_to_candidates": 0.7333333333333334
+          },
+          "fold_metrics": [
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.7191945568122935,
+                "ndcg_at_5_informative": 0.7191945568122935,
+                "pairwise_accuracy": 0.5303030303030303,
+                "top1_best_label_credit_informative": 0.3909090909090909,
+                "queries": 11,
+                "informative_queries": 11,
+                "all_weak_queries_excluded_from_ndcg": 0
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 0.9721043996848754,
+                "ndcg_at_5_informative": 0.7628873973214407,
+                "pairwise_accuracy": 0.5,
+                "top1_best_label_credit_informative": 0.41666666666666663,
+                "queries": 41,
+                "informative_queries": 2,
+                "all_weak_queries_excluded_from_ndcg": 24,
+                "input_pairs": 55,
+                "evaluated_pairs": 54,
+                "duplicate_candidate_versions_excluded": 1,
+                "multi_candidate_queries": 10,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            },
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.8206452727923562,
+                "ndcg_at_5_informative": 0.8007169697692846,
+                "pairwise_accuracy": 0.6736111111111112,
+                "top1_best_label_credit_informative": 0.47777777777777775,
+                "queries": 10,
+                "informative_queries": 9,
+                "all_weak_queries_excluded_from_ndcg": 0
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 1.0,
+                "ndcg_at_5_informative": 1.0,
+                "pairwise_accuracy": 1.0,
+                "top1_best_label_credit_informative": 1.0,
+                "queries": 46,
+                "informative_queries": 1,
+                "all_weak_queries_excluded_from_ndcg": 25,
+                "input_pairs": 50,
+                "evaluated_pairs": 50,
+                "duplicate_candidate_versions_excluded": 0,
+                "multi_candidate_queries": 4,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            },
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.85987118792287,
+                "ndcg_at_5_informative": 0.8198343844722614,
+                "pairwise_accuracy": 0.5416666666666666,
+                "top1_best_label_credit_informative": 0.42857142857142855,
+                "queries": 10,
+                "informative_queries": 7,
+                "all_weak_queries_excluded_from_ndcg": 1
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 0.9769331095982161,
+                "ndcg_at_5_informative": 0.8892789260714373,
+                "pairwise_accuracy": 0.7,
+                "top1_best_label_credit_informative": 0.7,
+                "queries": 38,
+                "informative_queries": 5,
+                "all_weak_queries_excluded_from_ndcg": 14,
+                "input_pairs": 50,
+                "evaluated_pairs": 50,
+                "duplicate_candidate_versions_excluded": 0,
+                "multi_candidate_queries": 10,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            }
+          ]
+        },
+        {
+          "l2": 0.01,
+          "hr_weight": 0.5,
+          "grade_gap": true,
+          "cv_macro_ndcg": 0.8319853724077864,
+          "cv_macro_pairwise_accuracy": 0.6575968013468014,
+          "direction_ndcg": {
+            "cv_to_jobs": 0.7799153036846133,
+            "job_to_candidates": 0.8840554411309594
+          },
+          "direction_pairwise_accuracy": {
+            "cv_to_jobs": 0.5818602693602694,
+            "job_to_candidates": 0.7333333333333334
+          },
+          "fold_metrics": [
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.7191945568122935,
+                "ndcg_at_5_informative": 0.7191945568122935,
+                "pairwise_accuracy": 0.5303030303030303,
+                "top1_best_label_credit_informative": 0.3909090909090909,
+                "queries": 11,
+                "informative_queries": 11,
+                "all_weak_queries_excluded_from_ndcg": 0
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 0.9721043996848754,
+                "ndcg_at_5_informative": 0.7628873973214407,
+                "pairwise_accuracy": 0.5,
+                "top1_best_label_credit_informative": 0.41666666666666663,
+                "queries": 41,
+                "informative_queries": 2,
+                "all_weak_queries_excluded_from_ndcg": 24,
+                "input_pairs": 55,
+                "evaluated_pairs": 54,
+                "duplicate_candidate_versions_excluded": 1,
+                "multi_candidate_queries": 10,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            },
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.8206452727923562,
+                "ndcg_at_5_informative": 0.8007169697692846,
+                "pairwise_accuracy": 0.6736111111111112,
+                "top1_best_label_credit_informative": 0.47777777777777775,
+                "queries": 10,
+                "informative_queries": 9,
+                "all_weak_queries_excluded_from_ndcg": 0
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 1.0,
+                "ndcg_at_5_informative": 1.0,
+                "pairwise_accuracy": 1.0,
+                "top1_best_label_credit_informative": 1.0,
+                "queries": 46,
+                "informative_queries": 1,
+                "all_weak_queries_excluded_from_ndcg": 25,
+                "input_pairs": 50,
+                "evaluated_pairs": 50,
+                "duplicate_candidate_versions_excluded": 0,
+                "multi_candidate_queries": 4,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            },
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.85987118792287,
+                "ndcg_at_5_informative": 0.8198343844722614,
+                "pairwise_accuracy": 0.5416666666666666,
+                "top1_best_label_credit_informative": 0.42857142857142855,
+                "queries": 10,
+                "informative_queries": 7,
+                "all_weak_queries_excluded_from_ndcg": 1
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 0.9769331095982161,
+                "ndcg_at_5_informative": 0.8892789260714373,
+                "pairwise_accuracy": 0.7,
+                "top1_best_label_credit_informative": 0.7,
+                "queries": 38,
+                "informative_queries": 5,
+                "all_weak_queries_excluded_from_ndcg": 14,
+                "input_pairs": 50,
+                "evaluated_pairs": 50,
+                "duplicate_candidate_versions_excluded": 0,
+                "multi_candidate_queries": 10,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            }
+          ]
+        },
+        {
+          "l2": 0.1,
+          "hr_weight": 0.0,
+          "grade_gap": false,
+          "cv_macro_ndcg": 0.82429564225619,
+          "cv_macro_pairwise_accuracy": 0.6512035032868366,
+          "direction_ndcg": {
+            "cv_to_jobs": 0.7645358433814208,
+            "job_to_candidates": 0.8840554411309594
+          },
+          "direction_pairwise_accuracy": {
+            "cv_to_jobs": 0.5690736732403399,
+            "job_to_candidates": 0.7333333333333334
+          },
+          "fold_metrics": [
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.7191945568122935,
+                "ndcg_at_5_informative": 0.7191945568122935,
+                "pairwise_accuracy": 0.5303030303030303,
+                "top1_best_label_credit_informative": 0.3909090909090909,
+                "queries": 11,
+                "informative_queries": 11,
+                "all_weak_queries_excluded_from_ndcg": 0
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 0.9721043996848754,
+                "ndcg_at_5_informative": 0.7628873973214407,
+                "pairwise_accuracy": 0.5,
+                "top1_best_label_credit_informative": 0.41666666666666663,
+                "queries": 41,
+                "informative_queries": 2,
+                "all_weak_queries_excluded_from_ndcg": 24,
+                "input_pairs": 55,
+                "evaluated_pairs": 54,
+                "duplicate_candidate_versions_excluded": 1,
+                "multi_candidate_queries": 10,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            },
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.8293051135452008,
+                "ndcg_at_5_informative": 0.8103390150502231,
+                "pairwise_accuracy": 0.6828703703703703,
+                "top1_best_label_credit_informative": 0.5333333333333333,
+                "queries": 10,
+                "informative_queries": 9,
+                "all_weak_queries_excluded_from_ndcg": 0
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 1.0,
+                "ndcg_at_5_informative": 1.0,
+                "pairwise_accuracy": 1.0,
+                "top1_best_label_credit_informative": 1.0,
+                "queries": 46,
+                "informative_queries": 1,
+                "all_weak_queries_excluded_from_ndcg": 25,
+                "input_pairs": 50,
+                "evaluated_pairs": 50,
+                "duplicate_candidate_versions_excluded": 0,
+                "multi_candidate_queries": 4,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            },
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.8165019675524687,
+                "ndcg_at_5_informative": 0.7640739582817455,
+                "pairwise_accuracy": 0.49404761904761907,
+                "top1_best_label_credit_informative": 0.2857142857142857,
+                "queries": 10,
+                "informative_queries": 7,
+                "all_weak_queries_excluded_from_ndcg": 1
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 0.9769331095982161,
+                "ndcg_at_5_informative": 0.8892789260714373,
+                "pairwise_accuracy": 0.7,
+                "top1_best_label_credit_informative": 0.7,
+                "queries": 38,
+                "informative_queries": 5,
+                "all_weak_queries_excluded_from_ndcg": 14,
+                "input_pairs": 50,
+                "evaluated_pairs": 50,
+                "duplicate_candidate_versions_excluded": 0,
+                "multi_candidate_queries": 10,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            }
+          ]
+        },
+        {
+          "l2": 0.1,
+          "hr_weight": 0.0,
+          "grade_gap": true,
+          "cv_macro_ndcg": 0.82429564225619,
+          "cv_macro_pairwise_accuracy": 0.6512035032868366,
+          "direction_ndcg": {
+            "cv_to_jobs": 0.7645358433814208,
+            "job_to_candidates": 0.8840554411309594
+          },
+          "direction_pairwise_accuracy": {
+            "cv_to_jobs": 0.5690736732403399,
+            "job_to_candidates": 0.7333333333333334
+          },
+          "fold_metrics": [
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.7191945568122935,
+                "ndcg_at_5_informative": 0.7191945568122935,
+                "pairwise_accuracy": 0.5303030303030303,
+                "top1_best_label_credit_informative": 0.3909090909090909,
+                "queries": 11,
+                "informative_queries": 11,
+                "all_weak_queries_excluded_from_ndcg": 0
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 0.9721043996848754,
+                "ndcg_at_5_informative": 0.7628873973214407,
+                "pairwise_accuracy": 0.5,
+                "top1_best_label_credit_informative": 0.41666666666666663,
+                "queries": 41,
+                "informative_queries": 2,
+                "all_weak_queries_excluded_from_ndcg": 24,
+                "input_pairs": 55,
+                "evaluated_pairs": 54,
+                "duplicate_candidate_versions_excluded": 1,
+                "multi_candidate_queries": 10,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            },
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.8293051135452008,
+                "ndcg_at_5_informative": 0.8103390150502231,
+                "pairwise_accuracy": 0.6828703703703703,
+                "top1_best_label_credit_informative": 0.5333333333333333,
+                "queries": 10,
+                "informative_queries": 9,
+                "all_weak_queries_excluded_from_ndcg": 0
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 1.0,
+                "ndcg_at_5_informative": 1.0,
+                "pairwise_accuracy": 1.0,
+                "top1_best_label_credit_informative": 1.0,
+                "queries": 46,
+                "informative_queries": 1,
+                "all_weak_queries_excluded_from_ndcg": 25,
+                "input_pairs": 50,
+                "evaluated_pairs": 50,
+                "duplicate_candidate_versions_excluded": 0,
+                "multi_candidate_queries": 4,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            },
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.8165019675524687,
+                "ndcg_at_5_informative": 0.7640739582817455,
+                "pairwise_accuracy": 0.49404761904761907,
+                "top1_best_label_credit_informative": 0.2857142857142857,
+                "queries": 10,
+                "informative_queries": 7,
+                "all_weak_queries_excluded_from_ndcg": 1
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 0.9769331095982161,
+                "ndcg_at_5_informative": 0.8892789260714373,
+                "pairwise_accuracy": 0.7,
+                "top1_best_label_credit_informative": 0.7,
+                "queries": 38,
+                "informative_queries": 5,
+                "all_weak_queries_excluded_from_ndcg": 14,
+                "input_pairs": 50,
+                "evaluated_pairs": 50,
+                "duplicate_candidate_versions_excluded": 0,
+                "multi_candidate_queries": 10,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            }
+          ]
+        },
+        {
+          "l2": 0.1,
+          "hr_weight": 0.5,
+          "grade_gap": false,
+          "cv_macro_ndcg": 0.8468978254941688,
+          "cv_macro_pairwise_accuracy": 0.6980008417508419,
+          "direction_ndcg": {
+            "cv_to_jobs": 0.778984355988333,
+            "job_to_candidates": 0.9148112950000046
+          },
+          "direction_pairwise_accuracy": {
+            "cv_to_jobs": 0.5793350168350169,
+            "job_to_candidates": 0.8166666666666668
+          },
+          "fold_metrics": [
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.7164017137234531,
+                "ndcg_at_5_informative": 0.7164017137234531,
+                "pairwise_accuracy": 0.5227272727272727,
+                "top1_best_label_credit_informative": 0.3909090909090909,
+                "queries": 11,
+                "informative_queries": 11,
+                "all_weak_queries_excluded_from_ndcg": 0
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 0.9829594069327737,
+                "ndcg_at_5_informative": 0.8551549589285763,
+                "pairwise_accuracy": 0.75,
+                "top1_best_label_credit_informative": 0.6666666666666666,
+                "queries": 41,
+                "informative_queries": 2,
+                "all_weak_queries_excluded_from_ndcg": 24,
+                "input_pairs": 55,
+                "evaluated_pairs": 54,
+                "duplicate_candidate_versions_excluded": 1,
+                "multi_candidate_queries": 10,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            },
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.8206452727923562,
+                "ndcg_at_5_informative": 0.8007169697692846,
+                "pairwise_accuracy": 0.6736111111111112,
+                "top1_best_label_credit_informative": 0.47777777777777775,
+                "queries": 10,
+                "informative_queries": 9,
+                "all_weak_queries_excluded_from_ndcg": 0
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 1.0,
+                "ndcg_at_5_informative": 1.0,
+                "pairwise_accuracy": 1.0,
+                "top1_best_label_credit_informative": 1.0,
+                "queries": 46,
+                "informative_queries": 1,
+                "all_weak_queries_excluded_from_ndcg": 25,
+                "input_pairs": 50,
+                "evaluated_pairs": 50,
+                "duplicate_candidate_versions_excluded": 0,
+                "multi_candidate_queries": 4,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            },
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.85987118792287,
+                "ndcg_at_5_informative": 0.8198343844722614,
+                "pairwise_accuracy": 0.5416666666666666,
+                "top1_best_label_credit_informative": 0.42857142857142855,
+                "queries": 10,
+                "informative_queries": 7,
+                "all_weak_queries_excluded_from_ndcg": 1
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 0.9769331095982161,
+                "ndcg_at_5_informative": 0.8892789260714373,
+                "pairwise_accuracy": 0.7,
+                "top1_best_label_credit_informative": 0.7,
+                "queries": 38,
+                "informative_queries": 5,
+                "all_weak_queries_excluded_from_ndcg": 14,
+                "input_pairs": 50,
+                "evaluated_pairs": 50,
+                "duplicate_candidate_versions_excluded": 0,
+                "multi_candidate_queries": 10,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            }
+          ]
+        },
+        {
+          "l2": 0.1,
+          "hr_weight": 0.5,
+          "grade_gap": true,
+          "cv_macro_ndcg": 0.8468978254941688,
+          "cv_macro_pairwise_accuracy": 0.6980008417508419,
+          "direction_ndcg": {
+            "cv_to_jobs": 0.778984355988333,
+            "job_to_candidates": 0.9148112950000046
+          },
+          "direction_pairwise_accuracy": {
+            "cv_to_jobs": 0.5793350168350169,
+            "job_to_candidates": 0.8166666666666668
+          },
+          "fold_metrics": [
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.7164017137234531,
+                "ndcg_at_5_informative": 0.7164017137234531,
+                "pairwise_accuracy": 0.5227272727272727,
+                "top1_best_label_credit_informative": 0.3909090909090909,
+                "queries": 11,
+                "informative_queries": 11,
+                "all_weak_queries_excluded_from_ndcg": 0
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 0.9829594069327737,
+                "ndcg_at_5_informative": 0.8551549589285763,
+                "pairwise_accuracy": 0.75,
+                "top1_best_label_credit_informative": 0.6666666666666666,
+                "queries": 41,
+                "informative_queries": 2,
+                "all_weak_queries_excluded_from_ndcg": 24,
+                "input_pairs": 55,
+                "evaluated_pairs": 54,
+                "duplicate_candidate_versions_excluded": 1,
+                "multi_candidate_queries": 10,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            },
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.8206452727923562,
+                "ndcg_at_5_informative": 0.8007169697692846,
+                "pairwise_accuracy": 0.6736111111111112,
+                "top1_best_label_credit_informative": 0.47777777777777775,
+                "queries": 10,
+                "informative_queries": 9,
+                "all_weak_queries_excluded_from_ndcg": 0
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 1.0,
+                "ndcg_at_5_informative": 1.0,
+                "pairwise_accuracy": 1.0,
+                "top1_best_label_credit_informative": 1.0,
+                "queries": 46,
+                "informative_queries": 1,
+                "all_weak_queries_excluded_from_ndcg": 25,
+                "input_pairs": 50,
+                "evaluated_pairs": 50,
+                "duplicate_candidate_versions_excluded": 0,
+                "multi_candidate_queries": 4,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            },
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.85987118792287,
+                "ndcg_at_5_informative": 0.8198343844722614,
+                "pairwise_accuracy": 0.5416666666666666,
+                "top1_best_label_credit_informative": 0.42857142857142855,
+                "queries": 10,
+                "informative_queries": 7,
+                "all_weak_queries_excluded_from_ndcg": 1
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 0.9769331095982161,
+                "ndcg_at_5_informative": 0.8892789260714373,
+                "pairwise_accuracy": 0.7,
+                "top1_best_label_credit_informative": 0.7,
+                "queries": 38,
+                "informative_queries": 5,
+                "all_weak_queries_excluded_from_ndcg": 14,
+                "input_pairs": 50,
+                "evaluated_pairs": 50,
+                "duplicate_candidate_versions_excluded": 0,
+                "multi_candidate_queries": 10,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            }
+          ]
+        },
+        {
+          "l2": 1.0,
+          "hr_weight": 0.0,
+          "grade_gap": false,
+          "cv_macro_ndcg": 0.8412734588211326,
+          "cv_macro_pairwise_accuracy": 0.6913169392336059,
+          "direction_ndcg": {
+            "cv_to_jobs": 0.7677356226422605,
+            "job_to_candidates": 0.9148112950000046
+          },
+          "direction_pairwise_accuracy": {
+            "cv_to_jobs": 0.5659672118005451,
+            "job_to_candidates": 0.8166666666666668
+          },
+          "fold_metrics": [
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.749953554307866,
+                "ndcg_at_5_informative": 0.749953554307866,
+                "pairwise_accuracy": 0.5454545454545454,
+                "top1_best_label_credit_informative": 0.4818181818181818,
+                "queries": 11,
+                "informative_queries": 11,
+                "all_weak_queries_excluded_from_ndcg": 0
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 0.9829594069327737,
+                "ndcg_at_5_informative": 0.8551549589285763,
+                "pairwise_accuracy": 0.75,
+                "top1_best_label_credit_informative": 0.6666666666666666,
+                "queries": 41,
+                "informative_queries": 2,
+                "all_weak_queries_excluded_from_ndcg": 24,
+                "input_pairs": 55,
+                "evaluated_pairs": 54,
+                "duplicate_candidate_versions_excluded": 1,
+                "multi_candidate_queries": 10,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            },
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.8119854320395117,
+                "ndcg_at_5_informative": 0.7910949244883463,
+                "pairwise_accuracy": 0.6643518518518519,
+                "top1_best_label_credit_informative": 0.4222222222222222,
+                "queries": 10,
+                "informative_queries": 9,
+                "all_weak_queries_excluded_from_ndcg": 0
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 1.0,
+                "ndcg_at_5_informative": 1.0,
+                "pairwise_accuracy": 1.0,
+                "top1_best_label_credit_informative": 1.0,
+                "queries": 46,
+                "informative_queries": 1,
+                "all_weak_queries_excluded_from_ndcg": 25,
+                "input_pairs": 50,
+                "evaluated_pairs": 50,
+                "duplicate_candidate_versions_excluded": 0,
+                "multi_candidate_queries": 4,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            },
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.8150120804348872,
+                "ndcg_at_5_informative": 0.7621583891305692,
+                "pairwise_accuracy": 0.4880952380952381,
+                "top1_best_label_credit_informative": 0.2857142857142857,
+                "queries": 10,
+                "informative_queries": 7,
+                "all_weak_queries_excluded_from_ndcg": 1
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 0.9769331095982161,
+                "ndcg_at_5_informative": 0.8892789260714373,
+                "pairwise_accuracy": 0.7,
+                "top1_best_label_credit_informative": 0.7,
+                "queries": 38,
+                "informative_queries": 5,
+                "all_weak_queries_excluded_from_ndcg": 14,
+                "input_pairs": 50,
+                "evaluated_pairs": 50,
+                "duplicate_candidate_versions_excluded": 0,
+                "multi_candidate_queries": 10,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            }
+          ]
+        },
+        {
+          "l2": 1.0,
+          "hr_weight": 0.0,
+          "grade_gap": true,
+          "cv_macro_ndcg": 0.8412734588211326,
+          "cv_macro_pairwise_accuracy": 0.6913169392336059,
+          "direction_ndcg": {
+            "cv_to_jobs": 0.7677356226422605,
+            "job_to_candidates": 0.9148112950000046
+          },
+          "direction_pairwise_accuracy": {
+            "cv_to_jobs": 0.5659672118005451,
+            "job_to_candidates": 0.8166666666666668
+          },
+          "fold_metrics": [
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.749953554307866,
+                "ndcg_at_5_informative": 0.749953554307866,
+                "pairwise_accuracy": 0.5454545454545454,
+                "top1_best_label_credit_informative": 0.4818181818181818,
+                "queries": 11,
+                "informative_queries": 11,
+                "all_weak_queries_excluded_from_ndcg": 0
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 0.9829594069327737,
+                "ndcg_at_5_informative": 0.8551549589285763,
+                "pairwise_accuracy": 0.75,
+                "top1_best_label_credit_informative": 0.6666666666666666,
+                "queries": 41,
+                "informative_queries": 2,
+                "all_weak_queries_excluded_from_ndcg": 24,
+                "input_pairs": 55,
+                "evaluated_pairs": 54,
+                "duplicate_candidate_versions_excluded": 1,
+                "multi_candidate_queries": 10,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            },
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.8119854320395117,
+                "ndcg_at_5_informative": 0.7910949244883463,
+                "pairwise_accuracy": 0.6643518518518519,
+                "top1_best_label_credit_informative": 0.4222222222222222,
+                "queries": 10,
+                "informative_queries": 9,
+                "all_weak_queries_excluded_from_ndcg": 0
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 1.0,
+                "ndcg_at_5_informative": 1.0,
+                "pairwise_accuracy": 1.0,
+                "top1_best_label_credit_informative": 1.0,
+                "queries": 46,
+                "informative_queries": 1,
+                "all_weak_queries_excluded_from_ndcg": 25,
+                "input_pairs": 50,
+                "evaluated_pairs": 50,
+                "duplicate_candidate_versions_excluded": 0,
+                "multi_candidate_queries": 4,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            },
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.8150120804348872,
+                "ndcg_at_5_informative": 0.7621583891305692,
+                "pairwise_accuracy": 0.4880952380952381,
+                "top1_best_label_credit_informative": 0.2857142857142857,
+                "queries": 10,
+                "informative_queries": 7,
+                "all_weak_queries_excluded_from_ndcg": 1
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 0.9769331095982161,
+                "ndcg_at_5_informative": 0.8892789260714373,
+                "pairwise_accuracy": 0.7,
+                "top1_best_label_credit_informative": 0.7,
+                "queries": 38,
+                "informative_queries": 5,
+                "all_weak_queries_excluded_from_ndcg": 14,
+                "input_pairs": 50,
+                "evaluated_pairs": 50,
+                "duplicate_candidate_versions_excluded": 0,
+                "multi_candidate_queries": 10,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            }
+          ]
+        },
+        {
+          "l2": 1.0,
+          "hr_weight": 0.5,
+          "grade_gap": false,
+          "cv_macro_ndcg": 0.8517114037819695,
+          "cv_macro_pairwise_accuracy": 0.7032217011383679,
+          "direction_ndcg": {
+            "cv_to_jobs": 0.7886115125639344,
+            "job_to_candidates": 0.9148112950000046
+          },
+          "direction_pairwise_accuracy": {
+            "cv_to_jobs": 0.5897767356100689,
+            "job_to_candidates": 0.8166666666666668
+          },
+          "fold_metrics": [
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.749953554307866,
+                "ndcg_at_5_informative": 0.749953554307866,
+                "pairwise_accuracy": 0.5454545454545454,
+                "top1_best_label_credit_informative": 0.4818181818181818,
+                "queries": 11,
+                "informative_queries": 11,
+                "all_weak_queries_excluded_from_ndcg": 0
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 0.9829594069327737,
+                "ndcg_at_5_informative": 0.8551549589285763,
+                "pairwise_accuracy": 0.75,
+                "top1_best_label_credit_informative": 0.6666666666666666,
+                "queries": 41,
+                "informative_queries": 2,
+                "all_weak_queries_excluded_from_ndcg": 24,
+                "input_pairs": 55,
+                "evaluated_pairs": 54,
+                "duplicate_candidate_versions_excluded": 1,
+                "multi_candidate_queries": 10,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            },
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.8119854320395117,
+                "ndcg_at_5_informative": 0.7910949244883463,
+                "pairwise_accuracy": 0.6643518518518519,
+                "top1_best_label_credit_informative": 0.4222222222222222,
+                "queries": 10,
+                "informative_queries": 9,
+                "all_weak_queries_excluded_from_ndcg": 0
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 1.0,
+                "ndcg_at_5_informative": 1.0,
+                "pairwise_accuracy": 1.0,
+                "top1_best_label_credit_informative": 1.0,
+                "queries": 46,
+                "informative_queries": 1,
+                "all_weak_queries_excluded_from_ndcg": 25,
+                "input_pairs": 50,
+                "evaluated_pairs": 50,
+                "duplicate_candidate_versions_excluded": 0,
+                "multi_candidate_queries": 4,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            },
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.863722490252126,
+                "ndcg_at_5_informative": 0.8247860588955905,
+                "pairwise_accuracy": 0.5595238095238095,
+                "top1_best_label_credit_informative": 0.42857142857142855,
+                "queries": 10,
+                "informative_queries": 7,
+                "all_weak_queries_excluded_from_ndcg": 1
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 0.9769331095982161,
+                "ndcg_at_5_informative": 0.8892789260714373,
+                "pairwise_accuracy": 0.7,
+                "top1_best_label_credit_informative": 0.7,
+                "queries": 38,
+                "informative_queries": 5,
+                "all_weak_queries_excluded_from_ndcg": 14,
+                "input_pairs": 50,
+                "evaluated_pairs": 50,
+                "duplicate_candidate_versions_excluded": 0,
+                "multi_candidate_queries": 10,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            }
+          ]
+        },
+        {
+          "l2": 1.0,
+          "hr_weight": 0.5,
+          "grade_gap": true,
+          "cv_macro_ndcg": 0.8517114037819695,
+          "cv_macro_pairwise_accuracy": 0.7032217011383679,
+          "direction_ndcg": {
+            "cv_to_jobs": 0.7886115125639344,
+            "job_to_candidates": 0.9148112950000046
+          },
+          "direction_pairwise_accuracy": {
+            "cv_to_jobs": 0.5897767356100689,
+            "job_to_candidates": 0.8166666666666668
+          },
+          "fold_metrics": [
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.749953554307866,
+                "ndcg_at_5_informative": 0.749953554307866,
+                "pairwise_accuracy": 0.5454545454545454,
+                "top1_best_label_credit_informative": 0.4818181818181818,
+                "queries": 11,
+                "informative_queries": 11,
+                "all_weak_queries_excluded_from_ndcg": 0
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 0.9829594069327737,
+                "ndcg_at_5_informative": 0.8551549589285763,
+                "pairwise_accuracy": 0.75,
+                "top1_best_label_credit_informative": 0.6666666666666666,
+                "queries": 41,
+                "informative_queries": 2,
+                "all_weak_queries_excluded_from_ndcg": 24,
+                "input_pairs": 55,
+                "evaluated_pairs": 54,
+                "duplicate_candidate_versions_excluded": 1,
+                "multi_candidate_queries": 10,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            },
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.8119854320395117,
+                "ndcg_at_5_informative": 0.7910949244883463,
+                "pairwise_accuracy": 0.6643518518518519,
+                "top1_best_label_credit_informative": 0.4222222222222222,
+                "queries": 10,
+                "informative_queries": 9,
+                "all_weak_queries_excluded_from_ndcg": 0
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 1.0,
+                "ndcg_at_5_informative": 1.0,
+                "pairwise_accuracy": 1.0,
+                "top1_best_label_credit_informative": 1.0,
+                "queries": 46,
+                "informative_queries": 1,
+                "all_weak_queries_excluded_from_ndcg": 25,
+                "input_pairs": 50,
+                "evaluated_pairs": 50,
+                "duplicate_candidate_versions_excluded": 0,
+                "multi_candidate_queries": 4,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            },
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.863722490252126,
+                "ndcg_at_5_informative": 0.8247860588955905,
+                "pairwise_accuracy": 0.5595238095238095,
+                "top1_best_label_credit_informative": 0.42857142857142855,
+                "queries": 10,
+                "informative_queries": 7,
+                "all_weak_queries_excluded_from_ndcg": 1
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 0.9769331095982161,
+                "ndcg_at_5_informative": 0.8892789260714373,
+                "pairwise_accuracy": 0.7,
+                "top1_best_label_credit_informative": 0.7,
+                "queries": 38,
+                "informative_queries": 5,
+                "all_weak_queries_excluded_from_ndcg": 14,
+                "input_pairs": 50,
+                "evaluated_pairs": 50,
+                "duplicate_candidate_versions_excluded": 0,
+                "multi_candidate_queries": 10,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            }
+          ]
+        },
+        {
+          "l2": 10.0,
+          "hr_weight": 0.0,
+          "grade_gap": false,
+          "cv_macro_ndcg": 0.8276982305417205,
+          "cv_macro_pairwise_accuracy": 0.6559994789161456,
+          "direction_ndcg": {
+            "cv_to_jobs": 0.7651898491786727,
+            "job_to_candidates": 0.8902066119047684
+          },
+          "direction_pairwise_accuracy": {
+            "cv_to_jobs": 0.5619989578322911,
+            "job_to_candidates": 0.75
+          },
+          "fold_metrics": [
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.749953554307866,
+                "ndcg_at_5_informative": 0.749953554307866,
+                "pairwise_accuracy": 0.5454545454545454,
+                "top1_best_label_credit_informative": 0.4818181818181818,
+                "queries": 11,
+                "informative_queries": 11,
+                "all_weak_queries_excluded_from_ndcg": 0
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 0.9829594069327737,
+                "ndcg_at_5_informative": 0.8551549589285763,
+                "pairwise_accuracy": 0.75,
+                "top1_best_label_credit_informative": 0.6666666666666666,
+                "queries": 41,
+                "informative_queries": 2,
+                "all_weak_queries_excluded_from_ndcg": 24,
+                "input_pairs": 55,
+                "evaluated_pairs": 54,
+                "duplicate_candidate_versions_excluded": 1,
+                "multi_candidate_queries": 10,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            },
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.8119854320395117,
+                "ndcg_at_5_informative": 0.7910949244883463,
+                "pairwise_accuracy": 0.6643518518518519,
+                "top1_best_label_credit_informative": 0.4222222222222222,
+                "queries": 10,
+                "informative_queries": 9,
+                "all_weak_queries_excluded_from_ndcg": 0
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 1.0,
+                "ndcg_at_5_informative": 1.0,
+                "pairwise_accuracy": 1.0,
+                "top1_best_label_credit_informative": 1.0,
+                "queries": 46,
+                "informative_queries": 1,
+                "all_weak_queries_excluded_from_ndcg": 25,
+                "input_pairs": 50,
+                "evaluated_pairs": 50,
+                "duplicate_candidate_versions_excluded": 0,
+                "multi_candidate_queries": 4,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            },
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.8090719423531822,
+                "ndcg_at_5_informative": 0.7545210687398057,
+                "pairwise_accuracy": 0.4761904761904762,
+                "top1_best_label_credit_informative": 0.2857142857142857,
+                "queries": 10,
+                "informative_queries": 7,
+                "all_weak_queries_excluded_from_ndcg": 1
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 0.9615551826636936,
+                "ndcg_at_5_informative": 0.8154648767857287,
+                "pairwise_accuracy": 0.5,
+                "top1_best_label_credit_informative": 0.5,
+                "queries": 38,
+                "informative_queries": 5,
+                "all_weak_queries_excluded_from_ndcg": 14,
+                "input_pairs": 50,
+                "evaluated_pairs": 50,
+                "duplicate_candidate_versions_excluded": 0,
+                "multi_candidate_queries": 10,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            }
+          ]
+        },
+        {
+          "l2": 10.0,
+          "hr_weight": 0.0,
+          "grade_gap": true,
+          "cv_macro_ndcg": 0.8276982305417205,
+          "cv_macro_pairwise_accuracy": 0.6559994789161456,
+          "direction_ndcg": {
+            "cv_to_jobs": 0.7651898491786727,
+            "job_to_candidates": 0.8902066119047684
+          },
+          "direction_pairwise_accuracy": {
+            "cv_to_jobs": 0.5619989578322911,
+            "job_to_candidates": 0.75
+          },
+          "fold_metrics": [
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.749953554307866,
+                "ndcg_at_5_informative": 0.749953554307866,
+                "pairwise_accuracy": 0.5454545454545454,
+                "top1_best_label_credit_informative": 0.4818181818181818,
+                "queries": 11,
+                "informative_queries": 11,
+                "all_weak_queries_excluded_from_ndcg": 0
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 0.9829594069327737,
+                "ndcg_at_5_informative": 0.8551549589285763,
+                "pairwise_accuracy": 0.75,
+                "top1_best_label_credit_informative": 0.6666666666666666,
+                "queries": 41,
+                "informative_queries": 2,
+                "all_weak_queries_excluded_from_ndcg": 24,
+                "input_pairs": 55,
+                "evaluated_pairs": 54,
+                "duplicate_candidate_versions_excluded": 1,
+                "multi_candidate_queries": 10,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            },
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.8119854320395117,
+                "ndcg_at_5_informative": 0.7910949244883463,
+                "pairwise_accuracy": 0.6643518518518519,
+                "top1_best_label_credit_informative": 0.4222222222222222,
+                "queries": 10,
+                "informative_queries": 9,
+                "all_weak_queries_excluded_from_ndcg": 0
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 1.0,
+                "ndcg_at_5_informative": 1.0,
+                "pairwise_accuracy": 1.0,
+                "top1_best_label_credit_informative": 1.0,
+                "queries": 46,
+                "informative_queries": 1,
+                "all_weak_queries_excluded_from_ndcg": 25,
+                "input_pairs": 50,
+                "evaluated_pairs": 50,
+                "duplicate_candidate_versions_excluded": 0,
+                "multi_candidate_queries": 4,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            },
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.8090719423531822,
+                "ndcg_at_5_informative": 0.7545210687398057,
+                "pairwise_accuracy": 0.4761904761904762,
+                "top1_best_label_credit_informative": 0.2857142857142857,
+                "queries": 10,
+                "informative_queries": 7,
+                "all_weak_queries_excluded_from_ndcg": 1
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 0.9615551826636936,
+                "ndcg_at_5_informative": 0.8154648767857287,
+                "pairwise_accuracy": 0.5,
+                "top1_best_label_credit_informative": 0.5,
+                "queries": 38,
+                "informative_queries": 5,
+                "all_weak_queries_excluded_from_ndcg": 14,
+                "input_pairs": 50,
+                "evaluated_pairs": 50,
+                "duplicate_candidate_versions_excluded": 0,
+                "multi_candidate_queries": 10,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            }
+          ]
+        },
+        {
+          "l2": 10.0,
+          "hr_weight": 0.5,
+          "grade_gap": false,
+          "cv_macro_ndcg": 0.8394090622343513,
+          "cv_macro_pairwise_accuracy": 0.6698883678050345,
+          "direction_ndcg": {
+            "cv_to_jobs": 0.7886115125639344,
+            "job_to_candidates": 0.8902066119047684
+          },
+          "direction_pairwise_accuracy": {
+            "cv_to_jobs": 0.5897767356100689,
+            "job_to_candidates": 0.75
+          },
+          "fold_metrics": [
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.749953554307866,
+                "ndcg_at_5_informative": 0.749953554307866,
+                "pairwise_accuracy": 0.5454545454545454,
+                "top1_best_label_credit_informative": 0.4818181818181818,
+                "queries": 11,
+                "informative_queries": 11,
+                "all_weak_queries_excluded_from_ndcg": 0
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 0.9829594069327737,
+                "ndcg_at_5_informative": 0.8551549589285763,
+                "pairwise_accuracy": 0.75,
+                "top1_best_label_credit_informative": 0.6666666666666666,
+                "queries": 41,
+                "informative_queries": 2,
+                "all_weak_queries_excluded_from_ndcg": 24,
+                "input_pairs": 55,
+                "evaluated_pairs": 54,
+                "duplicate_candidate_versions_excluded": 1,
+                "multi_candidate_queries": 10,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            },
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.8119854320395117,
+                "ndcg_at_5_informative": 0.7910949244883463,
+                "pairwise_accuracy": 0.6643518518518519,
+                "top1_best_label_credit_informative": 0.4222222222222222,
+                "queries": 10,
+                "informative_queries": 9,
+                "all_weak_queries_excluded_from_ndcg": 0
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 1.0,
+                "ndcg_at_5_informative": 1.0,
+                "pairwise_accuracy": 1.0,
+                "top1_best_label_credit_informative": 1.0,
+                "queries": 46,
+                "informative_queries": 1,
+                "all_weak_queries_excluded_from_ndcg": 25,
+                "input_pairs": 50,
+                "evaluated_pairs": 50,
+                "duplicate_candidate_versions_excluded": 0,
+                "multi_candidate_queries": 4,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            },
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.863722490252126,
+                "ndcg_at_5_informative": 0.8247860588955905,
+                "pairwise_accuracy": 0.5595238095238095,
+                "top1_best_label_credit_informative": 0.42857142857142855,
+                "queries": 10,
+                "informative_queries": 7,
+                "all_weak_queries_excluded_from_ndcg": 1
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 0.9615551826636936,
+                "ndcg_at_5_informative": 0.8154648767857287,
+                "pairwise_accuracy": 0.5,
+                "top1_best_label_credit_informative": 0.5,
+                "queries": 38,
+                "informative_queries": 5,
+                "all_weak_queries_excluded_from_ndcg": 14,
+                "input_pairs": 50,
+                "evaluated_pairs": 50,
+                "duplicate_candidate_versions_excluded": 0,
+                "multi_candidate_queries": 10,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            }
+          ]
+        },
+        {
+          "l2": 10.0,
+          "hr_weight": 0.5,
+          "grade_gap": true,
+          "cv_macro_ndcg": 0.8394090622343513,
+          "cv_macro_pairwise_accuracy": 0.6698883678050345,
+          "direction_ndcg": {
+            "cv_to_jobs": 0.7886115125639344,
+            "job_to_candidates": 0.8902066119047684
+          },
+          "direction_pairwise_accuracy": {
+            "cv_to_jobs": 0.5897767356100689,
+            "job_to_candidates": 0.75
+          },
+          "fold_metrics": [
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.749953554307866,
+                "ndcg_at_5_informative": 0.749953554307866,
+                "pairwise_accuracy": 0.5454545454545454,
+                "top1_best_label_credit_informative": 0.4818181818181818,
+                "queries": 11,
+                "informative_queries": 11,
+                "all_weak_queries_excluded_from_ndcg": 0
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 0.9829594069327737,
+                "ndcg_at_5_informative": 0.8551549589285763,
+                "pairwise_accuracy": 0.75,
+                "top1_best_label_credit_informative": 0.6666666666666666,
+                "queries": 41,
+                "informative_queries": 2,
+                "all_weak_queries_excluded_from_ndcg": 24,
+                "input_pairs": 55,
+                "evaluated_pairs": 54,
+                "duplicate_candidate_versions_excluded": 1,
+                "multi_candidate_queries": 10,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            },
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.8119854320395117,
+                "ndcg_at_5_informative": 0.7910949244883463,
+                "pairwise_accuracy": 0.6643518518518519,
+                "top1_best_label_credit_informative": 0.4222222222222222,
+                "queries": 10,
+                "informative_queries": 9,
+                "all_weak_queries_excluded_from_ndcg": 0
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 1.0,
+                "ndcg_at_5_informative": 1.0,
+                "pairwise_accuracy": 1.0,
+                "top1_best_label_credit_informative": 1.0,
+                "queries": 46,
+                "informative_queries": 1,
+                "all_weak_queries_excluded_from_ndcg": 25,
+                "input_pairs": 50,
+                "evaluated_pairs": 50,
+                "duplicate_candidate_versions_excluded": 0,
+                "multi_candidate_queries": 4,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            },
+            {
+              "cv_to_jobs": {
+                "ndcg_at_5": 0.863722490252126,
+                "ndcg_at_5_informative": 0.8247860588955905,
+                "pairwise_accuracy": 0.5595238095238095,
+                "top1_best_label_credit_informative": 0.42857142857142855,
+                "queries": 10,
+                "informative_queries": 7,
+                "all_weak_queries_excluded_from_ndcg": 1
+              },
+              "job_to_candidates": {
+                "ndcg_at_5": 0.9615551826636936,
+                "ndcg_at_5_informative": 0.8154648767857287,
+                "pairwise_accuracy": 0.5,
+                "top1_best_label_credit_informative": 0.5,
+                "queries": 38,
+                "informative_queries": 5,
+                "all_weak_queries_excluded_from_ndcg": 14,
+                "input_pairs": 50,
+                "evaluated_pairs": 50,
+                "duplicate_candidate_versions_excluded": 0,
+                "multi_candidate_queries": 10,
+                "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+              }
+            }
+          ]
+        }
+      ],
+      "validation_search": [
+        {
+          "l2": 1.0,
+          "hr_weight": 0.5,
+          "grade_gap": false,
+          "metrics": {
+            "cv_to_jobs": {
+              "ndcg_at_5": 0.9321905934833814,
+              "ndcg_at_5_informative": 0.9095874579778419,
+              "pairwise_accuracy": 0.5416666666666666,
+              "top1_best_label_credit_informative": 0.5666666666666667,
+              "queries": 6,
+              "informative_queries": 3,
+              "all_weak_queries_excluded_from_ndcg": 2
+            },
+            "job_to_candidates": {
+              "ndcg_at_5": 0.9806873278571435,
+              "ndcg_at_5_informative": 0.8551549589285763,
+              "pairwise_accuracy": 0.75,
+              "top1_best_label_credit_informative": 0.6666666666666666,
+              "queries": 25,
+              "informative_queries": 2,
+              "all_weak_queries_excluded_from_ndcg": 10,
+              "input_pairs": 30,
+              "evaluated_pairs": 30,
+              "duplicate_candidate_versions_excluded": 0,
+              "multi_candidate_queries": 4,
+              "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+            }
+          }
+        }
+      ],
+      "selected_l2": 1.0,
+      "train": {
+        "skill_overlap": {
+          "ndcg_at_5": 0.7773488429518728,
+          "ndcg_at_5_informative": 0.7526098255020808,
+          "pairwise_accuracy": 0.5362654320987654,
+          "top1_best_label_credit_informative": 0.44074074074074077,
+          "queries": 31,
+          "informative_queries": 27,
+          "all_weak_queries_excluded_from_ndcg": 1
+        },
+        "original_shortlist_order": {
+          "ndcg_at_5": 0.7872814201294738,
+          "ndcg_at_5_informative": 0.7636460223660819,
+          "pairwise_accuracy": 0.5972222222222222,
+          "top1_best_label_credit_informative": 0.5185185185185185,
+          "queries": 31,
+          "informative_queries": 27,
+          "all_weak_queries_excluded_from_ndcg": 1
+        },
+        "trained_ml2": {
+          "ndcg_at_5": 0.8163974966747882,
+          "ndcg_at_5_informative": 0.7959972185275425,
+          "pairwise_accuracy": 0.6072530864197531,
+          "top1_best_label_credit_informative": 0.48518518518518516,
+          "queries": 31,
+          "informative_queries": 27,
+          "all_weak_queries_excluded_from_ndcg": 1
+        }
+      },
+      "validation": {
+        "skill_overlap": {
+          "ndcg_at_5": 0.9565893466078877,
+          "ndcg_at_5_informative": 0.942119128810517,
+          "pairwise_accuracy": 0.625,
+          "top1_best_label_credit_informative": 0.7333333333333334,
+          "queries": 6,
+          "informative_queries": 3,
+          "all_weak_queries_excluded_from_ndcg": 2
+        },
+        "original_shortlist_order": {
+          "ndcg_at_5": 0.9569010918389727,
+          "ndcg_at_5_informative": 0.9425347891186302,
+          "pairwise_accuracy": 0.5833333333333334,
+          "top1_best_label_credit_informative": 0.6666666666666666,
+          "queries": 6,
+          "informative_queries": 3,
+          "all_weak_queries_excluded_from_ndcg": 2
+        },
+        "trained_ml2": {
+          "ndcg_at_5": 0.9321905934833814,
+          "ndcg_at_5_informative": 0.9095874579778419,
+          "pairwise_accuracy": 0.5416666666666666,
+          "top1_best_label_credit_informative": 0.5666666666666667,
+          "queries": 6,
+          "informative_queries": 3,
+          "all_weak_queries_excluded_from_ndcg": 2
+        }
+      },
+      "test": {
+        "skill_overlap": {
+          "ndcg_at_5": 0.6990205643101722,
+          "ndcg_at_5_informative": 0.6990205643101722,
+          "pairwise_accuracy": 0.44841269841269843,
+          "top1_best_label_credit_informative": 0.19999999999999998,
+          "queries": 6,
+          "informative_queries": 6,
+          "all_weak_queries_excluded_from_ndcg": 0
+        },
+        "original_shortlist_order": {
+          "ndcg_at_5": 0.6734775647850731,
+          "ndcg_at_5_informative": 0.6734775647850731,
+          "pairwise_accuracy": 0.39087301587301587,
+          "top1_best_label_credit_informative": 0.16666666666666666,
+          "queries": 6,
+          "informative_queries": 6,
+          "all_weak_queries_excluded_from_ndcg": 0
+        },
+        "trained_ml2": {
+          "ndcg_at_5": 0.7170923440089787,
+          "ndcg_at_5_informative": 0.7170923440089787,
+          "pairwise_accuracy": 0.5734126984126985,
+          "top1_best_label_credit_informative": 0.3666666666666667,
+          "queries": 6,
+          "informative_queries": 6,
+          "all_weak_queries_excluded_from_ndcg": 0
+        }
+      },
+      "hr_ranking": {
+        "train": {
+          "skill_overlap": {
+            "ndcg_at_5": 0.9604015974776854,
+            "ndcg_at_5_informative": 0.855748676525854,
+            "pairwise_accuracy": 0.6130952380952381,
+            "top1_best_label_credit_informative": 0.6059523809523809,
+            "queries": 103,
+            "informative_queries": 14,
+            "all_weak_queries_excluded_from_ndcg": 52,
+            "input_pairs": 155,
+            "evaluated_pairs": 154,
+            "duplicate_candidate_versions_excluded": 1,
+            "multi_candidate_queries": 29,
+            "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+          },
+          "trained_ml2": {
+            "ndcg_at_5": 0.9720436558123661,
+            "ndcg_at_5_informative": 0.8981590318879054,
+            "pairwise_accuracy": 0.7142857142857143,
+            "top1_best_label_credit_informative": 0.713095238095238,
+            "queries": 103,
+            "informative_queries": 14,
+            "all_weak_queries_excluded_from_ndcg": 52,
+            "input_pairs": 155,
+            "evaluated_pairs": 154,
+            "duplicate_candidate_versions_excluded": 1,
+            "multi_candidate_queries": 29,
+            "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+          }
+        },
+        "validation": {
+          "skill_overlap": {
+            "ndcg_at_5": 0.9806873278571435,
+            "ndcg_at_5_informative": 0.8551549589285763,
+            "pairwise_accuracy": 0.75,
+            "top1_best_label_credit_informative": 0.6666666666666666,
+            "queries": 25,
+            "informative_queries": 2,
+            "all_weak_queries_excluded_from_ndcg": 10,
+            "input_pairs": 30,
+            "evaluated_pairs": 30,
+            "duplicate_candidate_versions_excluded": 0,
+            "multi_candidate_queries": 4,
+            "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+          },
+          "trained_ml2": {
+            "ndcg_at_5": 0.9806873278571435,
+            "ndcg_at_5_informative": 0.8551549589285763,
+            "pairwise_accuracy": 0.75,
+            "top1_best_label_credit_informative": 0.6666666666666666,
+            "queries": 25,
+            "informative_queries": 2,
+            "all_weak_queries_excluded_from_ndcg": 10,
+            "input_pairs": 30,
+            "evaluated_pairs": 30,
+            "duplicate_candidate_versions_excluded": 0,
+            "multi_candidate_queries": 4,
+            "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+          }
+        },
+        "test": {
+          "skill_overlap": {
+            "ndcg_at_5": 0.9858049905219791,
+            "ndcg_at_5_informative": 0.9077324383928644,
+            "pairwise_accuracy": 0.75,
+            "top1_best_label_credit_informative": 0.75,
+            "queries": 26,
+            "informative_queries": 2,
+            "all_weak_queries_excluded_from_ndcg": 13,
+            "input_pairs": 30,
+            "evaluated_pairs": 30,
+            "duplicate_candidate_versions_excluded": 0,
+            "multi_candidate_queries": 4,
+            "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+          },
+          "trained_ml2": {
+            "ndcg_at_5": 0.9858049905219791,
+            "ndcg_at_5_informative": 0.9077324383928644,
+            "pairwise_accuracy": 0.75,
+            "top1_best_label_credit_informative": 0.75,
+            "queries": 26,
+            "informative_queries": 2,
+            "all_weak_queries_excluded_from_ndcg": 13,
+            "input_pairs": 30,
+            "evaluated_pairs": 30,
+            "duplicate_candidate_versions_excluded": 0,
+            "multi_candidate_queries": 4,
+            "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+          }
+        }
+      },
+      "limitations": [
+        "Small pilot; test contains only six CV queries in the current dataset",
+        "Some test vacancies also occur in training; this is not an unseen-vacancy test",
+        "Original shortlist is BM25/skills, not an executed ML1 embedding baseline",
+        "Dictionary features do not reproduce every requirement judgment or generate new span annotations",
+        "Employment duration uses explicitly role-scoped statements or totals in one supported profile, not inferred job intervals",
+        "Zero input evidence anchors score at zero; positive scores remain uncalibrated relative evidence, not hiring probabilities",
+        "The explicit relevant-experience shortfall rule is engineering policy, not a learned coefficient; validation and reported metrics include this rule",
+        "Only ten good-fit pairs in the complete eligible dataset; mixed human/assistant review",
+        "Three train candidate-group folds selected the configuration before validation/test reporting; fixed validation is descriptive and did not select hyperparameters",
+        "HR-direction metrics are sparse; show informative and multi-candidate query counts, not singleton-inflated overall NDCG",
+        "The historical pilot test was already reused in earlier project development; it is not a pristine prospective holdout"
+      ]
+    },
+    "limitations": [
+      "Small pilot; test contains only six CV queries in the current dataset",
+      "Some test vacancies also occur in training; this is not an unseen-vacancy test",
+      "Original shortlist is BM25/skills, not an executed ML1 embedding baseline",
+      "Dictionary features do not reproduce every requirement judgment or generate new span annotations",
+      "Employment duration uses explicitly role-scoped statements or totals in one supported profile, not inferred job intervals",
+      "Zero input evidence anchors score at zero; positive scores remain uncalibrated relative evidence, not hiring probabilities",
+      "The explicit relevant-experience shortfall rule is engineering policy, not a learned coefficient; validation and reported metrics include this rule",
+      "Only ten good-fit pairs in the complete eligible dataset; mixed human/assistant review",
+      "Three train candidate-group folds selected the configuration before validation/test reporting; fixed validation is descriptive and did not select hyperparameters",
+      "HR-direction metrics are sparse; show informative and multi-candidate query counts, not singleton-inflated overall NDCG",
+      "The historical pilot test was already reused in earlier project development; it is not a pristine prospective holdout",
+      "Fixed validation forward NDCG is lower than shipped v2; group-CV improvement does not establish universal improvement.",
+      "Only eight informative HR queries across three train folds; historical validation has two informative HR queries.",
+      "The independent synthetic HR benchmark was frozen externally and not read for feature definitions, model selection, or fitting. It is engineering evidence, not real HR validation.",
+      "On the two informative historical HR test queries, v2 and v3 tie at NDCG0.907732; the larger HR cross-validation gain is not a demonstrated improvement on that sparse test."
+    ],
+    "v2_historical_test_comparison_after_model_lock": {
+      "description": "Frozen shipped v2 source+weights from git18b827c, historical test computed only after finalv3model was locked andpublished; descriptivecomparisonnotselection.",
+      "metrics": {
+        "cv_to_jobs": {
+          "ndcg_at_5": 0.7142410243350934,
+          "ndcg_at_5_informative": 0.7142410243350934,
+          "pairwise_accuracy": 0.5317460317460317,
+          "top1_best_label_credit_informative": 0.3666666666666667,
+          "queries": 6,
+          "informative_queries": 6,
+          "all_weak_queries_excluded_from_ndcg": 0
+        },
+        "job_to_candidates": {
+          "ndcg_at_5": 0.9858049905219791,
+          "ndcg_at_5_informative": 0.9077324383928644,
+          "pairwise_accuracy": 0.75,
+          "top1_best_label_credit_informative": 0.75,
+          "queries": 26,
+          "informative_queries": 2,
+          "all_weak_queries_excluded_from_ndcg": 13,
+          "input_pairs": 30,
+          "evaluated_pairs": 30,
+          "duplicate_candidate_versions_excluded": 0,
+          "multi_candidate_queries": 4,
+          "version_policy": "One candidate group per vacancy; stable minimum CV source ID, independent of labels and scores"
+        }
+      }
+    }
+  },
+  "limitations": [
+    "Small pilot; test contains only six CV queries in the current dataset",
+    "Some test vacancies also occur in training; this is not an unseen-vacancy test",
+    "Original shortlist is BM25/skills, not an executed ML1 embedding baseline",
+    "Dictionary features do not reproduce every requirement judgment or generate new span annotations",
+    "Employment duration uses explicitly role-scoped statements or totals in one supported profile, not inferred job intervals",
+    "Zero input evidence anchors score at zero; positive scores remain uncalibrated relative evidence, not hiring probabilities",
+    "The explicit relevant-experience shortfall rule is engineering policy, not a learned coefficient; validation and reported metrics include this rule",
+    "Only ten good-fit pairs in the complete eligible dataset; mixed human/assistant review",
+    "Three train candidate-group folds selected the configuration before validation/test reporting; fixed validation is descriptive and did not select hyperparameters",
+    "HR-direction metrics are sparse; show informative and multi-candidate query counts, not singleton-inflated overall NDCG",
+    "The historical pilot test was already reused in earlier project development; it is not a pristine prospective holdout",
+    "This extraction correctness fix was informed by the first synthetic HR holdout; that first holdout is now a regression set, not independent quality evidence for the revised source",
+    "Fixed validation forward NDCG is lower than shipped v2; group-CV improvement does not establish universal improvement.",
+    "Only eight informative HR queries across three train folds; historical validation and historical test each have only two informative HR queries.",
+    "The first HR holdout informed source negation fixes and is now regression evidence, not an independent test of the revised extractor.",
+    "This final refit used precisely the previously selected configuration, not another hyperparameter search.",
+    "The historical train/validation/test metrics and learned weights were unchanged by this bounded negation fix; the source fingerprint and provenance changed.",
+    "A new blind synthetic HR suite is separately owned and was not read for fitting, selection, or this negation fix; synthetic checks do not validate real employer outcomes."
+  ]
+}

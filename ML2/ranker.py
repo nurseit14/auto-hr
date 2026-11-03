@@ -9,26 +9,60 @@ import numpy as np
 from ML2.features import FEATURE_NAMES, FEATURE_VERSION, extract_features, feature_fingerprint
 
 
-MODEL_VERSION = "ml2-pairwise-linear-v2"
+MODEL_VERSION = "ml2-pairwise-linear-v3"
 SCORE_POLICY_VERSION = "relevant-experience-shortfall-v1"
 
 
-def preference_pairs(rows, matrix):
-    queries = defaultdict(list)
+def preference_pairs(rows, matrix, hr_weight=0., grade_gap=False):
+    """Balance query contributions in both supported retrieval directions.
+
+    Human-reviewed labels alone determine preferences. A candidate version is
+    never compared with itself in the HR direction. Each direction first
+    normalizes its informative queries; the mix then controls total mass.
+    """
+    if not 0 <= hr_weight <= 1:
+        raise ValueError("HR direction weight must be between zero and one")
+    queries, vacancies = defaultdict(list), defaultdict(list)
     for index, row in enumerate(rows):
         if row.get("relevance") is None or row.get("overall_score") == 0:
             raise ValueError("Unknown labels cannot train the ranker")
         queries[row["cv_id"]].append(index)
-    differences, weights = [], []
-    for indices in queries.values():
-        pairs = [(a, b) for a in indices for b in indices
-                 if rows[a]["relevance"] > rows[b]["relevance"]]
-        for a, b in pairs:
-            differences.append(matrix[a] - matrix[b])
-            weights.append(1. / len(pairs))
-    if not differences:
+        if row.get("vacancy_id") is not None:
+            vacancies[row["vacancy_id"]].append(index)
+
+    def direction(groups, hr=False):
+        result = []
+        for indices in groups.values():
+            if hr:
+                canonical = {}
+                for index in sorted(indices, key=lambda index: str(rows[index]["cv_id"])):
+                    canonical.setdefault(rows[index].get("candidate_group_id", rows[index]["cv_id"]), index)
+                indices = list(canonical.values())
+            pairs = [(a, b) for a in indices for b in indices
+                     if rows[a]["relevance"] > rows[b]["relevance"]
+                     and (not hr or rows[a].get("candidate_group_id", rows[a]["cv_id"])
+                          != rows[b].get("candidate_group_id", rows[b]["cv_id"]))]
+            if not pairs:
+                continue
+            importance = np.asarray([rows[a]["relevance"] - rows[b]["relevance"]
+                                     if grade_gap else 1. for a, b in pairs], dtype=float)
+            importance /= importance.sum()
+            result.append([(matrix[a] - matrix[b], float(weight))
+                           for (a, b), weight in zip(pairs, importance)])
+        return [(diff, weight / len(result)) for group in result for diff, weight in group]
+
+    cv_pairs, hr_pairs = direction(queries), direction(vacancies, hr=True)
+    if not cv_pairs and not hr_pairs:
         raise ValueError("Need at least one CV with different relevance labels")
-    return np.asarray(differences), np.asarray(weights) / sum(weights)
+    # Fixtures or a sparse fold may have no comparable candidates for a job.
+    # Reassign its unused mass instead of dropping all learning examples.
+    if not hr_pairs:
+        hr_weight = 0.
+    elif not cv_pairs:
+        hr_weight = 1.
+    selected = [(diff, weight * (1. - hr_weight)) for diff, weight in cv_pairs if hr_weight < 1.]
+    selected += [(diff, weight * hr_weight) for diff, weight in hr_pairs if hr_weight > 0.]
+    return np.asarray([item[0] for item in selected]), np.asarray([item[1] for item in selected])
 
 
 class LinearRanker:
@@ -42,7 +76,7 @@ class LinearRanker:
         self.metadata = metadata or {}
 
     @classmethod
-    def fit(cls, rows, matrix, l2=.1, iterations=3000):
+    def fit(cls, rows, matrix, l2=.1, iterations=3000, hr_weight=0., grade_gap=False):
         matrix = np.asarray(matrix, dtype=float)
         if matrix.shape != (len(rows), len(FEATURE_NAMES)) or not np.isfinite(matrix).all():
             raise ValueError("Invalid training feature matrix")
@@ -54,7 +88,7 @@ class LinearRanker:
         # professional evidence rather than the average of a small mixed pilot.
         # This changes the score origin, not learned pairwise preferences.
         mean = np.zeros(matrix.shape[1])
-        diffs, sample_weight = preference_pairs(rows, matrix / scale)
+        diffs, sample_weight = preference_pairs(rows, matrix / scale, hr_weight=hr_weight, grade_gap=grade_gap)
         weights = np.zeros(matrix.shape[1])
         lipschitz = .25 * np.linalg.norm(diffs * np.sqrt(sample_weight[:, None]), ord=2) ** 2 + l2
         for iteration in range(iterations):
@@ -70,6 +104,7 @@ class LinearRanker:
                      + .5 * l2 * (weights @ weights))
         return cls(mean, scale, weights, {"l2": l2, "iterations": iteration + 1,
                                          "preference_pairs": len(diffs), "training_objective": loss,
+                                         "hr_direction_weight": hr_weight, "grade_gap_weighting": grade_gap,
                                          "score_origin": "Zero feature vector is zero evidence score; pairwise learning is translation invariant",
                                          "training_feature_mean": training_mean.tolist(),
                                          "score_policy_version": SCORE_POLICY_VERSION,
