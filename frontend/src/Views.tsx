@@ -11,6 +11,7 @@ import {
   MapPin,
   Search,
   Send,
+  Trash2,
   Upload,
 } from "lucide-react";
 import { api, json, safeSourceUrl, scoreLabel } from "./api";
@@ -63,9 +64,13 @@ function VacancyDetails({ vacancy }: { vacancy: Vacancy }) {
 export function VacancyBrowser({
   onSelect,
   compact = false,
+  onDelete,
+  revision = 0,
 }: {
   onSelect: (vacancy: Vacancy) => void;
   compact?: boolean;
+  onDelete?: (vacancy: Vacancy) => void;
+  revision?: number;
 }) {
   const [query, setQuery] = useState("");
   const [city, setCity] = useState("");
@@ -89,7 +94,11 @@ export function VacancyBrowser({
         });
         api<VacancyPage>(`/vacancies?${params}`, { signal: controller.signal })
           .then((result) => {
-            if (!controller.signal.aborted) setData(result);
+            if (!controller.signal.aborted) {
+              const lastPage = Math.max(1, Math.ceil(result.total / limit));
+              if (page > lastPage) setPage(lastPage);
+              setData(result);
+            }
           })
           .catch((reason) => {
             if (!controller.signal.aborted) setError(errorText(reason));
@@ -104,7 +113,7 @@ export function VacancyBrowser({
       window.clearTimeout(timer);
       controller.abort();
     };
-  }, [query, city, page, limit, retry]);
+  }, [query, city, page, limit, retry, revision]);
 
   const pages = Math.max(1, Math.ceil((data?.total || 0) / limit));
   return (
@@ -236,6 +245,16 @@ export function VacancyBrowser({
               >
                 Подобрать кандидатов <ArrowRight size={16} />
               </button>
+              {onDelete && vacancy.is_custom && (
+                <button
+                  className="button ghost danger-text"
+                  type="button"
+                  disabled={loading}
+                  onClick={() => onDelete(vacancy)}
+                >
+                  <Trash2 size={16} /> Удалить вакансию
+                </button>
+              )}
             </div>
           </article>
         ))}
@@ -270,9 +289,11 @@ export function VacancyBrowser({
 export function MatchesView({
   candidates,
   onAddResume,
+  revision,
 }: {
   candidates: Candidate[];
   onAddResume: () => void;
+  revision: number;
 }) {
   const [candidateId, setCandidateId] = useState(candidates[0]?.id || "");
   const [city, setCity] = useState("");
@@ -306,7 +327,7 @@ export function MatchesView({
       controller.abort();
       request.current?.abort();
     };
-  }, []);
+  }, [revision]);
   useEffect(() => {
     if (!candidates.some((candidate) => candidate.id === candidateId)) {
       request.current?.abort();
@@ -320,7 +341,7 @@ export function MatchesView({
     setLoading(false);
     setResult(null);
     setError("");
-  }, [candidateSignature]);
+  }, [candidateSignature, revision]);
   async function match(event: FormEvent) {
     event.preventDefault();
     if (!candidateId || loading) return;

@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 import re
 from time import perf_counter
-from typing import Literal
+from typing import Annotated, Literal
 from urllib.parse import urlparse
 import uuid
 
@@ -34,6 +34,11 @@ class Input(BaseModel):
 class CandidateInput(Input):
     name: str = Field(default="Кандидат", min_length=1, max_length=120)
     text: str = Field(min_length=20, max_length=MAX_TEXT_CHARS)
+    vacancy_id: str | None = Field(default=None, min_length=1, max_length=100)
+
+
+class CandidateVacanciesInput(Input):
+    vacancy_ids: list[Annotated[str, Field(min_length=1, max_length=100)]] = Field(max_length=100)
 
 
 class CandidatePatch(Input):
@@ -96,9 +101,10 @@ def timestamp():
 
 
 def create_app(database_path=None):
-    app = FastAPI(title="Auto-HR API", version="1.0.0", description="Локальный MVP помощника HR для IT-вакансий Казахстана.")
-    store = Store(database_path or os.getenv("AUTO_HR_DB") or ROOT / "backend/runtime/auto_hr.sqlite3")
+    app = FastAPI(title="Auto-HR API", version="1.1.0", description="Локальный MVP помощника HR для IT-вакансий Казахстана.")
     matching = Matching()
+    store = Store(database_path or os.getenv("AUTO_HR_DB") or ROOT / "backend/runtime/auto_hr.sqlite3",
+                  catalogue_ids=matching.by_id)
     app.state.store = store
     app.state.matching = matching
 
@@ -149,7 +155,9 @@ def create_app(database_path=None):
             raise HTTPException(404, "Вакансия не найдена в этом рабочем пространстве.")
         return record
 
-    def add_candidate(request, name, text, filename="", is_demo=False):
+    def add_candidate(request, name, text, filename="", is_demo=False, vacancy_id=None):
+        if vacancy_id:
+            vacancy_for(request, vacancy_id)
         if len(store.all("candidates", request.state.sid)) >= 100:
             raise HTTPException(400, "В MVP доступно до 100 кандидатов. Удалите ненужные резюме.")
         try:
@@ -164,8 +172,11 @@ def create_app(database_path=None):
                                  "text": text, "notes": "", "is_demo": is_demo,
                                  "created_at": timestamp(), "clarifications": [],
                                  "manual_added": [], "manual_removed": [], "manual_confirmed": []})
-        store.put("candidates", request.state.sid, record)
-        return record
+        try:
+            store.put("candidates", request.state.sid, record, vacancy_ids=[vacancy_id] if vacancy_id else [])
+        except LookupError as exc:
+            raise HTTPException(404, str(exc)) from exc
+        return candidate_for(request, record["id"])
 
     def add_vacancy(request, data, is_demo=False):
         if len(store.all("vacancies", request.state.sid)) >= 100:
@@ -203,16 +214,34 @@ def create_app(database_path=None):
     def get_vacancy(vacancy_id: str, request: Request):
         return vacancy_for(request, vacancy_id)
 
+    @app.delete("/api/vacancies/{vacancy_id}")
+    def delete_vacancy(vacancy_id: str, request: Request):
+        record = store.get("vacancies", request.state.sid, vacancy_id)
+        if record is None:
+            if vacancy_id in matching.by_id:
+                raise HTTPException(403, "Архивную вакансию удалить нельзя. Удалять можно только вакансии вашего рабочего пространства.")
+            raise HTTPException(404, "Вакансия не найдена в этом рабочем пространстве.")
+        store.delete_vacancy(request.state.sid, vacancy_id)
+        return {"deleted": True}
+
     @app.get("/api/candidates")
-    def candidates(request: Request):
-        return {"items": [public_candidate(row) for row in store.all("candidates", request.state.sid)]}
+    def candidates(request: Request, vacancy_id: str | None = Query(default=None, min_length=1, max_length=100)):
+        if vacancy_id is not None:
+            vacancy_for(request, vacancy_id)
+            rows = store.candidates_for_vacancy(request.state.sid, vacancy_id)
+        else:
+            rows = store.all("candidates", request.state.sid)
+        return {"items": [public_candidate(row) for row in rows]}
 
     @app.post("/api/candidates", status_code=201)
     def create_candidate(data: CandidateInput, request: Request):
-        return public_candidate(add_candidate(request, data.name, data.text))
+        return public_candidate(add_candidate(request, data.name, data.text, vacancy_id=data.vacancy_id))
 
     @app.post("/api/candidates/upload", status_code=201)
-    async def upload_candidate(request: Request, file: UploadFile = File(...), name: str = Form(default="")):
+    async def upload_candidate(request: Request, file: UploadFile = File(...), name: str = Form(default=""),
+                               vacancy_id: str | None = Form(default=None, max_length=100)):
+        if vacancy_id:
+            vacancy_for(request, vacancy_id)
         if len(name.strip()) > 120:
             raise HTTPException(422, "Имя должно быть не длиннее 120 символов.")
         try:
@@ -227,10 +256,21 @@ def create_app(database_path=None):
         except ResumeError as exc:
             raise HTTPException(422, str(exc)) from exc
         display_name = name.strip() or Path(filename).stem[:120] or "Кандидат"
-        return public_candidate(add_candidate(request, display_name, text, filename=filename))
+        return public_candidate(add_candidate(request, display_name, text, filename=filename, vacancy_id=vacancy_id))
 
     @app.get("/api/candidates/{candidate_id}")
     def get_candidate(candidate_id: str, request: Request):
+        return public_candidate(candidate_for(request, candidate_id))
+
+    @app.put("/api/candidates/{candidate_id}/vacancies")
+    def set_candidate_vacancies(candidate_id: str, data: CandidateVacanciesInput, request: Request):
+        candidate_for(request, candidate_id)
+        for vacancy_id in set(data.vacancy_ids):
+            vacancy_for(request, vacancy_id)
+        try:
+            store.set_candidate_vacancies(request.state.sid, candidate_id, data.vacancy_ids)
+        except LookupError as exc:
+            raise HTTPException(404, str(exc)) from exc
         return public_candidate(candidate_for(request, candidate_id))
 
     @app.patch("/api/candidates/{candidate_id}")
@@ -272,14 +312,19 @@ def create_app(database_path=None):
     def shortlist(data: ShortlistInput, request: Request):
         start = perf_counter()
         vacancy = vacancy_for(request, data.vacancy_id)
-        rows = matching.shortlist(store.all("candidates", request.state.sid), vacancy, store.reviews(request.state.sid, data.vacancy_id))
+        rows = matching.shortlist(store.candidates_for_vacancy(request.state.sid, data.vacancy_id), vacancy, store.reviews(request.state.sid, data.vacancy_id))
         return {"vacancy": vacancy, "candidates": rows, "pipeline": matching.pipeline(), "elapsed_ms": round((perf_counter() - start) * 1000, 1)}
 
     @app.put("/api/reviews")
     def review(data: ReviewInput, request: Request):
         vacancy_for(request, data.vacancy_id)
-        candidate_for(request, data.candidate_id)
-        store.review(request.state.sid, data.vacancy_id, data.candidate_id, data.status)
+        record = candidate_for(request, data.candidate_id)
+        if data.vacancy_id not in record["vacancy_ids"]:
+            raise HTTPException(409, "Сначала добавьте кандидата в эту вакансию из общей базы резюме.")
+        try:
+            store.review(request.state.sid, data.vacancy_id, data.candidate_id, data.status)
+        except LookupError as exc:
+            raise HTTPException(409, str(exc)) from exc
         return {"status": data.status}
 
     @app.post("/api/matches")
@@ -294,7 +339,7 @@ def create_app(database_path=None):
     @app.get("/api/export")
     def export(request: Request, vacancy_id: str):
         vacancy = vacancy_for(request, vacancy_id)
-        rows = matching.shortlist(store.all("candidates", request.state.sid), vacancy, store.reviews(request.state.sid, vacancy_id))
+        rows = matching.shortlist(store.candidates_for_vacancy(request.state.sid, vacancy_id), vacancy, store.reviews(request.state.sid, vacancy_id))
         stream = StringIO(newline="")
         writer = csv.writer(stream, delimiter=";")
         writer.writerow(["Кандидат", "Вакансия", "Относительный балл ML2", "Покрытие навыков", "Подтверждены", "Не подтверждены", "Требуют уточнения", "Решение HR", "Объяснение", "Заметки HR"])
@@ -330,21 +375,34 @@ def create_app(database_path=None):
 
     @app.post("/api/demo")
     def demo(request: Request):
+        all_candidates = store.all("candidates", request.state.sid)
+        saved_demo_candidates = [row for row in all_candidates if row.get("is_demo")]
         existing = next((row for row in store.all("vacancies", request.state.sid) if row.get("is_demo")), None)
         if existing:
-            demo_candidates = [public_candidate(row) for row in store.all("candidates", request.state.sid) if row["is_demo"]]
+            demo_candidates = []
+            for row in saved_demo_candidates:
+                store.set_candidate_vacancies(request.state.sid, row["id"], [*row["vacancy_ids"], existing["id"]])
+                demo_candidates.append(public_candidate(candidate_for(request, row["id"])))
             return {"vacancy_id": existing["id"], "candidates": demo_candidates}
+        if not saved_demo_candidates and len(all_candidates) > 96:
+            raise HTTPException(400, "Для демо нужно место для четырёх кандидатов. Удалите ненужные резюме или используйте свои данные.")
         vacancy = add_vacancy(request, VacancyInput(title="Middle Python Backend Developer", company="Auto-HR · демо-команда",
                               city="Алматы", requirements="Обязательны Python, FastAPI, PostgreSQL, Docker, Git, REST API. Опыт backend разработки от 2 лет. Желателен Kubernetes.",
                               description="Разрабатывать backend сервисы и REST API, писать тесты, оптимизировать SQL и разворачивать сервисы.",
                               experience="От 2 лет", salary="Обсуждается на интервью"), is_demo=True)
+        if saved_demo_candidates:
+            records = []
+            for row in saved_demo_candidates:
+                store.set_candidate_vacancies(request.state.sid, row["id"], [*row["vacancy_ids"], vacancy["id"]])
+                records.append(public_candidate(candidate_for(request, row["id"])))
+            return {"vacancy_id": vacancy["id"], "candidates": records}
         examples = [
             ("Кандидат А · backend", "Middle Python backend developer. Work experience: 4 years. Разрабатывал REST API на FastAPI и Python. PostgreSQL, SQL, Docker, Git. Писал unit tests и разворачивал сервисы в Kubernetes. В команде отвечал за backend сервис платежей, оптимизацию запросов и deployment."),
             ("Кандидат Б · fullstack", "Middle fullstack developer. Work experience: 3 years. Python, Django, PostgreSQL, Git, Docker, JavaScript, React, REST API. Разрабатывал клиентские интерфейсы и backend интернет-магазина. Знакомство с FastAPI, хочу изучить Kubernetes."),
             ("Кандидат В · начинающий", "Junior Python backend developer. Work experience: 1 year. Разработал учебный REST API с FastAPI и SQLite. Python, Git, SQL, unit tests. Docker изучаю на учебных проектах. В PostgreSQL и Kubernetes не работал."),
             ("Кандидат Г · frontend", "Middle frontend developer. Work experience: 3 years. React, TypeScript, JavaScript, HTML, CSS, Git, Figma, Jest. Разрабатывал интерфейсы личного кабинета и компоненты дизайн-системы. Работал с REST API со стороны клиента."),
         ]
-        records = [public_candidate(add_candidate(request, name, text, is_demo=True)) for name, text in examples]
+        records = [public_candidate(add_candidate(request, name, text, is_demo=True, vacancy_id=vacancy["id"])) for name, text in examples]
         return {"vacancy_id": vacancy["id"], "candidates": records}
 
     @app.delete("/api/session")

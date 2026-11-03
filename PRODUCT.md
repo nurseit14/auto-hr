@@ -20,7 +20,7 @@ Local demonstration and early user testing. Russian interface; source resumes ma
 
 ## Capabilities and Constraints
 
-Reuse canonical skill extraction and the trained local ML2 ranker. ML1 embedding artifacts are absent; show lexical/skills fallback honestly and offer optional semantic configuration. Uploaded candidates and decisions persist in session-scoped SQLite. Local browser sessions are not authenticated employer accounts. Never automatically reject candidates. No remote key required for the core MVP. Never copy private CVs, annotations, .env or API keys.
+Reuse canonical skill extraction and the trained local ML2 ranker. ML1 embedding artifacts are absent; show lexical/skills fallback honestly and offer optional semantic configuration. Uploaded candidates, explicit candidate-to-vacancy assignments and decisions persist in session-scoped SQLite. Each vacancy compares only its assigned candidates; the general talent pool remains separate. HR can remove an assignment, delete a resume from the workspace, or delete a custom vacancy while retaining its resumes. Local browser sessions are not authenticated employer accounts. Never automatically reject candidates. No remote key required for the core MVP. Never copy private CVs, annotations, .env or API keys.
 
 ## Brand Commitments
 

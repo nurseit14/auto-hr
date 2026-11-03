@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
-import { FileText, LoaderCircle, Upload, X } from "lucide-react";
+import { FileText, LoaderCircle, Search, Upload, X } from "lucide-react";
 import { api, json } from "./api";
 import type { Candidate, Vacancy } from "./api";
 
@@ -63,10 +63,15 @@ export function Modal({
 export function UploadDialog({
   onClose,
   onCreated,
+  vacancies,
+  defaultVacancy,
 }: {
   onClose: () => void;
   onCreated: (items: Candidate[]) => void;
+  vacancies: Vacancy[];
+  defaultVacancy: Vacancy | null;
 }) {
+  const [vacancyId, setVacancyId] = useState(defaultVacancy?.id || "");
   const [mode, setMode] = useState<"files" | "text">("files");
   const [files, setFiles] = useState<File[]>([]);
   const [name, setName] = useState("");
@@ -98,7 +103,11 @@ export function UploadDialog({
       if (mode === "text") {
         const candidate = await api<Candidate>("/candidates", {
           method: "POST",
-          body: json({ name: name.trim() || "Кандидат", text: text.trim() }),
+          body: json({
+            name: name.trim() || "Кандидат",
+            text: text.trim(),
+            vacancy_id: vacancyId || null,
+          }),
         });
         onCreated([candidate]);
         onClose();
@@ -123,6 +132,7 @@ export function UploadDialog({
           try {
             const data = new FormData();
             data.append("file", file);
+            if (vacancyId) data.append("vacancy_id", vacancyId);
             if (files.length === 1 && name.trim())
               data.append("name", name.trim());
             created.push(
@@ -161,6 +171,26 @@ export function UploadDialog({
           Загрузите опыт IT-специалиста. Навыки будут извлечены автоматически;
           результат можно проверить и исправить.
         </p>
+        <label className="field">
+          Куда добавить резюме
+          <select
+            value={vacancyId}
+            onChange={(event) => setVacancyId(event.target.value)}
+            disabled={busy}
+          >
+            <option value="">В общую базу · без вакансии</option>
+            {vacancies.map((vacancy) => (
+              <option value={vacancy.id} key={vacancy.id}>
+                {vacancy.title} · {vacancy.company}
+              </option>
+            ))}
+          </select>
+          <span className="field-hint">
+            {vacancyId
+              ? "Кандидаты появятся в подборе только этой вакансии. В другие вакансии их можно добавить вручную."
+              : "Резюме сохранится в разделе «Все кандидаты» и не попадёт в подбор автоматически."}
+          </span>
+        </label>
         <div className="segmented" aria-label="Способ добавления резюме">
           <button
             type="button"
@@ -284,6 +314,159 @@ export function UploadDialog({
               : mode === "files" && files.length > 1
                 ? `Добавить резюме (${files.length})`
                 : "Добавить резюме"}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+export function CandidatePoolDialog({
+  vacancy,
+  candidates,
+  onClose,
+  onSaved,
+}: {
+  vacancy: Vacancy;
+  candidates: Candidate[];
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [query, setQuery] = useState("");
+  const [selected, setSelected] = useState<string[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const available = candidates.filter(
+    (candidate) => !candidate.vacancy_ids.includes(vacancy.id),
+  );
+  const visible = available.filter((candidate) =>
+    `${candidate.name} ${candidate.skills.join(" ")}`
+      .toLowerCase()
+      .includes(query.toLowerCase()),
+  );
+
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    if (busy || !selected.length) return;
+    setBusy(true);
+    setError("");
+    const failed: string[] = [];
+    let added = 0;
+    let reason = "";
+    for (const id of selected) {
+      const candidate = available.find((item) => item.id === id);
+      if (!candidate) continue;
+      try {
+        const latest = await api<Candidate>(
+          `/candidates/${encodeURIComponent(id)}`,
+        );
+        await api<Candidate>(
+          `/candidates/${encodeURIComponent(id)}/vacancies`,
+          {
+            method: "PUT",
+            body: json({
+              vacancy_ids: [...new Set([...latest.vacancy_ids, vacancy.id])],
+            }),
+          },
+        );
+        added += 1;
+      } catch (error) {
+        failed.push(id);
+        reason = errorText(error);
+      }
+    }
+    if (added) onSaved();
+    if (failed.length) {
+      setSelected(failed);
+      setError(
+        `${added ? `Добавлено: ${added}. ` : ""}Остальные кандидаты не добавлены. ${reason}`,
+      );
+    } else onClose();
+    setBusy(false);
+  }
+
+  return (
+    <Modal
+      title="Добавить кандидатов из базы"
+      onClose={() => {
+        if (!busy) onClose();
+      }}
+      wide
+    >
+      <form className="stack" onSubmit={submit} aria-busy={busy}>
+        <p className="muted">
+          Вакансия: <strong>{vacancy.title}</strong>. Выберите резюме для этого
+          подбора. Их связи с другими вакансиями сохранятся.
+        </p>
+        <label className="search-field">
+          <Search size={17} />
+          <input
+            aria-label="Найти кандидата в базе"
+            placeholder="Имя или навык"
+            value={query}
+            disabled={busy}
+            onChange={(event) => setQuery(event.target.value)}
+          />
+        </label>
+        <div className="pool-list">
+          {visible.map((candidate) => (
+            <label className="pool-option" key={candidate.id}>
+              <input
+                type="checkbox"
+                checked={selected.includes(candidate.id)}
+                disabled={busy}
+                onChange={(event) =>
+                  setSelected((old) =>
+                    event.target.checked
+                      ? [...old, candidate.id]
+                      : old.filter((id) => id !== candidate.id),
+                  )
+                }
+              />
+              <span>
+                <strong>{candidate.name}</strong>
+                <small>
+                  {candidate.skills.slice(0, 7).join(" · ") ||
+                    "Навыки не извлечены"}
+                </small>
+                <small>
+                  {candidate.vacancy_ids.length
+                    ? `В других вакансиях: ${candidate.vacancy_ids.length}`
+                    : "Без вакансии"}
+                </small>
+              </span>
+            </label>
+          ))}
+          {!visible.length && (
+            <div className="empty small-empty">
+              <p>
+                {available.length
+                  ? "По этому запросу кандидатов нет."
+                  : "Все резюме из базы уже добавлены в эту вакансию."}
+              </p>
+            </div>
+          )}
+        </div>
+        {error && (
+          <p className="form-error" role="alert">
+            {error}
+          </p>
+        )}
+        <div className="form-actions">
+          <button
+            type="button"
+            className="button secondary"
+            disabled={busy}
+            onClick={onClose}
+          >
+            Отмена
+          </button>
+          <button
+            className="button primary"
+            disabled={busy || !selected.length}
+          >
+            {busy && <LoaderCircle size={16} className="spin" />}Добавить
+            выбранных{selected.length > 0 ? ` (${selected.length})` : ""}
           </button>
         </div>
       </form>

@@ -383,6 +383,116 @@ main {
   background: #b33c45;
   color: white;
 }
+.button.danger-text {
+  color: #9e303a;
+}
+.button.danger-text:hover:not(:disabled) {
+  color: #8a2530;
+  background: #fff0f1;
+}
+.field-hint {
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.65;
+}
+.pool-list {
+  max-height: 380px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+.pool-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 15px;
+  cursor: pointer;
+}
+.pool-option + .pool-option {
+  border-top: 1px solid var(--line);
+}
+.pool-option:hover {
+  background: #f5f8ff;
+}
+.pool-option input {
+  margin-top: 4px;
+  accent-color: var(--blue);
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.pool-option > span {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.pool-option strong {
+  overflow-wrap: anywhere;
+}
+.pool-option small {
+  color: var(--muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.candidate-management {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  padding: 0 18px 10px;
+}
+.candidate-management .text-button {
+  font-size: 11px;
+  min-height: 30px;
+}
+.candidate-assignment {
+  color: #56677f;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.vacancy-workflow-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  max-width: 310px;
+}
+.vacancy-empty > p {
+  max-width: 65ch;
+}
+.vacancy-row-actions {
+  gap: 8px;
+  flex-wrap: wrap;
+}
+@media (max-width: 1100px) {
+  .vacancy-strip {
+    flex-wrap: wrap;
+  }
+  .vacancy-workflow-actions {
+    flex-basis: 100%;
+    max-width: none;
+  }
+}
+@media (max-width: 520px) {
+  .vacancy-workflow-actions {
+    justify-content: flex-start;
+  }
+  .vacancy-workflow-actions > .button {
+    min-height: 42px;
+    white-space: normal;
+  }
+  .candidate-management {
+    padding-inline: 12px;
+    gap: 6px 12px;
+  }
+  .candidate-management .text-button {
+    min-height: 40px;
+    font-size: 12px;
+  }
+  .pool-option {
+    padding: 13px 12px;
+  }
+}
 .button.small {
   min-height: 33px;
   padding: 7px 11px;

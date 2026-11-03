@@ -24,6 +24,7 @@ export interface Candidate {
   is_demo: boolean;
   created_at: string;
   clarifications: { question: string; answer: string }[];
+  vacancy_ids: string[];
 }
 export type ReviewStatus = "new" | "shortlisted" | "hold";
 export interface RankedCandidate {

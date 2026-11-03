@@ -58,7 +58,8 @@ def normalize_skill(value):
 
 
 def public_candidate(record):
-    return {key: record[key] for key in ("id", "name", "filename", "text", "skills", "notes", "is_demo", "created_at", "clarifications")}
+    return {**{key: record[key] for key in ("id", "name", "filename", "text", "skills", "notes", "is_demo", "created_at", "clarifications")},
+            "vacancy_ids": record.get("vacancy_ids", [])}
 
 
 def refresh_skills(record):

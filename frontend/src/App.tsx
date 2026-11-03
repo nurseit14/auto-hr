@@ -41,6 +41,7 @@ import type {
 } from "./api";
 import {
   CandidateEditDialog,
+  CandidatePoolDialog,
   Modal,
   UploadDialog,
   VacancyDialog,
@@ -129,6 +130,7 @@ export default function App() {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [vacancy, setVacancy] = useState<Vacancy | null>(null);
+  const [vacancyOptions, setVacancyOptions] = useState<Vacancy[]>([]);
   const [ranking, setRanking] = useState<Shortlist | null>(null);
   const [selectedId, setSelectedId] = useState("");
   const [revision, setRevision] = useState(0);
@@ -138,8 +140,22 @@ export default function App() {
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState("");
   const [dialog, setDialog] = useState<
-    "upload" | "vacancy" | "picker" | "edit" | "delete" | null
+    | "upload"
+    | "vacancy"
+    | "picker"
+    | "edit"
+    | "delete"
+    | "pool"
+    | "unlink"
+    | "deleteVacancy"
+    | null
   >(null);
+  const [candidateTarget, setCandidateTarget] = useState<Candidate | null>(
+    null,
+  );
+  const [vacancyTarget, setVacancyTarget] = useState<Vacancy | null>(null);
+  const [modalError, setModalError] = useState("");
+  const [candidateFilter, setCandidateFilter] = useState("all");
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("all");
   const [tab, setTab] = useState<DetailTab>("evidence");
@@ -161,27 +177,41 @@ export default function App() {
       context?.focus({ preventScroll: true });
     }
   }, [tab, resumeQuote]);
-  const selectedCandidate = candidates.find((c) => c.id === selectedId) || null;
   const selectedRank =
-    ranking?.candidates.find((r) => r.candidate.id === selectedId) || null;
+    ranking?.vacancy.id === vacancy?.id
+      ? ranking?.candidates.find((r) => r.candidate.id === selectedId) || null
+      : null;
+  const selectedCandidate =
+    view === "shortlist"
+      ? selectedRank?.candidate || null
+      : candidates.find((c) => c.id === selectedId) || null;
+  const availableVacancies = [
+    ...vacancyOptions,
+    ...(vacancy && !vacancyOptions.some((item) => item.id === vacancy.id)
+      ? [vacancy]
+      : []),
+  ];
   const isDemo = candidates.some((c) => c.is_demo);
   const hasDemoVacancy = Boolean(
     (vacancy as Vacancy & { is_demo?: boolean })?.is_demo,
   );
 
   async function reload() {
-    const [c, s] = await Promise.all([
+    const [c, s, v] = await Promise.all([
       api<{ items: Candidate[] }>("/candidates"),
       api<Stats>("/stats"),
+      api<VacancyPage>("/vacancies?limit=100"),
     ]);
     setCandidates(c.items);
     setStats(s);
+    setVacancyOptions(v.items.filter((item) => item.is_custom));
     return c.items;
   }
   function pickVacancy(v: Vacancy) {
     setVacancy(v);
     localStorage.setItem("autohr_vacancy", v.id);
     setRanking(null);
+    setSelectedId("");
     setView("shortlist");
     setDialog(null);
     setMobileDetail(false);
@@ -194,8 +224,15 @@ export default function App() {
   }
   async function updated(items?: Candidate[]) {
     if (items?.length) setSelectedId(items[items.length - 1].id);
-    await reload();
-    setRevision((v) => v + 1);
+    try {
+      await reload();
+    } catch {
+      setError(
+        "Изменения сохранены, но список не обновился. Обновите страницу.",
+      );
+    } finally {
+      setRevision((v) => v + 1);
+    }
   }
   useEffect(() => {
     let active = true;
@@ -212,6 +249,7 @@ export default function App() {
         if (!active) return;
         setCandidates(c.items);
         setStats(s);
+        setVacancyOptions(j.items.filter((item) => item.is_custom));
         setSelectedId(c.items[0]?.id || "");
         const saved = localStorage.getItem("autohr_vacancy");
         let chosen =
@@ -242,7 +280,10 @@ export default function App() {
     };
   }, []);
   useEffect(() => {
-    if (!ready || !vacancy) return;
+    if (!ready || !vacancy || view !== "shortlist") {
+      setRankingBusy(false);
+      return;
+    }
     let active = true;
     setRankingBusy(true);
     api<Shortlist>("/shortlist", {
@@ -267,7 +308,10 @@ export default function App() {
     return () => {
       active = false;
     };
-  }, [ready, vacancy, revision]);
+  }, [ready, vacancy, revision, view]);
+  useEffect(() => {
+    setModalError("");
+  }, [dialog]);
   useEffect(() => {
     setQuestion(
       selectedRank?.questions[0] ||
@@ -363,20 +407,107 @@ export default function App() {
     }
   }
   async function remove() {
-    if (!selectedCandidate) return;
+    if (!candidateTarget) return;
     setBusy("delete");
+    setModalError("");
     try {
-      await api(`/candidates/${selectedCandidate.id}`, { method: "DELETE" });
+      await api(`/candidates/${encodeURIComponent(candidateTarget.id)}`, {
+        method: "DELETE",
+      });
+      setCandidates((old) =>
+        old.filter((item) => item.id !== candidateTarget.id),
+      );
       setDialog(null);
       setSelectedId("");
+      setRanking(null);
       setMobileDetail(false);
       await updated();
       setNotice("Резюме, уточнения и решения по кандидату удалены.");
     } catch (e) {
-      setError(message(e));
+      setModalError(message(e));
     } finally {
       setBusy("");
     }
+  }
+  async function unlink() {
+    if (!candidateTarget || !vacancyTarget) return;
+    setBusy("unlink");
+    setModalError("");
+    try {
+      const latest = await api<Candidate>(
+        `/candidates/${encodeURIComponent(candidateTarget.id)}`,
+      );
+      const changed = await api<Candidate>(
+        `/candidates/${encodeURIComponent(candidateTarget.id)}/vacancies`,
+        {
+          method: "PUT",
+          body: json({
+            vacancy_ids: latest.vacancy_ids.filter(
+              (id) => id !== vacancyTarget.id,
+            ),
+          }),
+        },
+      );
+      setCandidates((old) =>
+        old.map((item) => (item.id === changed.id ? changed : item)),
+      );
+      setDialog(null);
+      setSelectedId("");
+      setRanking(null);
+      setMobileDetail(false);
+      await updated();
+      setNotice(
+        "Кандидат убран из этой вакансии. Резюме осталось в общей базе.",
+      );
+    } catch (e) {
+      setModalError(message(e));
+    } finally {
+      setBusy("");
+    }
+  }
+  async function removeVacancy() {
+    if (!vacancyTarget) return;
+    setBusy("deleteVacancy");
+    setModalError("");
+    try {
+      await api(`/vacancies/${encodeURIComponent(vacancyTarget.id)}`, {
+        method: "DELETE",
+      });
+      setVacancyOptions((old) =>
+        old.filter((item) => item.id !== vacancyTarget.id),
+      );
+      setCandidates((old) =>
+        old.map((item) => ({
+          ...item,
+          vacancy_ids: item.vacancy_ids.filter((id) => id !== vacancyTarget.id),
+        })),
+      );
+      if (vacancy?.id === vacancyTarget.id) {
+        setVacancy(null);
+        setRanking(null);
+        setSelectedId("");
+        setMobileDetail(false);
+        localStorage.removeItem("autohr_vacancy");
+      }
+      if (candidateFilter === vacancyTarget.id) setCandidateFilter("all");
+      setDialog(null);
+      await updated();
+      setNotice(
+        "Вакансия и решения по ней удалены. Резюме сохранены в общей базе.",
+      );
+    } catch (e) {
+      setModalError(message(e));
+    } finally {
+      setBusy("");
+    }
+  }
+  function confirmDeleteCandidate(candidate: Candidate) {
+    setCandidateTarget(candidate);
+    setDialog("delete");
+  }
+  function confirmDeleteVacancy(item: Vacancy) {
+    setVacancyTarget(item);
+    setDialog("deleteVacancy");
   }
   function chooseCandidate(id: string) {
     setSelectedId(id);
@@ -399,12 +530,29 @@ export default function App() {
         .toLowerCase()
         .includes(query.toLowerCase()),
   );
-  const visibleCandidates = candidates.filter((c) =>
-    `${c.name} ${c.skills.join(" ")}`
-      .toLowerCase()
-      .includes(query.toLowerCase()),
+  const visibleCandidates = candidates.filter(
+    (c) =>
+      (candidateFilter === "all" ||
+        (candidateFilter === "unassigned"
+          ? c.vacancy_ids.length === 0
+          : c.vacancy_ids.includes(candidateFilter))) &&
+      `${c.name} ${c.skills.join(" ")}`
+        .toLowerCase()
+        .includes(query.toLowerCase()),
   );
   const noCandidates = candidates.length === 0;
+  const vacancyCandidateCount = candidates.filter(
+    (candidate) => vacancy && candidate.vacancy_ids.includes(vacancy.id),
+  ).length;
+  useEffect(() => {
+    if (
+      view === "candidates" &&
+      !visibleCandidates.some((candidate) => candidate.id === selectedId)
+    ) {
+      setSelectedId(visibleCandidates[0]?.id || "");
+      setMobileDetail(false);
+    }
+  }, [view, candidateFilter, query, candidates, selectedId]);
   const showingWorkbench = view === "shortlist" || view === "candidates";
   return (
     <div className="app-shell">
@@ -589,6 +737,26 @@ export default function App() {
                           Сменить вакансию
                           <ArrowRight size={16} />
                         </button>
+                        <div className="vacancy-workflow-actions">
+                          <button
+                            className="button secondary small"
+                            onClick={() => {
+                              setVacancyTarget(vacancy);
+                              setDialog("pool");
+                            }}
+                            disabled={!candidates.length}
+                          >
+                            <UsersRound size={16} /> Добавить из базы
+                          </button>
+                          {vacancy.is_custom && (
+                            <button
+                              className="button ghost small danger-text"
+                              onClick={() => confirmDeleteVacancy(vacancy)}
+                            >
+                              <Trash2 size={15} /> Удалить вакансию
+                            </button>
+                          )}
+                        </div>
                       </section>
                     ) : (
                       <section className="choose-vacancy">
@@ -671,8 +839,8 @@ export default function App() {
                       <BriefcaseBusiness size={32} />
                       <h2>Резюме уже на месте</h2>
                       <p>
-                        Выберите вакансию выше, чтобы сравнить{" "}
-                        {candidates.length} кандидатов с её требованиями.
+                        Выберите вакансию, затем добавьте в неё нужных
+                        кандидатов из общей базы.
                       </p>
                       <button
                         className="button primary"
@@ -681,6 +849,36 @@ export default function App() {
                         Выбрать вакансию
                       </button>
                     </div>
+                  ) : view === "shortlist" &&
+                    vacancy &&
+                    vacancyCandidateCount === 0 ? (
+                    <section className="panel empty vacancy-empty">
+                      <UsersRound size={32} />
+                      <h2>В этой вакансии пока нет кандидатов</h2>
+                      <p>
+                        Загрузите резюме для «{vacancy.title}» или выберите
+                        кандидатов из общей базы. Резюме из других вакансий сюда
+                        автоматически не попадают.
+                      </p>
+                      <div className="empty-actions">
+                        <button
+                          className="button primary"
+                          onClick={() => setDialog("upload")}
+                        >
+                          <Upload size={17} /> Загрузить резюме
+                        </button>
+                        <button
+                          className="button secondary"
+                          onClick={() => {
+                            setVacancyTarget(vacancy);
+                            setDialog("pool");
+                          }}
+                        >
+                          <UsersRound size={17} /> Добавить из базы (
+                          {candidates.length})
+                        </button>
+                      </div>
+                    </section>
                   ) : (
                     <div
                       className={`workbench ${mobileDetail ? "show-detail" : ""}`}
@@ -691,9 +889,36 @@ export default function App() {
                       >
                         <div className="candidate-toolbar">
                           <h2>
-                            Кандидаты <span>{candidates.length}</span>
+                            Кандидаты{" "}
+                            <span>
+                              {view === "shortlist"
+                                ? vacancyCandidateCount
+                                : visibleCandidates.length}
+                            </span>
                           </h2>
                           <div className="candidate-tools">
+                            {view === "candidates" && (
+                              <label className="compact-select">
+                                <BriefcaseBusiness size={15} />
+                                <select
+                                  aria-label="Фильтр кандидатов по вакансии"
+                                  value={candidateFilter}
+                                  onChange={(event) =>
+                                    setCandidateFilter(event.target.value)
+                                  }
+                                >
+                                  <option value="all">Вся база</option>
+                                  <option value="unassigned">
+                                    Без вакансии
+                                  </option>
+                                  {availableVacancies.map((item) => (
+                                    <option key={item.id} value={item.id}>
+                                      {item.title}
+                                    </option>
+                                  ))}
+                                </select>
+                              </label>
+                            )}
                             {view === "shortlist" && (
                               <>
                                 <label className="compact-select">
@@ -856,6 +1081,11 @@ export default function App() {
                                   <span className="candidate-file">
                                     {c.filename || "Резюме текстом"}
                                   </span>
+                                  <span className="candidate-assignment">
+                                    {c.vacancy_ids.length
+                                      ? `Вакансий: ${c.vacancy_ids.length}`
+                                      : "Без вакансии · в общей базе"}
+                                  </span>
                                   <SkillTags skills={c.skills.slice(0, 5)} />
                                 </span>
                                 <ChevronRight size={17} />
@@ -910,6 +1140,30 @@ export default function App() {
                                 onClick={() => setDialog("edit")}
                               >
                                 <Pencil size={17} />
+                              </button>
+                            </div>
+                            <div className="candidate-management">
+                              {view === "shortlist" && vacancy && (
+                                <button
+                                  className="text-button"
+                                  disabled={Boolean(busy)}
+                                  onClick={() => {
+                                    setCandidateTarget(selectedCandidate);
+                                    setVacancyTarget(vacancy);
+                                    setDialog("unlink");
+                                  }}
+                                >
+                                  <X size={15} /> Убрать из вакансии
+                                </button>
+                              )}
+                              <button
+                                className="text-button danger-text"
+                                disabled={Boolean(busy)}
+                                onClick={() =>
+                                  confirmDeleteCandidate(selectedCandidate)
+                                }
+                              >
+                                <Trash2 size={15} /> Удалить резюме
                               </button>
                             </div>
                             <div
@@ -1273,7 +1527,9 @@ export default function App() {
                                   <button
                                     type="button"
                                     className="text-button danger-text"
-                                    onClick={() => setDialog("delete")}
+                                    onClick={() =>
+                                      confirmDeleteCandidate(selectedCandidate)
+                                    }
                                   >
                                     <Trash2 size={15} />
                                     Удалить резюме и связанные данные
@@ -1375,11 +1631,16 @@ export default function App() {
                 </>
               )}
               {view === "vacancies" && (
-                <VacancyBrowser onSelect={pickVacancy} />
+                <VacancyBrowser
+                  onSelect={pickVacancy}
+                  onDelete={confirmDeleteVacancy}
+                  revision={revision}
+                />
               )}
               {view === "matches" && (
                 <MatchesView
                   candidates={candidates}
+                  revision={revision}
                   onAddResume={() => setDialog("upload")}
                 />
               )}
@@ -1396,10 +1657,20 @@ export default function App() {
       </div>
       {dialog === "upload" && (
         <UploadDialog
+          vacancies={availableVacancies}
+          defaultVacancy={view === "shortlist" ? vacancy : null}
           onClose={() => setDialog(null)}
           onCreated={(items) => {
+            if (view === "candidates") {
+              setCandidateFilter("all");
+              setQuery("");
+            }
             updated(items);
-            setNotice("Резюме добавлены в рабочее пространство.");
+            setNotice(
+              items.some((item) => item.vacancy_ids.length)
+                ? "Резюме добавлены в выбранную вакансию."
+                : "Резюме сохранены в общей базе без привязки к вакансии.",
+            );
           }}
         />
       )}
@@ -1411,7 +1682,7 @@ export default function App() {
             setRevision((x) => x + 1);
             reload();
             setNotice(
-              "IT-вакансия создана. Теперь добавьте кандидатов или сравните уже сохранённые резюме.",
+              "IT-вакансия создана. Загрузите резюме для неё или добавьте кандидатов из базы.",
             );
           }}
         />
@@ -1422,7 +1693,7 @@ export default function App() {
           onClose={() => setDialog(null)}
           wide
         >
-          <VacancyBrowser onSelect={pickVacancy} compact />
+          <VacancyBrowser onSelect={pickVacancy} revision={revision} compact />
         </Modal>
       )}
       {dialog === "edit" && selectedCandidate && (
@@ -1435,15 +1706,113 @@ export default function App() {
           }}
         />
       )}
-      {dialog === "delete" && selectedCandidate && (
-        <Modal title="Удалить резюме?" onClose={() => setDialog(null)}>
+      {dialog === "pool" && vacancyTarget && (
+        <CandidatePoolDialog
+          vacancy={vacancyTarget}
+          candidates={candidates}
+          onClose={() => setDialog(null)}
+          onSaved={() => {
+            updated();
+            setNotice("Выбранные кандидаты добавлены в вакансию.");
+          }}
+        />
+      )}
+      {dialog === "unlink" && candidateTarget && vacancyTarget && (
+        <Modal
+          title="Убрать кандидата из вакансии?"
+          onClose={() => {
+            if (!busy) setDialog(null);
+          }}
+        >
           <p>
-            Резюме «{selectedCandidate.name}», уточнения, заметки и решения по
-            нему будут удалены из рабочего пространства.
+            Кандидат «{candidateTarget.name}» и решение HR будут убраны из
+            вакансии «{vacancyTarget.title}». Резюме, уточнения и связи с
+            другими вакансиями сохранятся.
           </p>
+          {modalError && (
+            <p className="form-error" role="alert">
+              {modalError}
+            </p>
+          )}
           <div className="form-actions">
             <button
               className="button secondary"
+              disabled={Boolean(busy)}
+              onClick={() => setDialog(null)}
+            >
+              Отмена
+            </button>
+            <button
+              className="button primary"
+              disabled={Boolean(busy)}
+              onClick={unlink}
+            >
+              {busy === "unlink" && <LoaderCircle size={16} className="spin" />}
+              Убрать из вакансии
+            </button>
+          </div>
+        </Modal>
+      )}
+      {dialog === "deleteVacancy" && vacancyTarget && (
+        <Modal
+          title="Удалить вакансию?"
+          onClose={() => {
+            if (!busy) setDialog(null);
+          }}
+        >
+          <p>
+            Вакансия «{vacancyTarget.title}» и решения HR по ней будут удалены.
+            Все резюме сохранятся в общей базе и в других вакансиях.
+          </p>
+          {modalError && (
+            <p className="form-error" role="alert">
+              {modalError}
+            </p>
+          )}
+          <div className="form-actions">
+            <button
+              className="button secondary"
+              disabled={Boolean(busy)}
+              onClick={() => setDialog(null)}
+            >
+              Оставить вакансию
+            </button>
+            <button
+              className="button danger"
+              disabled={Boolean(busy)}
+              onClick={removeVacancy}
+            >
+              {busy === "deleteVacancy" ? (
+                <LoaderCircle size={16} className="spin" />
+              ) : (
+                <Trash2 size={16} />
+              )}
+              Удалить вакансию
+            </button>
+          </div>
+        </Modal>
+      )}
+      {dialog === "delete" && candidateTarget && (
+        <Modal
+          title="Удалить резюме?"
+          onClose={() => {
+            if (!busy) setDialog(null);
+          }}
+        >
+          <p>
+            Резюме «{candidateTarget.name}», уточнения, заметки и решения по
+            нему будут удалены из общей базы и всех вакансий. Восстановить их
+            нельзя.
+          </p>
+          {modalError && (
+            <p className="form-error" role="alert">
+              {modalError}
+            </p>
+          )}
+          <div className="form-actions">
+            <button
+              className="button secondary"
+              disabled={Boolean(busy)}
               onClick={() => setDialog(null)}
             >
               Оставить резюме
@@ -1454,7 +1823,7 @@ export default function App() {
               disabled={Boolean(busy)}
             >
               <Trash2 size={16} />
-              Удалить данные
+              Удалить резюме
             </button>
           </div>
         </Modal>

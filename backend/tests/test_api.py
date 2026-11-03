@@ -99,8 +99,8 @@ def test_session_isolation_and_private_ids(app):
 
 def test_shortlist_explanations_and_hr_review_persist(client):
     v = vacancy(client)
-    good = candidate(client)
-    weak = candidate(client, name="Дизайнер", text="UX UI designer. I build user research reports and prototypes in Figma. Work experience: 3 years.")
+    good = candidate(client, vacancy_id=v["id"])
+    weak = candidate(client, vacancy_id=v["id"], name="Дизайнер", text="UX UI designer. I build user research reports and prototypes in Figma. Work experience: 3 years.")
     data = shortlist(client, v["id"])
     assert data["vacancy"]["id"] == v["id"]
     assert data["pipeline"]["ml2_available"] is True
@@ -128,7 +128,7 @@ def test_shortlist_explanations_and_hr_review_persist(client):
 
 def test_manual_skill_corrections_and_clarification_change_evidence(client):
     v = vacancy(client, requirements="Python, Kubernetes, Docker")
-    c = candidate(client, text="Backend developer with Python experience. Built production REST API services for two years.")
+    c = candidate(client, vacancy_id=v["id"], text="Backend developer with Python experience. Built production REST API services for two years.")
     before = shortlist(client, v["id"])["candidates"][0]
     assert "python" in before["matched_skills"]
     patched = client.patch(f"/api/candidates/{c['id']}", json={"skills": ["docker"], "notes": "HR verified the skill correction"})
@@ -232,7 +232,7 @@ def test_demo_is_idempotent_and_matching_uses_real_vacancies(client):
 
 def test_feedback_csv_and_formula_injection(client):
     v = vacancy(client)
-    c = candidate(client, name="=1+1")
+    c = candidate(client, vacancy_id=v["id"], name="=1+1")
     client.put("/api/reviews", json={"vacancy_id": v["id"], "candidate_id": c["id"], "status": "hold"})
     feedback = client.post("/api/feedback", json={"rating": 4, "comment": "Понятные объяснения", "candidate_id": c["id"]})
     assert feedback.status_code in (200, 201), feedback.text
@@ -266,7 +266,7 @@ def test_invalid_inputs_and_unknown_routes_are_json(client):
 
 def test_weak_skill_evidence_stays_uncertain_until_hr_confirms(client):
     v = vacancy(client, requirements="Python, Kubernetes")
-    c = candidate(client, text="Python backend developer. Work experience: 3 years. Kubernetes изучаю, практического опыта пока нет.")
+    c = candidate(client, vacancy_id=v["id"], text="Python backend developer. Work experience: 3 years. Kubernetes изучаю, практического опыта пока нет.")
     first = shortlist(client, v["id"])["candidates"][0]
     assert "python" in first["matched_skills"]
     assert "kubernetes" not in first["matched_skills"]
@@ -296,7 +296,7 @@ def test_unrelated_engineering_vacancy_is_outside_it_scope(client):
 
 def test_uncertainty_does_not_mark_machine_learning_or_neighbor_skills(client):
     v = vacancy(client, title="Machine Learning Engineer", requirements="Python, Machine Learning, Docker")
-    candidate(client, text="Machine Learning Engineer. Work experience: 3 years. Python developer currently learning Docker.")
+    candidate(client, vacancy_id=v["id"], text="Machine Learning Engineer. Work experience: 3 years. Python developer currently learning Docker.")
     row = shortlist(client, v["id"])["candidates"][0]
     assert "machine learning" in row["matched_skills"]
     assert "python" in row["matched_skills"]
@@ -306,7 +306,7 @@ def test_uncertainty_does_not_mark_machine_learning_or_neighbor_skills(client):
 
 def test_negative_list_predicate_applies_to_both_skills(client):
     v = vacancy(client, requirements="Python, PostgreSQL, Kubernetes")
-    candidate(client, text="Python backend developer. Work experience: 3 years. В PostgreSQL и Kubernetes не работал.")
+    candidate(client, vacancy_id=v["id"], text="Python backend developer. Work experience: 3 years. В PostgreSQL и Kubernetes не работал.")
     row = shortlist(client, v["id"])["candidates"][0]
     assert set(row["uncertain_skills"]) == {"postgresql", "kubernetes"}
     assert "python" in row["matched_skills"]
@@ -314,7 +314,7 @@ def test_negative_list_predicate_applies_to_both_skills(client):
 
 def test_negative_previous_clause_does_not_leak_across_comma(client):
     v = vacancy(client, requirements="Python, Kubernetes")
-    candidate(client, text="Backend developer. Work experience: 3 years. Kubernetes не знаю, Python использую три года.")
+    candidate(client, vacancy_id=v["id"], text="Backend developer. Work experience: 3 years. Kubernetes не знаю, Python использую три года.")
     row = shortlist(client, v["id"])["candidates"][0]
     assert "python" in row["matched_skills"]
     assert "kubernetes" in row["uncertain_skills"]
@@ -324,7 +324,7 @@ def test_demographics_are_not_skill_evidence_or_professional_source(client):
     no_source = client.post("/api/candidates", json={"name": "Person", "text": "Nationality: Kazakhstan. Date of birth: 2000-01-01"})
     assert no_source.status_code == 422, no_source.text
     v = vacancy(client, title="Java Backend Developer", requirements="Python, Java")
-    c = candidate(client, text="Nationality: Python\nMiddle Java developer. Work experience: 3 years.")
+    c = candidate(client, vacancy_id=v["id"], text="Nationality: Python\nMiddle Java developer. Work experience: 3 years.")
     assert "python" not in c["skills"]
     row = shortlist(client, v["id"])["candidates"][0]
     assert "python" not in row["matched_skills"]
