@@ -219,6 +219,14 @@ White fields with a blue-gray stroke (1px), compact field corners, and padding f
 
 The navy rail uses muted pale text, a darker blue active field, and a lighter navy hover field; active and hovered labels turn white. Navigation items have a (45px) minimum height. Outline SVG icons support labels. The mobile drawer overlays a translucent scrim and retains the same navigation vocabulary. Dossier tabs use cobalt text and a (2px) underline for the active tab.
 
+### Login and account workspaces
+
+One username/password form opens the account's workspace without a role selector. The desktop login pairs a navy brand introduction with a white form; narrow screens stack these regions. Demo credentials appear as plain reference text. Errors stay beside the form, and a labelled button toggles password visibility. HR and candidate workspaces share the existing rail, fields and panels; the candidate navigation exposes vacancies, matching, personal resumes and advice. Closed mobile drawers are hidden from pointer and keyboard interaction.
+
+### Resume feedback and vacancy questions
+
+A shared context strip selects the resume and optional vacancy. Desktop places feedback and questions in two flat panels; narrow screens stack them. Feedback separates existing evidence, unknown requirements and improvements. Questions offer editable examples, a text field and chronological replies. Source quotes and the existing score explanation remain inspectable in disclosure controls. An imported vacancy opens the normal editable form with filename and warnings before creation.
+
 ### Evidence dossier
 
 A candidate header, underlined tabs, scrollable evidence region, source-context actions, and a separate decision footer keep inspection and action legible. Evidence quotes remain inspectable; source-context actions can reveal highlighted text. Green confirmed tags and amber unknowns sit beside explanations rather than replacing them. Relative model values use separate muted-blue numeric fields.

@@ -20,6 +20,7 @@ from backend.documents import extract_resume, validate_text, ResumeError, MAX_FI
 from backend.matching import Matching, CATALOGUE_NOTE, normalize_skill, public_candidate, refresh_skills
 from ML2.features import professional_text
 from backend.storage import Store
+from backend.auth import AUTH_COOKIE, AUTH_MAX_AGE, public_user
 from NLP.anonymizer import anonymize_text
 from NLP.skill_extractor import extract_skills
 
@@ -92,6 +93,21 @@ class FeedbackInput(Input):
     candidate_id: str | None = Field(default=None, max_length=100)
 
 
+class LoginInput(Input):
+    username: str = Field(min_length=1, max_length=120)
+    password: str = Field(min_length=1, max_length=200)
+
+
+class ResumeFeedbackInput(Input):
+    vacancy_id: str | None = Field(default=None, min_length=1, max_length=100)
+
+
+class QuestionInput(Input):
+    vacancy_id: str = Field(min_length=1, max_length=100)
+    candidate_id: str | None = Field(default=None, min_length=1, max_length=100)
+    question: str = Field(min_length=3, max_length=1000)
+
+
 def identity(prefix):
     return prefix + uuid.uuid4().hex
 
@@ -101,7 +117,7 @@ def timestamp():
 
 
 def create_app(database_path=None):
-    app = FastAPI(title="Auto-HR API", version="1.1.0", description="Локальный MVP помощника HR для IT-вакансий Казахстана.")
+    app = FastAPI(title="Auto-HR API", version="1.2.0", description="Локальный MVP помощника HR для IT-вакансий Казахстана.")
     matching = Matching()
     store = Store(database_path or os.getenv("AUTO_HR_DB") or ROOT / "backend/runtime/auto_hr.sqlite3",
                   catalogue_ids=matching.by_id)
@@ -116,8 +132,7 @@ def create_app(database_path=None):
 
     @app.middleware("http")
     async def workspace_session(request: Request, call_next):
-        # Bind local browser sessions to one browser profile. This is deliberately
-        # not presented as employer authentication or multi-user production access.
+        # Auth tokens are opaque and revocable; an account owns a stable workspace.
         length = request.headers.get("content-length", "")
         if length.isdigit() and int(length) > MAX_FILE_BYTES + 512 * 1024:
             return JSONResponse(status_code=413, content={"detail": "Размер запроса превышает 8 МБ. Загрузите файл меньшего размера."})
@@ -129,15 +144,22 @@ def create_app(database_path=None):
                 local = {"localhost", "127.0.0.1", "::1"}
                 if source.netloc != target.netloc and not (source.hostname in local and target.hostname in local):
                     return JSONResponse(status_code=403, content={"detail": "Запрос с другого сайта запрещён. Откройте Auto-HR напрямую."})
-        sid = request.cookies.get(COOKIE, "")
-        new_session = not (re.fullmatch(r"[a-f0-9]{64}", sid) and store.session_exists(sid))
-        if new_session:
-            sid = uuid.uuid4().hex + uuid.uuid4().hex
-            store.create_session(sid)
-        request.state.sid = sid
+        account = store.authenticate(request.cookies.get(AUTH_COOKIE, ""))
+        request.state.account = account
+        request.state.sid = account["workspace_id"] if account else None
+        path, method = request.url.path, request.method
+        public_api = path in {"/api/health", "/api/auth/me", "/api/auth/login", "/api/auth/logout"}
+        if path.startswith("/api/") and not public_api:
+            if account is None:
+                return JSONResponse(status_code=401, content={"detail": "Войдите в аккаунт, чтобы продолжить."},
+                                    headers={"Cache-Control": "no-store"})
+            hr_only = ((path.startswith("/api/vacancies") and method not in {"GET", "HEAD"})
+                       or path in {"/api/shortlist", "/api/reviews", "/api/export", "/api/demo"}
+                       or re.fullmatch(r"/api/candidates/[^/]+/vacancies", path))
+            if hr_only and account["role"] != "hr":
+                return JSONResponse(status_code=403, content={"detail": "Это действие доступно только HR."},
+                                    headers={"Cache-Control": "no-store"})
         response = await call_next(request)
-        if new_session:
-            response.set_cookie(COOKIE, sid, httponly=True, samesite="strict", secure=request.url.scheme == "https", max_age=30 * 24 * 3600)
         response.headers["X-Content-Type-Options"] = "nosniff"
         if request.url.path.startswith("/api"):
             response.headers["Cache-Control"] = "no-store"
@@ -150,13 +172,15 @@ def create_app(database_path=None):
         return record
 
     def vacancy_for(request, vacancy_id):
-        record = matching.by_id.get(vacancy_id) or store.get("vacancies", request.state.sid, vacancy_id)
+        record = matching.by_id.get(vacancy_id) or store.public_vacancy(vacancy_id)
         if record is None:
             raise HTTPException(404, "Вакансия не найдена в этом рабочем пространстве.")
         return record
 
     def add_candidate(request, name, text, filename="", is_demo=False, vacancy_id=None):
         if vacancy_id:
+            if request.state.account["role"] != "hr":
+                raise HTTPException(403, "Резюме кандидата сохраняется в личном кабинете без автоматической отправки HR.")
             vacancy_for(request, vacancy_id)
         if len(store.all("candidates", request.state.sid)) >= 100:
             raise HTTPException(400, "В MVP доступно до 100 кандидатов. Удалите ненужные резюме.")
@@ -188,7 +212,7 @@ def create_app(database_path=None):
         if not it_role and not extract_skills(full):
             raise HTTPException(422, "Auto-HR MVP работает с IT-вакансиями. Укажите IT-роль и технические требования.")
         record = {**data.model_dump(), "id": identity("v_"), "skills": extract_skills(full),
-                  "employment": "Полная занятость", "responsibilities": "", "url": "",
+                  "employment": "", "responsibilities": "", "url": "",
                   "is_custom": True, "is_demo": is_demo, "category": "IT", "publish_date": timestamp()[:10]}
         store.put("vacancies", request.state.sid, record)
         return record
@@ -197,10 +221,37 @@ def create_app(database_path=None):
     def health():
         return {"status": "ok", **matching.pipeline(), "vacancy_count": len(matching.catalogue), "catalogue_note": CATALOGUE_NOTE}
 
+    @app.get("/api/auth/me")
+    def current_user(request: Request):
+        return {"user": public_user(request.state.account) if request.state.account else None}
+
+    @app.post("/api/auth/login")
+    def login(data: LoginInput, request: Request, response: Response):
+        legacy = request.cookies.get(COOKIE, "")
+        if not re.fullmatch(r"[a-f0-9]{64}", legacy):
+            legacy = None
+        result = store.login(data.username, data.password, legacy_sid=legacy,
+                             previous_token=request.cookies.get(AUTH_COOKIE))
+        if result is None:
+            raise HTTPException(401, "Неверный логин или пароль.")
+        token, account = result
+        response.set_cookie(AUTH_COOKIE, token, httponly=True, samesite="strict",
+                            secure=request.url.scheme == "https", max_age=AUTH_MAX_AGE)
+        # Legacy cookies never authenticate private API access.
+        if account["role"] == "hr":
+            response.delete_cookie(COOKIE)
+        return {"user": public_user(account)}
+
+    @app.post("/api/auth/logout")
+    def logout(request: Request, response: Response):
+        store.logout(request.cookies.get(AUTH_COOKIE))
+        response.delete_cookie(AUTH_COOKIE)
+        return {"logged_out": True}
+
     @app.get("/api/vacancies")
     def vacancies(request: Request, q: str = Query(default="", max_length=200), city: str = Query(default="", max_length=100),
                   page: int = Query(default=1, ge=1), limit: int = Query(default=20, ge=1, le=100)):
-        all_items = store.all("vacancies", request.state.sid) + matching.catalogue
+        all_items = store.public_vacancies() + matching.catalogue
         cities = sorted({item["city"] for item in all_items if item["city"]})
         items = [item for item in all_items if (not city or item["city"].casefold() == city.casefold())
                  and (not q or q.casefold() in " ".join((item["title"], item["company"], item["requirements"], item["description"], ", ".join(item["skills"]))).casefold())]
@@ -209,6 +260,21 @@ def create_app(database_path=None):
     @app.post("/api/vacancies", status_code=201)
     def create_vacancy(data: VacancyInput, request: Request):
         return add_vacancy(request, data)
+
+    @app.post("/api/vacancies/import-preview")
+    async def import_vacancy(request: Request, file: UploadFile = File(...)):
+        from backend.vacancy_import import preview_vacancy
+        try:
+            data = await file.read(MAX_FILE_BYTES + 1)
+        finally:
+            await file.close()
+        if len(data) > MAX_FILE_BYTES:
+            raise HTTPException(413, "Размер файла превышает 8 МБ. Загрузите файл меньшего размера.")
+        filename = Path(file.filename or "vacancy").name[:200]
+        try:
+            return await run_in_threadpool(preview_vacancy, data, filename)
+        except ResumeError as exc:
+            raise HTTPException(422, str(exc).replace("резюме", "вакансии")) from exc
 
     @app.get("/api/vacancies/{vacancy_id}")
     def get_vacancy(vacancy_id: str, request: Request):
@@ -276,6 +342,8 @@ def create_app(database_path=None):
     @app.patch("/api/candidates/{candidate_id}")
     def patch_candidate(candidate_id: str, data: CandidatePatch, request: Request):
         record = candidate_for(request, candidate_id)
+        if request.state.account["role"] != "hr" and (data.skills is not None or data.notes is not None):
+            raise HTTPException(403, "Подтверждать навыки и вести заметки HR можно только в кабинете HR.")
         if data.name is not None:
             record["name"] = data.name
         if data.notes is not None:
@@ -330,11 +398,45 @@ def create_app(database_path=None):
     @app.post("/api/matches")
     def matches(data: MatchInput, request: Request):
         record = candidate_for(request, data.candidate_id)
-        rows = store.all("vacancies", request.state.sid) + matching.catalogue
+        rows = store.public_vacancies() + matching.catalogue
         if data.city:
             rows = [row for row in rows if row["city"].casefold() == data.city.casefold()]
         items, pipeline = matching.matches(record, rows, data.limit)
         return {"items": items, "pipeline": pipeline}
+
+    @app.post("/api/candidates/{candidate_id}/feedback")
+    def resume_feedback(candidate_id: str, data: ResumeFeedbackInput, request: Request):
+        from backend.advice import build_resume_feedback
+        record = candidate_for(request, candidate_id)
+        vacancy = vacancy_for(request, data.vacancy_id) if data.vacancy_id else None
+        match = matching.pair(record, vacancy) if vacancy else None
+        return build_resume_feedback(record, vacancy, match)
+
+    @app.get("/api/questions")
+    def question_history(request: Request,
+                         vacancy_id: str | None = Query(default=None, min_length=1, max_length=100),
+                         candidate_id: str | None = Query(default=None, min_length=1, max_length=100)):
+        if vacancy_id:
+            vacancy_for(request, vacancy_id)
+        if candidate_id:
+            candidate_for(request, candidate_id)
+        rows = store.all("questions", request.state.sid)
+        return {"items": [row for row in rows if (not vacancy_id or row["vacancy_id"] == vacancy_id)
+                          and (not candidate_id or row.get("candidate_id") == candidate_id)]}
+
+    @app.post("/api/questions", status_code=201)
+    def ask_question(data: QuestionInput, request: Request):
+        from backend.advice import answer_question
+        vacancy = vacancy_for(request, data.vacancy_id)
+        candidate = candidate_for(request, data.candidate_id) if data.candidate_id else None
+        if len(store.all("questions", request.state.sid)) >= 200:
+            raise HTTPException(422, "В этом кабинете сохранено 200 вопросов. Достигнут лимит истории MVP.")
+        match = matching.pair(candidate, vacancy) if candidate else None
+        result = answer_question(data.question, vacancy, candidate, match)
+        record = {"id": identity("q_"), "vacancy_id": data.vacancy_id, "candidate_id": data.candidate_id,
+                  "question": data.question, **result, "created_at": timestamp()}
+        store.put("questions", request.state.sid, record)
+        return record
 
     @app.get("/api/export")
     def export(request: Request, vacancy_id: str):

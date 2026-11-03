@@ -3,6 +3,10 @@ from contextlib import contextmanager
 import json
 from pathlib import Path
 import sqlite3
+import secrets
+import time
+
+from backend.auth import AUTH_MAX_AGE, BUILTIN_ACCOUNTS, password_hash, token_hash, verify_password
 
 
 class Store:
@@ -35,6 +39,17 @@ class Store:
                 CREATE INDEX IF NOT EXISTS vacancy_candidates
                     ON candidate_vacancies(session_id, vacancy_id);
                 CREATE TABLE IF NOT EXISTS schema_migrations (name TEXT PRIMARY KEY);
+                CREATE TABLE IF NOT EXISTS accounts (
+                    username TEXT PRIMARY KEY, password_hash TEXT NOT NULL,
+                    role TEXT NOT NULL CHECK(role IN ('hr','candidate')),
+                    display_name TEXT NOT NULL, workspace_id TEXT NOT NULL UNIQUE,
+                    legacy_adopted INTEGER NOT NULL DEFAULT 0);
+                CREATE TABLE IF NOT EXISTS auth_sessions (
+                    token_hash TEXT PRIMARY KEY, username TEXT NOT NULL,
+                    expires_at INTEGER NOT NULL, created_at INTEGER NOT NULL);
+                CREATE TABLE IF NOT EXISTS questions (
+                    id TEXT PRIMARY KEY, session_id TEXT NOT NULL, data TEXT NOT NULL);
+                CREATE INDEX IF NOT EXISTS question_sessions ON questions(session_id);
             """)
             # A previous HR decision is explicit evidence of an application.
             # Merely having scored a CV against a vacancy is deliberately not.
@@ -53,6 +68,13 @@ class Store:
                         db.execute("INSERT OR IGNORE INTO candidate_vacancies VALUES (?,?,?)",
                                    (row["session_id"], row["candidate_id"], row["vacancy_id"]))
                 db.execute("INSERT INTO schema_migrations(name) VALUES (?)", (migration,))
+            for username, password, role, display_name in BUILTIN_ACCOUNTS:
+                if db.execute("SELECT 1 FROM accounts WHERE username=?", (username,)).fetchone():
+                    continue
+                workspace = secrets.token_hex(32)
+                db.execute("INSERT INTO sessions(id) VALUES (?)", (workspace,))
+                db.execute("INSERT INTO accounts(username,password_hash,role,display_name,workspace_id) VALUES (?,?,?,?,?)",
+                           (username, password_hash(password), role, display_name, workspace))
 
     @contextmanager
     def connect(self):
@@ -75,6 +97,71 @@ class Store:
         with self.connect() as db:
             db.execute("INSERT INTO sessions(id) VALUES (?)", (sid,))
 
+    def authenticate(self, token):
+        if not isinstance(token, str) or len(token) != 64:
+            return None
+        with self.connect() as db:
+            row = db.execute("""SELECT a.username,a.role,a.display_name,a.workspace_id
+                              FROM auth_sessions s JOIN accounts a ON a.username=s.username
+                              WHERE s.token_hash=? AND s.expires_at>?""",
+                             (token_hash(token), int(time.time()))).fetchone()
+        return dict(row) if row else None
+
+    def login(self, username, password, legacy_sid=None, previous_token=None):
+        with self.connect() as db:
+            row = db.execute("SELECT * FROM accounts WHERE username=?", (username,)).fetchone()
+        if row is None or not verify_password(password, row["password_hash"]):
+            return None
+        token, now = secrets.token_hex(32), int(time.time())
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            account = dict(db.execute("SELECT * FROM accounts WHERE username=?", (username,)).fetchone())
+            if account["role"] == "hr" and not account["legacy_adopted"]:
+                # Only the legacy workspace whose opaque cookie this browser
+                # already holds can become this account's workspace. Candidate
+                # login never adopts old HR data, nor is every legacy row merged.
+                valid_legacy = (isinstance(legacy_sid, str) and len(legacy_sid) == 64
+                                and db.execute("SELECT 1 FROM sessions WHERE id=?", (legacy_sid,)).fetchone()
+                                and not db.execute("SELECT 1 FROM accounts WHERE workspace_id=?", (legacy_sid,)).fetchone())
+                if valid_legacy:
+                    # Globally unique record IDs can move without rewriting any
+                    # resume, question, vacancy or reference. Existing account
+                    # records stay intact if the first login was in another tab.
+                    for table in ("candidates", "vacancies", "feedback", "questions"):
+                        db.execute(f"UPDATE {table} SET session_id=? WHERE session_id=?",
+                                   (account["workspace_id"], legacy_sid))
+                    db.execute("""INSERT OR IGNORE INTO candidate_vacancies
+                                  SELECT ?,candidate_id,vacancy_id FROM candidate_vacancies WHERE session_id=?""",
+                               (account["workspace_id"], legacy_sid))
+                    db.execute("""INSERT OR IGNORE INTO reviews
+                                  SELECT ?,vacancy_id,candidate_id,status FROM reviews WHERE session_id=?""",
+                               (account["workspace_id"], legacy_sid))
+                    for table in ("candidate_vacancies", "reviews"):
+                        db.execute(f"DELETE FROM {table} WHERE session_id=?", (legacy_sid,))
+                    db.execute("UPDATE accounts SET legacy_adopted=1 WHERE username=?", (username,))
+            if previous_token:
+                db.execute("DELETE FROM auth_sessions WHERE token_hash=?", (token_hash(previous_token),))
+            db.execute("DELETE FROM auth_sessions WHERE expires_at<=?", (now,))
+            db.execute("INSERT INTO auth_sessions VALUES (?,?,?,?)", (token_hash(token), username, now + AUTH_MAX_AGE, now))
+        return token, account
+
+    def logout(self, token):
+        if token:
+            with self.connect() as db:
+                db.execute("DELETE FROM auth_sessions WHERE token_hash=?", (token_hash(token),))
+
+    def public_vacancies(self):
+        with self.connect() as db:
+            rows = db.execute("""SELECT v.data FROM vacancies v JOIN accounts a ON a.workspace_id=v.session_id
+                                 WHERE a.role='hr' ORDER BY v.rowid DESC""").fetchall()
+        return [json.loads(row[0]) for row in rows]
+
+    def public_vacancy(self, identity):
+        with self.connect() as db:
+            row = db.execute("""SELECT v.data FROM vacancies v JOIN accounts a ON a.workspace_id=v.session_id
+                                WHERE a.role='hr' AND v.id=?""", (identity,)).fetchone()
+        return json.loads(row[0]) if row else None
+
     def get(self, table, sid, identity):
         assert table in {"candidates", "vacancies"}
         with self.connect() as db:
@@ -87,7 +174,7 @@ class Store:
         return record
 
     def all(self, table, sid):
-        assert table in {"candidates", "vacancies", "feedback"}
+        assert table in {"candidates", "vacancies", "feedback", "questions"}
         with self.connect() as db:
             rows = db.execute(f"SELECT data FROM {table} WHERE session_id=? ORDER BY rowid DESC", (sid,)).fetchall()
             records = [json.loads(row[0]) for row in rows]
@@ -100,7 +187,7 @@ class Store:
         return records
 
     def put(self, table, sid, record, vacancy_ids=None):
-        assert table in {"candidates", "vacancies", "feedback"}
+        assert table in {"candidates", "vacancies", "feedback", "questions"}
         with self.connect() as db:
             # Links have their own source of truth, never an embedded JSON copy.
             stored = {key: value for key, value in record.items() if table != "candidates" or key != "vacancy_ids"}
@@ -146,6 +233,9 @@ class Store:
             for row in db.execute("SELECT id, data FROM feedback WHERE session_id=?", (sid,)).fetchall():
                 if json.loads(row["data"]).get("vacancy_id") == identity:
                     db.execute("DELETE FROM feedback WHERE id=? AND session_id=?", (row["id"], sid))
+            for row in db.execute("SELECT id,data FROM questions").fetchall():
+                if json.loads(row["data"]).get("vacancy_id") == identity:
+                    db.execute("DELETE FROM questions WHERE id=?", (row["id"],))
 
     def delete_candidate(self, sid, identity):
         with self.connect() as db:
@@ -156,6 +246,9 @@ class Store:
             for row in db.execute("SELECT id, data FROM feedback WHERE session_id=?", (sid,)).fetchall():
                 if json.loads(row["data"]).get("candidate_id") == identity:
                     db.execute("DELETE FROM feedback WHERE id=? AND session_id=?", (row["id"], sid))
+            for row in db.execute("SELECT id,data FROM questions WHERE session_id=?", (sid,)).fetchall():
+                if json.loads(row["data"]).get("candidate_id") == identity:
+                    db.execute("DELETE FROM questions WHERE id=? AND session_id=?", (row["id"], sid))
 
     def review(self, sid, vacancy_id, candidate_id, status):
         with self.connect() as db:
@@ -179,5 +272,12 @@ class Store:
 
     def clear_session(self, sid):
         with self.connect() as db:
-            for table in ("candidate_vacancies", "candidates", "vacancies", "reviews", "feedback"):
+            removed_vacancies = {row[0] for row in db.execute("SELECT id FROM vacancies WHERE session_id=?", (sid,))}
+            # Published HR vacancies can be referenced by another account's
+            # questions. Clearing HR data has the same cascade as deleting one.
+            if removed_vacancies:
+                for row in db.execute("SELECT id,data FROM questions WHERE session_id<>?", (sid,)).fetchall():
+                    if json.loads(row["data"]).get("vacancy_id") in removed_vacancies:
+                        db.execute("DELETE FROM questions WHERE id=?", (row["id"],))
+            for table in ("candidate_vacancies", "candidates", "vacancies", "reviews", "feedback", "questions"):
                 db.execute(f"DELETE FROM {table} WHERE session_id=?", (sid,))

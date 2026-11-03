@@ -22,7 +22,14 @@ def app(tmp_path):
 @pytest.fixture
 def client(app):
     with TestClient(app) as c:
+        login(c)
         yield c
+
+
+def login(client, username="admin", password=None):
+    response = client.post("/api/auth/login", json={"username": username, "password": password or username})
+    assert response.status_code == 200, response.text
+    return response.json()["user"]
 
 
 def vacancy(client, **updates):
@@ -83,18 +90,22 @@ def test_real_catalogue_and_engine_are_reported(client):
 
 def test_session_isolation_and_private_ids(app):
     with TestClient(app) as one, TestClient(app) as two:
+        login(one)
+        login(two, "user")
         v = vacancy(one)
         c = candidate(one)
         assert len(one.get("/api/candidates").json()["items"]) == 1
         assert two.get("/api/candidates").json()["items"] == []
-        assert two.get(f"/api/vacancies/{v['id']}").status_code == 404
+        assert two.get(f"/api/vacancies/{v['id']}").status_code == 200
         assert two.patch(f"/api/candidates/{c['id']}", json={"notes": "No access"}).status_code == 404
         assert two.delete(f"/api/candidates/{c['id']}").status_code == 404
-        assert two.post("/api/shortlist", json={"vacancy_id": v["id"]}).status_code == 404
-        assert two.put("/api/reviews", json={"vacancy_id": v["id"], "candidate_id": c["id"], "status": "shortlisted"}).status_code == 404
-        assert two.get("/api/export", params={"vacancy_id": v["id"]}).status_code == 404
-        assert not any(x["id"] == v["id"] for x in two.get("/api/vacancies", params={"limit": 100}).json()["items"])
-        assert one.cookies.get("autohr_session") or one.cookies
+        assert two.post("/api/shortlist", json={"vacancy_id": v["id"]}).status_code == 403
+        assert two.put("/api/reviews", json={"vacancy_id": v["id"], "candidate_id": c["id"], "status": "shortlisted"}).status_code == 403
+        assert two.get("/api/export", params={"vacancy_id": v["id"]}).status_code == 403
+        assert any(x["id"] == v["id"] for x in two.get("/api/vacancies", params={"limit": 100}).json()["items"])
+        user_cv = candidate(two)
+        assert one.get(f"/api/candidates/{user_cv['id']}").status_code == 404
+        assert one.cookies.get("autohr_auth")
 
 
 def test_shortlist_explanations_and_hr_review_persist(client):
@@ -162,6 +173,7 @@ def test_candidate_anonymization_and_delete(client):
 def test_candidates_persist_when_app_reopens(tmp_path):
     db = tmp_path / "persistent.sqlite3"
     with TestClient(create_app(database_path=db)) as first:
+        login(first)
         c = candidate(first)
         cookies = dict(first.cookies)
     with TestClient(create_app(database_path=db)) as second:

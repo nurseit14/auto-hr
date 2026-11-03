@@ -1,3 +1,8 @@
+export interface AuthUser {
+  username: string;
+  role: "hr" | "candidate";
+  display_name: string;
+}
 export interface Vacancy {
   id: string;
   title: string;
@@ -129,10 +134,45 @@ export interface VacancyPage {
   limit: number;
   cities: string[];
 }
+export interface ResumeFeedback {
+  summary: string;
+  source_note?: string;
+  strengths: string[];
+  gaps: string[];
+  recommendations: string[];
+  match?: Match | RankedCandidate | null;
+}
+export interface VacancyQuestion {
+  id: string;
+  question: string;
+  answer: string;
+  topic?: string;
+  created_at: string;
+  evidence: { source: "vacancy" | "resume" | "calculation" | "clarification" | "hr"; quote: string }[];
+  score_breakdown?: ScoreBreakdownData | null;
+}
+export interface VacancyImportPreview {
+  fields: {
+    title: string;
+    company: string;
+    city: string;
+    requirements: string;
+    description: string;
+    experience: string;
+    salary: string;
+  };
+  filename: string;
+  warnings: string[];
+}
+let authGeneration = 0;
+export function advanceAuthGeneration() {
+  authGeneration += 1;
+}
 export async function api<T>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
+  const requestAuthGeneration = authGeneration;
   const headers = new Headers(options.headers);
   if (options.body && !(options.body instanceof FormData))
     headers.set("Content-Type", "application/json");
@@ -142,6 +182,8 @@ export async function api<T>(
     credentials: "same-origin",
   });
   if (!response.ok) {
+    if (response.status === 401 && !path.startsWith("/auth/") && requestAuthGeneration === authGeneration)
+      window.dispatchEvent(new Event("autohr:unauthorized"));
     let detail = "Не удалось выполнить запрос. Попробуйте ещё раз.";
     try {
       const data = await response.json();

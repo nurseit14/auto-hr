@@ -8,7 +8,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from backend.app import create_app
-from backend.tests.test_api import candidate, shortlist, vacancy
+from backend.tests.test_api import candidate, login, shortlist, vacancy
 
 
 @pytest.fixture
@@ -19,6 +19,7 @@ def app(tmp_path):
 @pytest.fixture
 def client(app):
     with TestClient(app) as current:
+        login(current)
         yield current
 
 
@@ -95,8 +96,12 @@ def test_invalid_or_foreign_vacancy_does_not_create_or_partially_reassign_cv(app
     own = vacancy(client)
     person = candidate(client, vacancy_id=own["id"])
     client.put("/api/reviews", json={"vacancy_id": own["id"], "candidate_id": person["id"], "status": "shortlisted"})
+    orphan_sid = "f" * 64
+    app.state.store.create_session(orphan_sid)
+    foreign = {**own, "id": "unpublished-legacy-vacancy"}
+    app.state.store.put("vacancies", orphan_sid, foreign)
     with TestClient(app) as stranger:
-        foreign = vacancy(stranger)
+        login(stranger, "user")
         for invalid in ("missing-vacancy", foreign["id"]):
             response = client.put(f"/api/candidates/{person['id']}/vacancies", json={"vacancy_ids": [invalid]})
             assert response.status_code == 404
@@ -107,9 +112,9 @@ def test_invalid_or_foreign_vacancy_does_not_create_or_partially_reassign_cv(app
             response = client.post("/api/candidates/upload", data={"vacancy_id": invalid},
                                    files={"file": ("resume.txt", b"Python backend developer with Docker and SQL experience.", "text/plain")})
             assert response.status_code == 404
-        assert stranger.put(f"/api/candidates/{person['id']}/vacancies", json={"vacancy_ids": [foreign["id"]]}).status_code == 404
-        assert stranger.get("/api/candidates", params={"vacancy_id": own["id"]}).status_code == 404
-        assert stranger.delete(f"/api/vacancies/{own['id']}").status_code == 404
+        assert stranger.put(f"/api/candidates/{person['id']}/vacancies", json={"vacancy_ids": [foreign["id"]]}).status_code == 403
+        assert stranger.get("/api/candidates", params={"vacancy_id": own["id"]}).json()["items"] == []
+        assert stranger.delete(f"/api/vacancies/{own['id']}").status_code == 403
     stored = client.get(f"/api/candidates/{person['id']}").json()
     assert stored["vacancy_ids"] == [own["id"]]
     assert len(client.get("/api/candidates").json()["items"]) == 1
@@ -233,13 +238,15 @@ def test_legacy_database_migration_preserves_pool_and_only_valid_reviewed_pairs(
     migrated = create_app(database_path=db_path)
     with TestClient(migrated) as current:
         current.cookies.set("autohr_session", sid)
+        login(current)
         records = {row["id"]: row for row in current.get("/api/candidates").json()["items"]}
         assert records["pool"]["vacancy_ids"] == []
         assert set(records["reviewed"]["vacancy_ids"]) == {"own-vacancy", archive_id}
         assert set(records) == {"reviewed", "pool"}
         assert current.get("/api/stats").json()["review_count"] == 2
     # Restarting is additive and idempotent; it does not re-import removed pairs.
-    migrated.state.store.set_candidate_vacancies(sid, "reviewed", [])
+    admin_sid = migrated.state.store.authenticate(current.cookies.get("autohr_auth"))["workspace_id"]
+    migrated.state.store.set_candidate_vacancies(admin_sid, "reviewed", [])
     reopened = create_app(database_path=db_path)
-    assert reopened.state.store.get("candidates", sid, "reviewed")["vacancy_ids"] == []
-    assert reopened.state.store.get("candidates", sid, "pool")["vacancy_ids"] == []
+    assert reopened.state.store.get("candidates", admin_sid, "reviewed")["vacancy_ids"] == []
+    assert reopened.state.store.get("candidates", admin_sid, "pool")["vacancy_ids"] == []

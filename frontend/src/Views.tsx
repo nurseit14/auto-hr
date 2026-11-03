@@ -67,11 +67,17 @@ export function VacancyBrowser({
   compact = false,
   onDelete,
   revision = 0,
+  selectLabel = "Подобрать кандидатов",
+  customLabel = "Моя вакансия",
+  onAsk,
 }: {
   onSelect: (vacancy: Vacancy) => void;
   compact?: boolean;
   onDelete?: (vacancy: Vacancy) => void;
   revision?: number;
+  selectLabel?: string;
+  customLabel?: string;
+  onAsk?: (vacancy: Vacancy) => void;
 }) {
   const [query, setQuery] = useState("");
   const [city, setCity] = useState("");
@@ -206,7 +212,7 @@ export function VacancyBrowser({
                 </p>
               </div>
               <span className={`tag${vacancy.is_custom ? " tag-success" : ""}`}>
-                {vacancy.is_custom ? "Моя вакансия" : "Архив · 2023"}
+                {vacancy.is_custom ? customLabel : "Архив · 2023"}
               </span>
             </div>
             <div className="vacancy-meta">
@@ -244,8 +250,9 @@ export function VacancyBrowser({
                 onClick={() => onSelect(vacancy)}
                 disabled={loading}
               >
-                Подобрать кандидатов <ArrowRight size={16} />
+                {selectLabel} <ArrowRight size={16} />
               </button>
+              {onAsk && <button className="button ghost" type="button" disabled={loading} onClick={() => onAsk(vacancy)}>Вопросы о вакансии</button>}
               {onDelete && vacancy.is_custom && (
                 <button
                   className="button ghost danger-text"
@@ -291,12 +298,18 @@ export function MatchesView({
   candidates,
   onAddResume,
   revision,
+  onAsk,
+  initialCandidateId = "",
+  customLabel = "Вакансия вашего пространства",
 }: {
   candidates: Candidate[];
   onAddResume: () => void;
   revision: number;
+  onAsk?: (vacancy: Vacancy, candidate: Candidate) => void;
+  initialCandidateId?: string;
+  customLabel?: string;
 }) {
-  const [candidateId, setCandidateId] = useState(candidates[0]?.id || "");
+  const [candidateId, setCandidateId] = useState(initialCandidateId || candidates[0]?.id || "");
   const [city, setCity] = useState("");
   const [cities, setCities] = useState<string[]>([]);
   const [result, setResult] = useState<{
@@ -317,6 +330,9 @@ export function MatchesView({
         selectedCandidate.clarifications,
       ])
     : "";
+  useEffect(() => {
+    if (initialCandidateId && candidates.some(candidate => candidate.id === initialCandidateId)) setCandidateId(initialCandidateId);
+  }, [initialCandidateId]);
   useEffect(() => {
     const controller = new AbortController();
     api<VacancyPage>("/vacancies?limit=1", { signal: controller.signal })
@@ -515,7 +531,7 @@ export function MatchesView({
                       )}
                       <span>
                         {item.vacancy.is_custom
-                          ? "Вакансия вашего пространства"
+                          ? customLabel
                           : "Архив · 2023"}
                       </span>
                     </div>
@@ -560,6 +576,7 @@ export function MatchesView({
                       <ScoreBreakdown data={item.score_breakdown} compact />
                     </details>
                     <VacancyDetails vacancy={item.vacancy} />
+                    {onAsk && selectedCandidate && <div className="vacancy-row-actions"><button className="button secondary" onClick={() => onAsk(item.vacancy, selectedCandidate)}>Разбор и вопросы <ArrowRight size={16} /></button></div>}
                   </article>
                 ))}
               </div>

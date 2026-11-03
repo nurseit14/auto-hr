@@ -2,7 +2,7 @@
 version: 1
 slug: "frontend-src-app-tsx"
 primary_target: "frontend/src/App.tsx"
-related_targets: ["frontend/src/styles.css"]
+related_targets: ["frontend/src/styles.css", "frontend/src/AuthApp.tsx", "frontend/src/LoginPage.tsx", "frontend/src/CandidateWorkspace.tsx", "frontend/src/AdviceView.tsx", "frontend/src/VacancyImportDialog.tsx"]
 ---
 
 # HR workspace
@@ -22,3 +22,9 @@ FIRST VIEWPORT: At1505px the rail is250px, topbar64px, content inset22px. Headin
 FORM: Grounded candidate7, recruitment dispatch desk, seed5fe1ae87. Compositional option1 selected for scan-and-inspect task clarity. The comp's invented scores and mistaken evidence counts are not literal data. The font-measure crop mixed heading/subtitle; preserve the approved Cyrillic neutral UI lettering and hierarchy rather than its erroneous18px condensed estimate.
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
+
+## Account extension · 2026-11-03
+
+Mode: Operate within the established direction. User specified one login form, role determined by fixed demo credentials, separate candidate and HR capabilities. Preserve the existing identity; no role chooser. Login uses a navy introduction and white form, stacked on mobile. Candidate navigation shares the workbench shell. Resume feedback and vacancy questions use source-labelled disclosures and the existing score explanation. Imported vacancy fields require review before creation. No raster assets introduced. Desktop and 390px browser checks passed; a closed mobile drawer is hidden from pointer and keyboard interaction. DESIGN.md records the shipped components.
+
+Finish verdict: ship. Independent finish review found no material fixes; typography, palette, flat surfaces and mobile layout retain the inherited workbench direction. Backend role/ownership review and 257 tests plus 59 subtests passed. TypeScript/Vite build and design detector passed.

@@ -6,6 +6,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from backend.app import create_app
+from backend.tests.test_api import login
 from ML2.features import FEATURE_NAMES, FEATURE_VERSION
 from ML2.ranker import MODEL_VERSION
 
@@ -18,6 +19,7 @@ def app(tmp_path):
 @pytest.fixture
 def client(app):
     with TestClient(app) as connection:
+        login(connection)
         yield connection
 
 

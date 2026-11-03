@@ -15,6 +15,7 @@ import {
   Info,
   Layers2,
   LoaderCircle,
+  LogOut,
   Menu,
   MessageSquare,
   Pencil,
@@ -32,6 +33,7 @@ import {
 import { api, json, scoreLabel, statusLabel } from "./api";
 import type {
   Candidate,
+  AuthUser,
   Health,
   ReviewStatus,
   Shortlist,
@@ -48,8 +50,10 @@ import {
 } from "./Dialogs";
 import { FeedbackView, MatchesView, VacancyBrowser } from "./Views";
 import { ScoreBreakdown } from "./ScoreBreakdown";
+import { AdviceView } from "./AdviceView";
+import { VacancyImportDialog } from "./VacancyImportDialog";
 
-type View = "shortlist" | "candidates" | "vacancies" | "matches" | "feedback";
+type View = "shortlist" | "candidates" | "vacancies" | "matches" | "feedback" | "advice";
 type DetailTab = "evidence" | "resume" | "clarifications" | "notes";
 const nav = [
   { id: "shortlist" as View, label: "Подбор кандидатов", icon: UsersRound },
@@ -60,13 +64,15 @@ const nav = [
     icon: BriefcaseBusiness,
   },
   { id: "matches" as View, label: "Вакансии для кандидата", icon: BookOpen },
+  { id: "advice" as View, label: "Разбор и вопросы", icon: MessageSquare },
 ];
 const titles: Record<View, string> = {
   shortlist: "Подбор кандидатов",
   candidates: "Все кандидаты",
   vacancies: "Каталог IT-вакансий",
   matches: "Вакансии для кандидата",
-  feedback: "Обратная связь",
+  feedback: "Оценить сервис",
+  advice: "Разбор резюме и вопросы",
 };
 const subtitles: Record<View, string> = {
   shortlist: "Решение за вами. Основания — перед вами.",
@@ -74,6 +80,7 @@ const subtitles: Record<View, string> = {
   vacancies: "Ваши вакансии и архив для проверки подбора.",
   matches: "Найдите IT-роли, подходящие вашему опыту.",
   feedback: "Помогите проверить, насколько полезен Auto-HR.",
+  advice: "Проверьте резюме, требования и основания подбора.",
 };
 function initials(name: string) {
   return name
@@ -125,8 +132,10 @@ function ResumeBody({ text, quote }: { text: string; quote: string }) {
   );
 }
 
-export default function App() {
+export default function HRWorkspace({ user, onLogout, loggingOut }: { user: AuthUser; onLogout: () => void; loggingOut: boolean }) {
   const [view, setView] = useState<View>("shortlist");
+  const [adviceVacancy, setAdviceVacancy] = useState<Vacancy | null>(null);
+  const [adviceCandidateId, setAdviceCandidateId] = useState("");
   const [health, setHealth] = useState<Health | null>(null);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
@@ -143,6 +152,7 @@ export default function App() {
   const [dialog, setDialog] = useState<
     | "upload"
     | "vacancy"
+    | "vacancyImport"
     | "picker"
     | "edit"
     | "delete"
@@ -210,7 +220,7 @@ export default function App() {
   }
   function pickVacancy(v: Vacancy) {
     setVacancy(v);
-    localStorage.setItem("autohr_vacancy", v.id);
+    localStorage.setItem("autohr_vacancy_hr", v.id);
     setRanking(null);
     setSelectedId("");
     setView("shortlist");
@@ -252,7 +262,7 @@ export default function App() {
         setStats(s);
         setVacancyOptions(j.items.filter((item) => item.is_custom));
         setSelectedId(c.items[0]?.id || "");
-        const saved = localStorage.getItem("autohr_vacancy");
+        const saved = localStorage.getItem("autohr_vacancy_hr");
         let chosen =
           j.items.find((v) => v.id === saved) ||
           j.items.find((v) => v.is_custom) ||
@@ -263,7 +273,7 @@ export default function App() {
               `/vacancies/${encodeURIComponent(saved)}`,
             );
           } catch {
-            localStorage.removeItem("autohr_vacancy");
+            localStorage.removeItem("autohr_vacancy_hr");
           }
         }
         if (active) setVacancy(chosen);
@@ -488,7 +498,7 @@ export default function App() {
         setRanking(null);
         setSelectedId("");
         setMobileDetail(false);
-        localStorage.removeItem("autohr_vacancy");
+        localStorage.removeItem("autohr_vacancy_hr");
       }
       if (candidateFilter === vacancyTarget.id) setCandidateFilter("all");
       setDialog(null);
@@ -601,7 +611,7 @@ export default function App() {
           <div className="workspace-label">
             <span className="workspace-avatar">HR</span>
             <div>
-              <strong>Рабочее пространство</strong>
+              <strong>{user.display_name}</strong>
               <small>IT-рекрутинг · Казахстан</small>
             </div>
           </div>
@@ -610,8 +620,9 @@ export default function App() {
             onClick={() => go("feedback")}
           >
             <MessageSquare size={19} />
-            Обратная связь
+            Оценить сервис
           </button>
+          <button className="nav-item" onClick={onLogout} disabled={loggingOut}>{loggingOut ? <LoaderCircle size={19} className="spin" /> : <LogOut size={19} />}Выйти</button>
           <span className="sidebar-version">Auto-HR · MVP</span>
         </div>
       </aside>
@@ -636,6 +647,8 @@ export default function App() {
               <span />
               {health ? "Локальное пространство" : "Подключение"}
             </span>
+            <span className="account-name">{user.username}</span>
+            <button className="icon-button account-logout" aria-label="Выйти из аккаунта" onClick={onLogout} disabled={loggingOut}><LogOut size={18} /></button>
             <span className="user-avatar" aria-label="HR">
               HR
             </span>
@@ -657,6 +670,7 @@ export default function App() {
                     <Plus size={17} />
                     Новая вакансия
                   </button>
+                  <button className="button secondary" onClick={() => setDialog("vacancyImport")}><Upload size={17} />Загрузить вакансию</button>
                   <button
                     className="button secondary"
                     onClick={() => setDialog("upload")}
@@ -1637,6 +1651,7 @@ export default function App() {
                   onSelect={pickVacancy}
                   onDelete={confirmDeleteVacancy}
                   revision={revision}
+                  onAsk={(item) => { setAdviceVacancy(item); setAdviceCandidateId(""); go("advice"); }}
                 />
               )}
               {view === "matches" && (
@@ -1644,8 +1659,10 @@ export default function App() {
                   candidates={candidates}
                   revision={revision}
                   onAddResume={() => setDialog("upload")}
+                  onAsk={(item, person) => { setAdviceVacancy(item); setAdviceCandidateId(person.id); go("advice"); }}
                 />
               )}
+              {view === "advice" && <AdviceView candidates={candidates} initialVacancy={adviceVacancy || vacancy} initialCandidateId={adviceCandidateId} onAddResume={() => setDialog("upload")} revision={revision} />}
               {view === "feedback" && (
                 <FeedbackView
                   onSaved={() => {
@@ -1676,6 +1693,7 @@ export default function App() {
           }}
         />
       )}
+      {dialog === "vacancyImport" && <VacancyImportDialog onClose={() => setDialog(null)} onCreated={(item) => { pickVacancy(item); setRevision(value => value + 1); reload(); setNotice("IT-вакансия создана из файла и доступна в каталоге кандидатов."); }} />}
       {dialog === "vacancy" && (
         <VacancyDialog
           onClose={() => setDialog(null)}

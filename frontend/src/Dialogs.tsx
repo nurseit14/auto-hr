@@ -2,7 +2,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 import { FileText, LoaderCircle, Search, Upload, X } from "lucide-react";
 import { api, json } from "./api";
-import type { Candidate, Vacancy } from "./api";
+import type { Candidate, Vacancy, VacancyImportPreview } from "./api";
 
 const errorText = (error: unknown) =>
   error instanceof Error
@@ -65,11 +65,13 @@ export function UploadDialog({
   onCreated,
   vacancies,
   defaultVacancy,
+  personal = false,
 }: {
   onClose: () => void;
   onCreated: (items: Candidate[]) => void;
   vacancies: Vacancy[];
   defaultVacancy: Vacancy | null;
+  personal?: boolean;
 }) {
   const [vacancyId, setVacancyId] = useState(defaultVacancy?.id || "");
   const [mode, setMode] = useState<"files" | "text">("files");
@@ -168,10 +170,11 @@ export function UploadDialog({
     <Modal title="Добавить резюме" onClose={close} wide>
       <form onSubmit={submit} className="stack" aria-busy={busy}>
         <p className="muted">
-          Загрузите опыт IT-специалиста. Навыки будут извлечены автоматически;
-          результат можно проверить и исправить.
+          {personal
+            ? "Навыки будут извлечены автоматически. В разборе можно проверить результат и увидеть, какие сведения стоит уточнить в резюме."
+            : "Загрузите опыт IT-специалиста. Навыки будут извлечены автоматически; результат можно проверить и исправить."}
         </p>
-        <label className="field">
+        {!personal && <label className="field">
           Куда добавить резюме
           <select
             value={vacancyId}
@@ -190,7 +193,8 @@ export function UploadDialog({
               ? "Кандидаты появятся в подборе только этой вакансии. В другие вакансии их можно добавить вручную."
               : "Резюме сохранится в разделе «Все кандидаты» и не попадёт в подбор автоматически."}
           </span>
-        </label>
+        </label>}
+        {personal && <p className="notice">Резюме сохранится в вашем кабинете. Сравнение с вакансией не отправляет его работодателю автоматически.</p>}
         <div className="segmented" aria-label="Способ добавления резюме">
           <button
             type="button"
@@ -477,9 +481,15 @@ export function CandidatePoolDialog({
 export function VacancyDialog({
   onClose,
   onCreated,
+  initialValues,
+  importWarnings = [],
+  filename,
 }: {
   onClose: () => void;
   onCreated: (item: Vacancy) => void;
+  initialValues?: VacancyImportPreview["fields"];
+  importWarnings?: string[];
+  filename?: string;
 }) {
   const [values, setValues] = useState({
     title: "",
@@ -489,6 +499,7 @@ export function VacancyDialog({
     description: "",
     experience: "",
     salary: "",
+    ...initialValues,
   });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -516,12 +527,14 @@ export function VacancyDialog({
     }
   }
   return (
-    <Modal title="Новая IT-вакансия" onClose={close} wide>
+    <Modal title={filename ? "Проверьте загруженную вакансию" : "Новая IT-вакансия"} onClose={close} wide>
       <form className="stack" onSubmit={submit} aria-busy={busy}>
         <p className="muted">
           Опишите роль и технические требования. По ним Auto-HR сравнит резюме и
           предложит уточняющие вопросы.
         </p>
+        {filename && <p className="notice">Из файла «{filename}» извлечён текст. Проверьте поля и заполните недостающие сведения перед созданием вакансии.</p>}
+        {importWarnings.length > 0 && <ul className="import-warnings">{importWarnings.map((warning, index) => <li key={index}>{warning}</li>)}</ul>}
         <label className="field">
           IT-должность
           <input
@@ -605,8 +618,7 @@ export function VacancyDialog({
           </label>
         </div>
         <p className="notice">
-          Вакансия сохранится в вашем рабочем пространстве. Финальное решение по
-          кандидатам принимает HR.
+          После создания вакансия появится в каталоге кандидатов. Финальное решение по кандидатам принимает HR.
         </p>
         {error && (
           <div className="form-error" role="alert">

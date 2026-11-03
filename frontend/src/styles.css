@@ -2282,10 +2282,14 @@ input::placeholder {
   .sidebar {
     transform: translateX(-100%);
     transition: transform 0.2s ease-out;
+    visibility: hidden;
+    pointer-events: none;
     width: 250px;
   }
   .sidebar.open {
     transform: translateX(0);
+    visibility: visible;
+    pointer-events: auto;
   }
   .app-body {
     margin-left: 0;
@@ -3098,4 +3102,199 @@ textarea::placeholder,
   .candidate-row:not(.all-candidates) .candidate-score {
     grid-row: 1;
   }
+}
+
+/* Account entry and role-specific workspaces share the recruiting desk palette. */
+.auth-loading {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 28px;
+  text-align: center;
+}
+.auth-loading p { max-width: 55ch; color: var(--muted); }
+.auth-loading h1 { font-size: 27px; }
+.auth-global-error {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 110;
+  width: min(600px, calc(100% - 28px));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 18px;
+  color: #8e2732;
+  background: #fff0f1;
+  border: 1px solid #e6b8bd;
+  border-radius: 6px;
+}
+.login-page {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  min-height: 100dvh;
+  padding: 0;
+  margin: 0;
+  max-width: none;
+}
+.login-intro {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 60px;
+  padding: clamp(35px, 5vw, 76px);
+  background: var(--navy);
+  color: #f5f8ff;
+}
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 29px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+.login-brand .brand-mark { width: 30px; height: 30px; }
+.login-intro-copy { max-width: 460px; }
+.login-intro h2 {
+  font-size: clamp(30px, 3.3vw, 45px);
+  line-height: 1.24;
+  letter-spacing: -0.03em;
+  font-weight: 800;
+  text-wrap: balance;
+}
+.login-intro-copy > p {
+  margin-top: 22px;
+  font-size: 16px;
+  color: #c9d8ed;
+  line-height: 1.75;
+  max-width: 40ch;
+}
+.login-purpose-list {
+  list-style: none;
+  margin: 40px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 23px;
+  color: #dbe6f7;
+}
+.login-purpose-list li { display: flex; gap: 14px; align-items: flex-start; line-height: 1.65; }
+.login-purpose-list svg { color: #96b9ff; margin-top: 2px; }
+.login-intro-foot { color: #b5c8e3; font-size: 12px; line-height: 1.7; }
+.login-form-side {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #fff;
+  padding: 56px 36px;
+}
+.login-form-wrap { width: min(100%, 405px); }
+.login-form-wrap h1 { font-size: 32px; }
+.login-description { margin-top: 12px; font-size: 14px; }
+.login-form { margin-top: 32px; gap: 22px; }
+.login-form .field { font-size: 13px; }
+.login-form .field input { min-height: 48px; font-size: 15px; }
+.password-field { display: block; position: relative; width: 100%; }
+.password-field input { width: 100%; padding-right: 48px; }
+.password-field .icon-button { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); }
+.login-submit { min-height: 48px; justify-content: center; font-size: 14px; }
+.login-access { margin-top: 38px; padding-top: 24px; border-top: 1px solid var(--line); }
+.login-access h2 { font-size: 13px; }
+.login-access dl { margin: 14px 0; display: grid; gap: 11px; }
+.login-access dl > div { display: flex; justify-content: space-between; gap: 16px; font-size: 13px; }
+.login-access dt { color: var(--muted); }
+.login-access dd { margin: 0; font-weight: 750; font-variant-numeric: tabular-nums; }
+.login-access > p { color: var(--muted); font-size: 12px; }
+.account-name { font-size: 12px; color: var(--muted); }
+.account-logout { width: 36px; height: 36px; }
+.heading-actions { flex-wrap: wrap; }
+.advice-context { padding: 20px; }
+.advice-context > .text-button { margin-top: 10px; }
+.advice-vacancy-choice {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  width: 100%;
+  padding: 10px 12px;
+  text-align: left;
+  color: #233b58;
+  background: #fff;
+  border: 1px solid #becbde;
+  border-radius: 5px;
+  font-weight: 600;
+}
+.advice-vacancy-choice:hover { border-color: var(--blue); background: #f8faff; }
+.advice-vacancy-choice > span { min-width: 0; overflow-wrap: anywhere; }
+.advice-vacancy-choice small { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; font-weight: 400; line-height: 1.5; }
+.advice-columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 16px; align-items: start; }
+.advice-panel { min-width: 0; padding: 22px; display: flex; flex-direction: column; gap: 17px; }
+.advice-panel-heading { display: flex; align-items: center; gap: 11px; }
+.advice-panel-heading > svg { color: var(--blue); }
+.advice-panel > .muted { font-size: 13px; line-height: 1.75; }
+.advice-panel > .button { align-self: flex-start; }
+.advice-panel .small-empty { padding: 28px 12px; }
+.feedback-result { border-top: 1px solid var(--line); padding-top: 20px; }
+.feedback-summary { font-weight: 600; font-size: 13px; }
+.feedback-result > section { margin-top: 24px; }
+.feedback-result > section h3 { font-size: 13px; }
+.feedback-result ul { margin: 10px 0 0; padding-left: 19px; color: var(--muted); font-size: 12px; line-height: 1.8; }
+.feedback-result li + li { margin-top: 8px; }
+.advice-score { display: flex; justify-content: space-between; align-items: baseline; gap: 15px; margin-top: 22px; font-size: 13px; }
+.advice-score strong { color: var(--blue); font-size: 19px; font-variant-numeric: tabular-nums; }
+.question-suggestions { display: flex; flex-wrap: wrap; gap: 8px; }
+.question-suggestion { color: #294eaa; background: #f5f8ff; padding: 8px 11px; border: 1px solid #d7e1f4; border-radius: 5px; text-align: left; font-size: 11px; line-height: 1.5; }
+.question-suggestion:hover:not(:disabled) { background: #eaf0ff; border-color: #a7bee9; }
+.question-history { display: flex; flex-direction: column; gap: 22px; }
+.question-answer { border-top: 1px solid var(--line); padding-top: 18px; min-width: 0; overflow-wrap: anywhere; }
+.question-answer > h3 { font-size: 13px; margin-bottom: 10px; }
+.question-answer > p { font-size: 13px; color: #354a65; }
+.question-answer details { margin-top: 12px; }
+.question-answer summary { color: #294eaa; font-size: 12px; cursor: pointer; padding-block: 6px; }
+.question-answer blockquote { margin: 10px 0 0; padding: 12px; background: #f5f8fc; border-radius: 4px; font-size: 12px; }
+.question-answer cite { display: block; margin-top: 7px; font-size: 11px; font-style: normal; color: var(--muted); }
+.my-resume { padding: 22px; display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.my-resume-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.my-resume-heading > div { min-width: 0; overflow-wrap: anywhere; }
+.my-resume-heading h2 { font-size: 17px; }
+.my-resume-heading p { font-size: 12px; margin-top: 5px; }
+.my-resume-text summary { color: #294eaa; cursor: pointer; font-size: 12px; padding-block: 7px; }
+.my-resume-text .resume-text { margin-top: 10px; max-height: 360px; overflow-y: auto; }
+.import-warnings { color: #80550e; background: #fff2d6; border-radius: 4px; padding: 13px 16px 13px 30px; font-size: 12px; line-height: 1.75; }
+.selected-import-file { overflow-wrap: anywhere; font-size: 13px; font-weight: 650; }
+@media (max-width: 1100px) {
+  .advice-columns { grid-template-columns: minmax(0, 1fr); }
+  .login-intro { padding: 36px; }
+  .login-intro h2 { font-size: 34px; }
+}
+@media (max-width: 700px) {
+  .login-page { grid-template-columns: minmax(0, 1fr); }
+  .login-intro { padding: 26px 24px 30px; gap: 24px; }
+  .login-brand { font-size: 25px; }
+  .login-intro-copy h2 { font-size: 26px; max-width: 28ch; }
+  .login-intro-copy > p { margin-top: 12px; font-size: 14px; max-width: none; }
+  .login-purpose-list, .login-intro-foot { display: none; }
+  .login-form-side { padding: 34px 24px 42px; align-items: flex-start; }
+  .login-form-wrap h1 { font-size: 27px; }
+  .login-form { margin-top: 24px; }
+  .login-form .field input { font-size: 16px; }
+  .login-access { margin-top: 28px; }
+}
+@media (max-width: 520px) {
+  .advice-context, .advice-panel, .my-resume { padding: 17px 16px; }
+  .advice-panel-heading { gap: 8px; }
+  .advice-panel-heading h2 { font-size: 16px; }
+  .advice-vacancy-choice { min-height: 48px; font-size: 13px; }
+  .my-resume-heading { flex-wrap: wrap; }
+  .my-resume-heading > .button { min-height: 40px; padding-left: 0; }
+  .advice-panel > .button, .advice-panel form > .button { width: 100%; justify-content: center; min-height: 44px; }
+  .question-suggestion { font-size: 12px; min-height: 40px; }
+  .account-name { display: none; }
+  .my-resume .vacancy-row-actions > .button { flex: 1 1 auto; min-height: 44px; justify-content: center; }
 }
