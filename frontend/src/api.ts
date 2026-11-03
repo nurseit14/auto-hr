@@ -27,6 +27,51 @@ export interface Candidate {
   vacancy_ids: string[];
 }
 export type ReviewStatus = "new" | "shortlisted" | "hold";
+export interface ScoreEvidence {
+  quote: string;
+  source: "resume" | "clarification" | "hr" | "vacancy";
+}
+export interface ScoreContribution {
+  feature: string;
+  label: string;
+  value: number;
+  mean: number;
+  scale: number;
+  weight: number;
+  contribution: number;
+  reason: string;
+  evidence: ScoreEvidence[];
+}
+export interface ScoreAdjustment {
+  policy: string;
+  label: string;
+  contribution: number;
+  factor: number;
+  reason: string;
+  evidence: ScoreEvidence[];
+}
+export interface ScoreBreakdownData {
+  model_version: string;
+  feature_version: string;
+  base_score: number;
+  raw_score: number;
+  final_score: number;
+  contributions: ScoreContribution[];
+  adjustments: ScoreAdjustment[];
+  experience: {
+    general_years: number | null;
+    relevant_years: number | null;
+    required_years: number | null;
+    reason: string;
+    evidence: ScoreEvidence[];
+  };
+  role: {
+    candidate_areas: string[];
+    vacancy_areas: string[];
+    reason: string;
+  };
+  warnings: string[];
+}
 export interface RankedCandidate {
   candidate: Candidate;
   score: number;
@@ -39,6 +84,7 @@ export interface RankedCandidate {
   status: ReviewStatus;
   questions: string[];
   signals: Record<string, number>;
+  score_breakdown: ScoreBreakdownData | null;
 }
 export interface Pipeline {
   engine: string;
@@ -59,6 +105,7 @@ export interface Match {
   matched_skills: string[];
   missing_skills: string[];
   explanation: string;
+  score_breakdown: ScoreBreakdownData | null;
 }
 export interface Health {
   status: string;
@@ -112,7 +159,7 @@ export async function api<T>(
 }
 export const json = (value: unknown) => JSON.stringify(value);
 export const scoreLabel = (score: number) =>
-  (score >= 0 ? "+" : "") + score.toFixed(2);
+  (score >= 0.005 ? "+" : "") + (Math.abs(score) < 0.005 ? 0 : score).toFixed(2);
 export const statusLabel: Record<ReviewStatus, string> = {
   new: "На рассмотрении",
   shortlisted: "В шорт-листе",

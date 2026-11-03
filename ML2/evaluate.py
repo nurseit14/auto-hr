@@ -18,7 +18,7 @@ def evaluate_saved(model_path, dataset, split="test"):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Проверить сохранённый реранкер без переобучения")
-    parser.add_argument("--model", type=Path, default=ROOT / "data/annotations/ml2_reranker_v1/model.json")
+    parser.add_argument("--model", type=Path, default=ROOT / "backend/models/ranker.json")
     parser.add_argument("--dataset", type=Path, default=ROOT / "data/annotations/ml2_training_v1")
     parser.add_argument("--split", choices=["train", "validation", "test"], default="test")
     args = parser.parse_args(argv)

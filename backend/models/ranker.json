@@ -1,7 +1,8 @@
 {
-  "model_version": "ml2-pairwise-linear-v1",
-  "feature_version": "professional-signals-v1",
-  "feature_fingerprint": "095b407942e53f5468257e45e77dd93b0bfa0342620010d98076323ba6c4f69b",
+  "model_version": "ml2-pairwise-linear-v2",
+  "feature_version": "professional-signals-v2",
+  "score_policy_version": "relevant-experience-shortfall-v1",
+  "feature_fingerprint": "da235c98a5c56d40802e6a164af5613f9cab7108451c85d78faed087c759080d",
   "feature_names": [
     "skill_coverage",
     "skill_jaccard",
@@ -17,54 +18,71 @@
     "communication_confirmation"
   ],
   "mean": [
-    0.4243108504398827,
-    0.12221888925158285,
-    0.5194623655913978,
-    0.34838709677419355,
-    0.041935483870967745,
-    0.3331541218637993,
-    0.035483870967741936,
-    0.0956989247311828,
-    0.025806451612903226,
-    0.0025806451612903226,
-    0.15698924731182798,
-    0.11612903225806452
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
   ],
   "scale": [
-    0.4286087000834299,
-    0.1484125222405066,
-    0.4475053086521138,
-    0.4661932091103469,
-    0.3134348659490638,
-    0.47469305908180004,
-    0.20952848308458044,
-    0.27036971043632885,
-    0.15855749325734883,
+    0.4254576874622146,
+    0.14867284690949087,
+    0.3314463337410328,
+    0.3396461676632132,
+    0.07237215318451636,
+    1.0,
+    0.1441960741642103,
+    0.1854486798469534,
+    1.0,
     0.032024964247718356,
-    0.3618147755192165,
-    0.32037958755961654
+    0.19503088151638212,
+    0.1377687516391137
   ],
   "weights": [
+    0.00415581362443666,
+    0.008807878894201567,
     0.0,
-    0.16427618818383125,
-    0.1836728406328689,
-    0.38128969304205435,
-    0.18223028090130886,
-    1.5774407109722126,
-    0.0,
-    0.0,
-    0.2177779270878623,
+    0.006685162518891589,
+    0.01200290210321987,
     0.0,
     0.0,
-    0.09104579773298839
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
   ],
-  "score_semantics": "Relative ranking score, not probability or a 0–3 annotation grade",
+  "score_semantics": "Relative linear evidence score plus a declared relevant-experience-shortfall adjustment; not probability or a 0–3 annotation grade",
   "metadata": {
-    "l2": 0.01,
-    "iterations": 446,
+    "l2": 10.0,
+    "iterations": 10,
     "preference_pairs": 132,
-    "training_objective": 0.5276253202595697,
-    "trained_at": "2026-10-26T08:19:39.865079+00:00",
+    "training_objective": 0.6916404407270117,
+    "score_origin": "Zero feature vector is zero evidence score; pairwise learning is translation invariant",
+    "training_feature_mean": [
+      0.41818181818181815,
+      0.12176277859348478,
+      0.18633486943164362,
+      0.163778801843318,
+      -0.009493087557603688,
+      0.0,
+      0.015483870967741935,
+      0.039569892473118276,
+      0.0,
+      0.0025806451612903226,
+      0.04129032258064516,
+      0.01935483870967742
+    ],
+    "score_policy_version": "relevant-experience-shortfall-v1",
+    "policy_semantics": "Declared rule, not a learned weight: an explicit relevant-experience shortfall scales only a positive linear score by the fulfilled minimum fraction; unknowns and negative bases are unchanged",
+    "trained_at": "2026-11-03T10:05:46.986641+00:00",
     "train_pairs": 155,
     "train_candidate_groups": 30,
     "dataset_fingerprints": {
@@ -78,6 +96,7 @@
     },
     "dataset_source_sha256": "ff0bd0527c79f485447c8308b4bc08c78c07b03202c007caabf8935d4dcbc5b8",
     "selection_metric": "validation ndcg_at_5_informative; pairwise accuracy; stronger L2",
+    "validation_prediction_policy": "relevant-experience-shortfall-v1",
     "label_semantics": {
       "0": {
         "status": "unknown",
@@ -96,7 +115,7 @@
         "relevance": 2
       }
     },
-    "feature_policy": "Fixed professional concepts only; no identity, contacts, demographics, annotation explanations or scores as inputs",
+    "feature_policy": "Role-aware technical evidence gates level and explicitly scoped experience; mixed totals are not allocated; no identity, contacts, demographics, annotation explanations or scores as inputs",
     "experimental": true
   }
 }

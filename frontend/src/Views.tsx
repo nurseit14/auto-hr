@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { api, json, safeSourceUrl, scoreLabel } from "./api";
 import type { Candidate, Match, Pipeline, Vacancy, VacancyPage } from "./api";
+import { ScoreBreakdown } from "./ScoreBreakdown";
 
 const errorText = (error: unknown) =>
   error instanceof Error
@@ -554,6 +555,10 @@ export function MatchesView({
                         </div>
                       </div>
                     </div>
+                    <details className="match-score-details">
+                      <summary>Почему такой балл</summary>
+                      <ScoreBreakdown data={item.score_breakdown} compact />
+                    </details>
                     <VacancyDetails vacancy={item.vacancy} />
                   </article>
                 ))}

@@ -1,0 +1,102 @@
+{
+  "model_version": "ml2-pairwise-linear-v1",
+  "feature_version": "professional-signals-v1",
+  "feature_fingerprint": "095b407942e53f5468257e45e77dd93b0bfa0342620010d98076323ba6c4f69b",
+  "feature_names": [
+    "skill_coverage",
+    "skill_jaccard",
+    "task_coverage",
+    "role_compatibility",
+    "seniority_compatibility",
+    "experience_compatibility",
+    "education_level_compatibility",
+    "education_field_coverage",
+    "language_compatibility",
+    "mandatory_skill_confirmation",
+    "industry_coverage",
+    "communication_confirmation"
+  ],
+  "mean": [
+    0.4243108504398827,
+    0.12221888925158285,
+    0.5194623655913978,
+    0.34838709677419355,
+    0.041935483870967745,
+    0.3331541218637993,
+    0.035483870967741936,
+    0.0956989247311828,
+    0.025806451612903226,
+    0.0025806451612903226,
+    0.15698924731182798,
+    0.11612903225806452
+  ],
+  "scale": [
+    0.4286087000834299,
+    0.1484125222405066,
+    0.4475053086521138,
+    0.4661932091103469,
+    0.3134348659490638,
+    0.47469305908180004,
+    0.20952848308458044,
+    0.27036971043632885,
+    0.15855749325734883,
+    0.032024964247718356,
+    0.3618147755192165,
+    0.32037958755961654
+  ],
+  "weights": [
+    0.0,
+    0.16427618818383125,
+    0.1836728406328689,
+    0.38128969304205435,
+    0.18223028090130886,
+    1.5774407109722126,
+    0.0,
+    0.0,
+    0.2177779270878623,
+    0.0,
+    0.0,
+    0.09104579773298839
+  ],
+  "score_semantics": "Relative ranking score, not probability or a 0–3 annotation grade",
+  "metadata": {
+    "l2": 0.01,
+    "iterations": 446,
+    "preference_pairs": 132,
+    "training_objective": 0.5276253202595697,
+    "trained_at": "2026-10-26T08:19:39.865079+00:00",
+    "train_pairs": 155,
+    "train_candidate_groups": 30,
+    "dataset_fingerprints": {
+      "pairs_all.jsonl": "53ec02c515edb27b9d54269aa224f25855d481aeccdd86f0b7d8d1764fa93306",
+      "train.jsonl": "351ea17acf0a7582a96e643fbb52d5b6e528419c8237bb203b561254bcf7fb54",
+      "validation.jsonl": "d251c91e8834d586952d73941d7957d8c636d234e2a547d22bb0d534395f5b3f",
+      "test.jsonl": "b478071cb9f43f3c719922c6f1cff5eeb944e164f31625b3b0603df4615e81c7",
+      "manifest.json": "df293d6780355197e774034e7e62ae3d0e4a9439b88dbdaaef96049116a6d30e",
+      "candidate_groups.json": "f3b76283dc74d3e28ad3942d22bbd85472c08d9b14263058a0ba94ba50a6b4c9",
+      "split_assignment.json": "f89a54e3d002a387f53df71cd0574f13c84ca54a241d40bfc010e171a473b7b9"
+    },
+    "dataset_source_sha256": "ff0bd0527c79f485447c8308b4bc08c78c07b03202c007caabf8935d4dcbc5b8",
+    "selection_metric": "validation ndcg_at_5_informative; pairwise accuracy; stronger L2",
+    "label_semantics": {
+      "0": {
+        "status": "unknown",
+        "relevance": null
+      },
+      "1": {
+        "status": "weak",
+        "relevance": 0
+      },
+      "2": {
+        "status": "partial",
+        "relevance": 1
+      },
+      "3": {
+        "status": "good",
+        "relevance": 2
+      }
+    },
+    "feature_policy": "Fixed professional concepts only; no identity, contacts, demographics, annotation explanations or scores as inputs",
+    "experimental": true
+  }
+}

@@ -18,7 +18,7 @@ def demo_sources(dataset, cv_id):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Пересортировать вакансии обученным ML2")
-    parser.add_argument("--model", type=Path, default=ROOT / "data/annotations/ml2_reranker_v1/model.json")
+    parser.add_argument("--model", type=Path, default=ROOT / "backend/models/ranker.json")
     parser.add_argument("--cv", type=Path, help="Текстовый файл резюме UTF-8")
     parser.add_argument("--vacancies", type=Path, help="JSON-список или CSV выбранных вакансий / результатов ML1")
     parser.add_argument("--dataset", type=Path, default=ROOT / "data/annotations/ml2_training_v1")

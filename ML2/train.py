@@ -10,7 +10,7 @@ from pathlib import Path
 from ML2.features import FEATURE_NAMES, extract_features
 from ML2.metrics import evaluate
 from ML2.prepare_dataset import SCHEMA_VERSION, sha256, write_json, write_jsonl
-from ML2.ranker import LinearRanker, MODEL_VERSION
+from ML2.ranker import LinearRanker, MODEL_VERSION, SCORE_POLICY_VERSION
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -115,12 +115,15 @@ def train_dataset(dataset, output, l2_grid=(.01, .1, 1., 10.)):
                            "dataset_fingerprints": fingerprints,
                            "dataset_source_sha256": dataset_manifest["source_sha256"],
                            "selection_metric": "validation ndcg_at_5_informative; pairwise accuracy; stronger L2",
+                           "validation_prediction_policy": SCORE_POLICY_VERSION,
                            "label_semantics": dataset_manifest["label_mapping"],
-                           "feature_policy": "Fixed professional concepts only; no identity, contacts, demographics, annotation explanations or scores as inputs",
+                           "feature_policy": "Role-aware technical evidence gates level and explicitly scoped experience; mixed totals are not allocated; no identity, contacts, demographics, annotation explanations or scores as inputs",
                            "experimental": True})
     # The chosen model is frozen before its only test evaluation in this run.
     test_matrix = matrix_for(splits["test"])
     report = {"model_version": MODEL_VERSION, "experimental": True,
+              "score_policy_version": SCORE_POLICY_VERSION,
+              "score_policy": "Positive linear evidence is multiplied by the explicitly established relevant-experience minimum fulfillment; unknown duration and negative linear bases are unchanged. This is a declared rule, not a learned coefficient.",
               "dataset_fingerprints": fingerprints,
               "evaluation_scope": dataset_manifest["evaluation_scope"],
               "metric_policy": "Linear relevance gains 0/1/2; expected DCG for tied scores; all-weak queries excluded from NDCG; informative queries have differing labels",
@@ -134,7 +137,9 @@ def train_dataset(dataset, output, l2_grid=(.01, .1, 1., 10.)):
                               "Some test vacancies also occur in training; this is not an unseen-vacancy test",
                               "Original shortlist is BM25/skills, not an executed ML1 embedding baseline",
                               "Dictionary features do not reproduce every requirement judgment or generate new span annotations",
-                              "Employment duration uses explicitly stated totals, not inferred job intervals",
+                              "Employment duration uses explicitly role-scoped statements or totals in one supported profile, not inferred job intervals",
+                              "Zero input evidence anchors score at zero; positive scores remain uncalibrated relative evidence, not hiring probabilities",
+                              "The explicit relevant-experience shortfall rule is engineering policy, not a learned coefficient; validation and reported metrics include this rule",
                               "Only ten good-fit pairs in the complete eligible dataset; mixed human/assistant review"]}
     output.mkdir(parents=True, exist_ok=True)
     model.save(output / "model.json")
@@ -145,7 +150,7 @@ def train_dataset(dataset, output, l2_grid=(.01, .1, 1., 10.)):
         predictions.append({k: row[k] for k in ("pair_id", "cv_id", "vacancy_id", "overall_score", "relevance")}
                            | {name: values[index] for name, values in scores.items()})
     write_jsonl(output / "test_predictions.jsonl", predictions)
-    lines = ["ML2 — первый локальный обученный реранкер", "",
+    lines = ["ML2 — локальный обученный реранкер с учётом профиля вакансии", "",
              f"Обучение: {len(splits['train'])} пар. Настройка: {len(splits['validation'])}. Тест: {len(splits['test'])}.",
              "Модель: линейное попарное ранжирование по профессиональным признакам.",
              "Балл модели задаёт порядок вакансий; это не вероятность найма и не оценка 0–3.", "",
@@ -161,7 +166,7 @@ def train_dataset(dataset, output, l2_grid=(.01, .1, 1., 10.)):
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Обучить первый локальный реранкер ML2")
     parser.add_argument("--dataset", type=Path, default=ROOT / "data/annotations/ml2_training_v1")
-    parser.add_argument("--output-dir", type=Path, default=ROOT / "data/annotations/ml2_reranker_v1")
+    parser.add_argument("--output-dir", type=Path, default=ROOT / "data/annotations/ml2_reranker_v2_policy")
     args = parser.parse_args(argv)
     report = train_dataset(args.dataset, args.output_dir)
     print("Модель сохранена:", args.output_dir / "model.json")

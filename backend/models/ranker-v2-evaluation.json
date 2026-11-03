@@ -1,0 +1,418 @@
+{
+  "schema_version": "ml2-aggregate-comparison-v1",
+  "current_model_version": "ml2-pairwise-linear-v2",
+  "feature_version": "professional-signals-v2",
+  "trained_at": "2026-11-03T10:05:46.986641+00:00",
+  "dataset_fingerprints": {
+    "pairs_all.jsonl": "53ec02c515edb27b9d54269aa224f25855d481aeccdd86f0b7d8d1764fa93306",
+    "train.jsonl": "351ea17acf0a7582a96e643fbb52d5b6e528419c8237bb203b561254bcf7fb54",
+    "validation.jsonl": "d251c91e8834d586952d73941d7957d8c636d234e2a547d22bb0d534395f5b3f",
+    "test.jsonl": "b478071cb9f43f3c719922c6f1cff5eeb944e164f31625b3b0603df4615e81c7",
+    "manifest.json": "df293d6780355197e774034e7e62ae3d0e4a9439b88dbdaaef96049116a6d30e",
+    "candidate_groups.json": "f3b76283dc74d3e28ad3942d22bbd85472c08d9b14263058a0ba94ba50a6b4c9",
+    "split_assignment.json": "f89a54e3d002a387f53df71cd0574f13c84ca54a241d40bfc010e171a473b7b9"
+  },
+  "dataset_summary": {
+    "train_pairs": 155,
+    "validation_pairs": 30,
+    "test_pairs": 30,
+    "test_cv_queries": 6,
+    "training_candidate_groups": 30,
+    "preference_pairs": 132
+  },
+  "v1": {
+    "source": "Saved frozen v1 evaluation, original professional-signals-v1 features; historical aggregate, not v1 weights applied to v2 inputs",
+    "metrics": {
+      "train": {
+        "skill_overlap": {
+          "ndcg_at_5": 0.7720213377746784,
+          "ndcg_at_5_informative": 0.7466903753051982,
+          "pairwise_accuracy": 0.5239197530864198,
+          "top1_best_label_credit_informative": 0.4222222222222222,
+          "queries": 31,
+          "informative_queries": 27,
+          "all_weak_queries_excluded_from_ndcg": 1
+        },
+        "original_shortlist_order": {
+          "ndcg_at_5": 0.7872814201294738,
+          "ndcg_at_5_informative": 0.7636460223660819,
+          "pairwise_accuracy": 0.5972222222222222,
+          "top1_best_label_credit_informative": 0.5185185185185185,
+          "queries": 31,
+          "informative_queries": 27,
+          "all_weak_queries_excluded_from_ndcg": 1
+        },
+        "trained_ml2": {
+          "ndcg_at_5": 0.869001605139322,
+          "ndcg_at_5_informative": 0.85444622793258,
+          "pairwise_accuracy": 0.7021604938271605,
+          "top1_best_label_credit_informative": 0.6925925925925925,
+          "queries": 31,
+          "informative_queries": 27,
+          "all_weak_queries_excluded_from_ndcg": 1
+        }
+      },
+      "validation": {
+        "skill_overlap": {
+          "ndcg_at_5": 0.9565893466078877,
+          "ndcg_at_5_informative": 0.942119128810517,
+          "pairwise_accuracy": 0.625,
+          "top1_best_label_credit_informative": 0.7333333333333334,
+          "queries": 6,
+          "informative_queries": 3,
+          "all_weak_queries_excluded_from_ndcg": 2
+        },
+        "original_shortlist_order": {
+          "ndcg_at_5": 0.9569010918389727,
+          "ndcg_at_5_informative": 0.9425347891186302,
+          "pairwise_accuracy": 0.5833333333333334,
+          "top1_best_label_credit_informative": 0.6666666666666666,
+          "queries": 6,
+          "informative_queries": 3,
+          "all_weak_queries_excluded_from_ndcg": 2
+        },
+        "trained_ml2": {
+          "ndcg_at_5": 0.9284758959949978,
+          "ndcg_at_5_informative": 0.9046345279933304,
+          "pairwise_accuracy": 0.625,
+          "top1_best_label_credit_informative": 0.5,
+          "queries": 6,
+          "informative_queries": 3,
+          "all_weak_queries_excluded_from_ndcg": 2
+        }
+      },
+      "test": {
+        "skill_overlap": {
+          "ndcg_at_5": 0.6990205643101722,
+          "ndcg_at_5_informative": 0.6990205643101722,
+          "pairwise_accuracy": 0.44841269841269843,
+          "top1_best_label_credit_informative": 0.19999999999999998,
+          "queries": 6,
+          "informative_queries": 6,
+          "all_weak_queries_excluded_from_ndcg": 0
+        },
+        "original_shortlist_order": {
+          "ndcg_at_5": 0.6734775647850731,
+          "ndcg_at_5_informative": 0.6734775647850731,
+          "pairwise_accuracy": 0.39087301587301587,
+          "top1_best_label_credit_informative": 0.16666666666666666,
+          "queries": 6,
+          "informative_queries": 6,
+          "all_weak_queries_excluded_from_ndcg": 0
+        },
+        "trained_ml2": {
+          "ndcg_at_5": 0.7390996565131043,
+          "ndcg_at_5_informative": 0.7390996565131043,
+          "pairwise_accuracy": 0.6706349206349206,
+          "top1_best_label_credit_informative": 0.5,
+          "queries": 6,
+          "informative_queries": 6,
+          "all_weak_queries_excluded_from_ndcg": 0
+        }
+      }
+    }
+  },
+  "v2": {
+    "selected_l2": 10.0,
+    "metrics": {
+      "train": {
+        "skill_overlap": {
+          "ndcg_at_5": 0.7773488429518728,
+          "ndcg_at_5_informative": 0.7526098255020808,
+          "pairwise_accuracy": 0.5362654320987654,
+          "top1_best_label_credit_informative": 0.44074074074074077,
+          "queries": 31,
+          "informative_queries": 27,
+          "all_weak_queries_excluded_from_ndcg": 1
+        },
+        "original_shortlist_order": {
+          "ndcg_at_5": 0.7872814201294738,
+          "ndcg_at_5_informative": 0.7636460223660819,
+          "pairwise_accuracy": 0.5972222222222222,
+          "top1_best_label_credit_informative": 0.5185185185185185,
+          "queries": 31,
+          "informative_queries": 27,
+          "all_weak_queries_excluded_from_ndcg": 1
+        },
+        "trained_ml2": {
+          "ndcg_at_5": 0.8020668232064568,
+          "ndcg_at_5_informative": 0.7800742480071742,
+          "pairwise_accuracy": 0.5516975308641976,
+          "top1_best_label_credit_informative": 0.5037037037037037,
+          "queries": 31,
+          "informative_queries": 27,
+          "all_weak_queries_excluded_from_ndcg": 1
+        }
+      },
+      "validation": {
+        "skill_overlap": {
+          "ndcg_at_5": 0.9565893466078877,
+          "ndcg_at_5_informative": 0.942119128810517,
+          "pairwise_accuracy": 0.625,
+          "top1_best_label_credit_informative": 0.7333333333333334,
+          "queries": 6,
+          "informative_queries": 3,
+          "all_weak_queries_excluded_from_ndcg": 2
+        },
+        "original_shortlist_order": {
+          "ndcg_at_5": 0.9569010918389727,
+          "ndcg_at_5_informative": 0.9425347891186302,
+          "pairwise_accuracy": 0.5833333333333334,
+          "top1_best_label_credit_informative": 0.6666666666666666,
+          "queries": 6,
+          "informative_queries": 3,
+          "all_weak_queries_excluded_from_ndcg": 2
+        },
+        "trained_ml2": {
+          "ndcg_at_5": 0.9565893466078877,
+          "ndcg_at_5_informative": 0.942119128810517,
+          "pairwise_accuracy": 0.625,
+          "top1_best_label_credit_informative": 0.7333333333333334,
+          "queries": 6,
+          "informative_queries": 3,
+          "all_weak_queries_excluded_from_ndcg": 2
+        }
+      },
+      "test": {
+        "skill_overlap": {
+          "ndcg_at_5": 0.6990205643101722,
+          "ndcg_at_5_informative": 0.6990205643101722,
+          "pairwise_accuracy": 0.44841269841269843,
+          "top1_best_label_credit_informative": 0.19999999999999998,
+          "queries": 6,
+          "informative_queries": 6,
+          "all_weak_queries_excluded_from_ndcg": 0
+        },
+        "original_shortlist_order": {
+          "ndcg_at_5": 0.6734775647850731,
+          "ndcg_at_5_informative": 0.6734775647850731,
+          "pairwise_accuracy": 0.39087301587301587,
+          "top1_best_label_credit_informative": 0.16666666666666666,
+          "queries": 6,
+          "informative_queries": 6,
+          "all_weak_queries_excluded_from_ndcg": 0
+        },
+        "trained_ml2": {
+          "ndcg_at_5": 0.7142410243350934,
+          "ndcg_at_5_informative": 0.7142410243350934,
+          "pairwise_accuracy": 0.5317460317460317,
+          "top1_best_label_credit_informative": 0.3666666666666667,
+          "queries": 6,
+          "informative_queries": 6,
+          "all_weak_queries_excluded_from_ndcg": 0
+        }
+      }
+    },
+    "score_policy_version": "relevant-experience-shortfall-v1",
+    "validation_search": [
+      {
+        "l2": 0.01,
+        "metrics": {
+          "ndcg_at_5": 0.9565893466078877,
+          "ndcg_at_5_informative": 0.942119128810517,
+          "pairwise_accuracy": 0.625,
+          "top1_best_label_credit_informative": 0.7333333333333334,
+          "queries": 6,
+          "informative_queries": 3,
+          "all_weak_queries_excluded_from_ndcg": 2
+        }
+      },
+      {
+        "l2": 0.1,
+        "metrics": {
+          "ndcg_at_5": 0.9565893466078877,
+          "ndcg_at_5_informative": 0.942119128810517,
+          "pairwise_accuracy": 0.625,
+          "top1_best_label_credit_informative": 0.7333333333333334,
+          "queries": 6,
+          "informative_queries": 3,
+          "all_weak_queries_excluded_from_ndcg": 2
+        }
+      },
+      {
+        "l2": 1.0,
+        "metrics": {
+          "ndcg_at_5": 0.9565893466078877,
+          "ndcg_at_5_informative": 0.942119128810517,
+          "pairwise_accuracy": 0.625,
+          "top1_best_label_credit_informative": 0.7333333333333334,
+          "queries": 6,
+          "informative_queries": 3,
+          "all_weak_queries_excluded_from_ndcg": 2
+        }
+      },
+      {
+        "l2": 10.0,
+        "metrics": {
+          "ndcg_at_5": 0.9565893466078877,
+          "ndcg_at_5_informative": 0.942119128810517,
+          "pairwise_accuracy": 0.625,
+          "top1_best_label_credit_informative": 0.7333333333333334,
+          "queries": 6,
+          "informative_queries": 3,
+          "all_weak_queries_excluded_from_ndcg": 2
+        }
+      }
+    ]
+  },
+  "score_origin": "Zero feature vector is zero evidence score; pairwise learning is translation invariant",
+  "limitations": [
+    "Small pilot; test contains only six CV queries in the current dataset",
+    "Some test vacancies also occur in training; this is not an unseen-vacancy test",
+    "Original shortlist is BM25/skills, not an executed ML1 embedding baseline",
+    "Dictionary features do not reproduce every requirement judgment or generate new span annotations",
+    "Employment duration uses explicitly role-scoped statements or totals in one supported profile, not inferred job intervals",
+    "Zero input evidence anchors score at zero; positive scores remain uncalibrated relative evidence, not hiring probabilities",
+    "The explicit relevant-experience shortfall rule is engineering policy, not a learned coefficient; validation and reported metrics include this rule",
+    "Only ten good-fit pairs in the complete eligible dataset; mixed human/assistant review",
+    "V2 fixes unsupported experience and level credit; test NDCG is lower than historical v1, so no universal quality improvement is claimed",
+    "The changed score origin makes raw v1/v2 scores incomparable; compare ordering metrics within each experiment",
+    "The six-query test does not validate HR candidate-to-one-vacancy ranking or language-specific quality",
+    "The same historical pilot test has been reused during project development; a larger independent prospective test remains necessary"
+  ],
+  "prior_v2_linear_only": {
+    "selected_l2": 10.0,
+    "metrics": {
+      "train": {
+        "skill_overlap": {
+          "ndcg_at_5": 0.7773488429518728,
+          "ndcg_at_5_informative": 0.7526098255020808,
+          "pairwise_accuracy": 0.5362654320987654,
+          "top1_best_label_credit_informative": 0.44074074074074077,
+          "queries": 31,
+          "informative_queries": 27,
+          "all_weak_queries_excluded_from_ndcg": 1
+        },
+        "original_shortlist_order": {
+          "ndcg_at_5": 0.7872814201294738,
+          "ndcg_at_5_informative": 0.7636460223660819,
+          "pairwise_accuracy": 0.5972222222222222,
+          "top1_best_label_credit_informative": 0.5185185185185185,
+          "queries": 31,
+          "informative_queries": 27,
+          "all_weak_queries_excluded_from_ndcg": 1
+        },
+        "trained_ml2": {
+          "ndcg_at_5": 0.8020668232064568,
+          "ndcg_at_5_informative": 0.7800742480071742,
+          "pairwise_accuracy": 0.5516975308641976,
+          "top1_best_label_credit_informative": 0.5037037037037037,
+          "queries": 31,
+          "informative_queries": 27,
+          "all_weak_queries_excluded_from_ndcg": 1
+        }
+      },
+      "validation": {
+        "skill_overlap": {
+          "ndcg_at_5": 0.9565893466078877,
+          "ndcg_at_5_informative": 0.942119128810517,
+          "pairwise_accuracy": 0.625,
+          "top1_best_label_credit_informative": 0.7333333333333334,
+          "queries": 6,
+          "informative_queries": 3,
+          "all_weak_queries_excluded_from_ndcg": 2
+        },
+        "original_shortlist_order": {
+          "ndcg_at_5": 0.9569010918389727,
+          "ndcg_at_5_informative": 0.9425347891186302,
+          "pairwise_accuracy": 0.5833333333333334,
+          "top1_best_label_credit_informative": 0.6666666666666666,
+          "queries": 6,
+          "informative_queries": 3,
+          "all_weak_queries_excluded_from_ndcg": 2
+        },
+        "trained_ml2": {
+          "ndcg_at_5": 0.9565893466078877,
+          "ndcg_at_5_informative": 0.942119128810517,
+          "pairwise_accuracy": 0.625,
+          "top1_best_label_credit_informative": 0.7333333333333334,
+          "queries": 6,
+          "informative_queries": 3,
+          "all_weak_queries_excluded_from_ndcg": 2
+        }
+      },
+      "test": {
+        "skill_overlap": {
+          "ndcg_at_5": 0.6990205643101722,
+          "ndcg_at_5_informative": 0.6990205643101722,
+          "pairwise_accuracy": 0.44841269841269843,
+          "top1_best_label_credit_informative": 0.19999999999999998,
+          "queries": 6,
+          "informative_queries": 6,
+          "all_weak_queries_excluded_from_ndcg": 0
+        },
+        "original_shortlist_order": {
+          "ndcg_at_5": 0.6734775647850731,
+          "ndcg_at_5_informative": 0.6734775647850731,
+          "pairwise_accuracy": 0.39087301587301587,
+          "top1_best_label_credit_informative": 0.16666666666666666,
+          "queries": 6,
+          "informative_queries": 6,
+          "all_weak_queries_excluded_from_ndcg": 0
+        },
+        "trained_ml2": {
+          "ndcg_at_5": 0.7142410243350934,
+          "ndcg_at_5_informative": 0.7142410243350934,
+          "pairwise_accuracy": 0.5317460317460317,
+          "top1_best_label_credit_informative": 0.3666666666666667,
+          "queries": 6,
+          "informative_queries": 6,
+          "all_weak_queries_excluded_from_ndcg": 0
+        }
+      }
+    },
+    "validation_search": [
+      {
+        "l2": 0.01,
+        "metrics": {
+          "ndcg_at_5": 0.9565893466078877,
+          "ndcg_at_5_informative": 0.942119128810517,
+          "pairwise_accuracy": 0.625,
+          "top1_best_label_credit_informative": 0.7333333333333334,
+          "queries": 6,
+          "informative_queries": 3,
+          "all_weak_queries_excluded_from_ndcg": 2
+        }
+      },
+      {
+        "l2": 0.1,
+        "metrics": {
+          "ndcg_at_5": 0.9565893466078877,
+          "ndcg_at_5_informative": 0.942119128810517,
+          "pairwise_accuracy": 0.625,
+          "top1_best_label_credit_informative": 0.7333333333333334,
+          "queries": 6,
+          "informative_queries": 3,
+          "all_weak_queries_excluded_from_ndcg": 2
+        }
+      },
+      {
+        "l2": 1.0,
+        "metrics": {
+          "ndcg_at_5": 0.9565893466078877,
+          "ndcg_at_5_informative": 0.942119128810517,
+          "pairwise_accuracy": 0.625,
+          "top1_best_label_credit_informative": 0.7333333333333334,
+          "queries": 6,
+          "informative_queries": 3,
+          "all_weak_queries_excluded_from_ndcg": 2
+        }
+      },
+      {
+        "l2": 10.0,
+        "metrics": {
+          "ndcg_at_5": 0.9565893466078877,
+          "ndcg_at_5_informative": 0.942119128810517,
+          "pairwise_accuracy": 0.625,
+          "top1_best_label_credit_informative": 0.7333333333333334,
+          "queries": 6,
+          "informative_queries": 3,
+          "all_weak_queries_excluded_from_ndcg": 2
+        }
+      }
+    ],
+    "description": "Earlier unpublished v2 run, without the explicit relevant-experience-shortfall policy; preserved for transparent experiment history"
+  },
+  "score_policy_version": "relevant-experience-shortfall-v1",
+  "score_policy": "Positive linear evidence is multiplied by the explicitly established relevant-experience minimum fulfillment; unknown duration and negative linear bases are unchanged. This is a declared rule, not a learned coefficient."
+}

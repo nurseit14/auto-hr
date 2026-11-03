@@ -22,6 +22,8 @@ Local demonstration and early user testing. Russian interface; source resumes ma
 
 Reuse canonical skill extraction and the trained local ML2 ranker. ML1 embedding artifacts are absent; show lexical/skills fallback honestly and offer optional semantic configuration. Uploaded candidates, explicit candidate-to-vacancy assignments and decisions persist in session-scoped SQLite. Each vacancy compares only its assigned candidates; the general talent pool remains separate. HR can remove an assignment, delete a resume from the workspace, or delete a custom vacancy while retaining its resumes. Local browser sessions are not authenticated employer accounts. Never automatically reject candidates. No remote key required for the core MVP. Never copy private CVs, annotations, .env or API keys.
 
+ML2 v2 must ground years and seniority in the vacancy's professional profile and technical evidence. Show exact learned contributions and any explicit requirement policy separately. The experience-shortfall rule can reduce a positive score for known insufficient relevant years; unknown years remain unknown. Scores are relative, not probabilities, and extraction is not independent verification of a candidate's claims.
+
 ## Brand Commitments
 
 Retain the Auto-HR project name. User requested implementation and integration and delegated routine technical decisions by asking to make all parts work together.

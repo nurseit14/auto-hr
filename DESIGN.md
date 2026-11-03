@@ -223,6 +223,10 @@ The navy rail uses muted pale text, a darker blue active field, and a lighter na
 
 A candidate header, underlined tabs, scrollable evidence region, source-context actions, and a separate decision footer keep inspection and action legible. Evidence quotes remain inspectable; source-context actions can reveal highlighted text. Green confirmed tags and amber unknowns sit beside explanations rather than replacing them. Relative model values use separate muted-blue numeric fields.
 
+### Score explanation
+
+The evidence dossier includes a flat, divided score explanation with tabular numeric contributions and source-labelled quotes. General years, role-specific years and the vacancy minimum remain separate. Learned feature contributions and explicit vacancy rules use separate groups; a shortfall adjustment shows its original subtotal, deduction and final sum. Zero uses no plus sign. Technical coefficients live in an optional horizontally scrollable table, while the page itself fits the mobile viewport.
+
 ### Dialogs and motion
 
 Dialogs use a sticky divided heading, padded form body, constrained viewport height, and internal scrolling. Wide dialogs extend to (830px), ordinary dialogs to (540px). Button state transitions take (150ms); dossier reveal and mobile drawer transitions take (200ms). Loading icons rotate over (1.1s). Reduced-motion preference removes animations and transitions.

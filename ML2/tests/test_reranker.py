@@ -28,7 +28,7 @@ class FeatureTests(unittest.TestCase):
         features = dict(zip(FEATURE_NAMES, vector))
         self.assertEqual(features["skill_coverage"], .75)
         self.assertLess(features["seniority_compatibility"], 0)
-        self.assertEqual(features["experience_compatibility"], 1.)
+        self.assertEqual(features["experience_compatibility"], .75)
         self.assertEqual(facts["skills_not_confirmed"], ["python"])
 
     def test_contact_demographics_and_annotation_targets_are_not_features(self):
@@ -61,7 +61,7 @@ class FeatureTests(unittest.TestCase):
     def test_no_experience_is_an_allowance(self):
         vacancy = {**self.vacancy, "experience": "Нет опыта"}
         vector, _ = extract_features(self.cv, vacancy)
-        self.assertEqual(vector[FEATURE_NAMES.index("experience_compatibility")], 1.)
+        self.assertEqual(vector[FEATURE_NAMES.index("experience_compatibility")], 0.)
 
 
 class MetricTests(unittest.TestCase):

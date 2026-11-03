@@ -47,6 +47,7 @@ import {
   VacancyDialog,
 } from "./Dialogs";
 import { FeedbackView, MatchesView, VacancyBrowser } from "./Views";
+import { ScoreBreakdown } from "./ScoreBreakdown";
 
 type View = "shortlist" | "candidates" | "vacancies" | "matches" | "feedback";
 type DetailTab = "evidence" | "resume" | "clarifications" | "notes";
@@ -1251,6 +1252,7 @@ export default function App() {
                                     <p className="explanation">
                                       {selectedRank.explanation}
                                     </p>
+                                    <ScoreBreakdown data={selectedRank.score_breakdown} />
                                     <div className="evidence-section">
                                       <h3>
                                         Подтверждено{" "}

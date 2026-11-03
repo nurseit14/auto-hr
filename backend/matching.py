@@ -15,41 +15,33 @@ import re
 import numpy as np
 
 from ML1.skill_similarity import calculate_skill_similarity
-from ML2.features import extract_features, FEATURE_NAMES, professional_text
-from ML2.ranker import LinearRanker
+from ML2.features import extract_features, FEATURE_NAMES, FEATURE_VERSION, professional_text, uncertain_skill_mention
+from ML2.ranker import LinearRanker, MODEL_VERSION
 from NLP.skill_extractor import extract_skills
 from NLP.skills_dictionary import SKILL_ALIASES
 
 ROOT = Path(__file__).resolve().parent.parent
 CATALOGUE_NOTE = "Учебный архив вакансий Казахстана за 2023 год. Доступность позиций и зарплат не проверяется в реальном времени."
-WEAK_BEFORE = re.compile(r"(?:\b(?:learning|beginner(?: in)?|basic(?: knowledge of)?|no experience(?: with| in)?|never used)\b|изучаю|изучить|осваиваю|базов\w*(?: знани\w*)?|не работал(?: с| в)?|не использовал|нет опыта(?: работы)?(?: с| в)?|не знаю|знаком(?:ство)? с)\s*$", re.I)
-WEAK_AFTER = re.compile(r"^\s*[:—–-]?\s*(?:только\s+)?(?:изучаю|осваиваю|не работал|не использовал|не знаю|нет опыта|\b(?:beginner|basic|learning|no experience|never used)\b)", re.I)
+
+FEATURE_LABELS = {
+    "skill_coverage": "Навыки вакансии",
+    "skill_jaccard": "Совпадение наборов навыков",
+    "task_coverage": "Задачи вакансии",
+    "role_compatibility": "Специализация",
+    "seniority_compatibility": "Уровень в нужной специализации",
+    "experience_compatibility": "Релевантный стаж",
+    "education_level_compatibility": "Уровень образования",
+    "education_field_coverage": "Направление образования",
+    "language_compatibility": "Языки",
+    "mandatory_skill_confirmation": "Обязательные навыки",
+    "industry_coverage": "Отраслевой опыт",
+    "communication_confirmation": "Коммуникация",
+}
 
 
 def uncertain_mention(text, skill):
-    """A weak statement must govern this skill, never every word on its line.
-
-    In particular, the professional term 'Machine Learning' is not the action
-    'learning Docker'. Separate clauses stop one negation leaking to a neighbor.
-    """
-    occurrences = []
-    for alias in [skill, *SKILL_ALIASES.get(skill, [])]:
-        for match in re.finditer(rf"(?<!\w){re.escape(alias)}(?!\w)", text, flags=re.I):
-            before = text[:match.start()]
-            after = text[match.end():]
-            if re.search(r"(?:не знаю|не работал|не использовал|изучаю|осваиваю|never used|no experience)\s*,\s*$", before, re.I):
-                before = before.rsplit(",", 1)[-1]
-            # Shared list predicates ('PostgreSQL и Kubernetes не работал',
-            # 'learning Python, Docker') apply to every member of that list.
-            for other in set(extract_skills(before + " " + after)) - {skill}:
-                for name in sorted([other, *SKILL_ALIASES.get(other, [])], key=len, reverse=True):
-                    pattern = rf"(?<!\w){re.escape(name)}(?!\w)"
-                    before = re.sub(pattern, " ", before, flags=re.I)
-                    after = re.sub(pattern, " ", after, flags=re.I)
-            before = re.sub(r"(?:\s|[,/&]|\b(?:and|и)\b)+$", " ", before, flags=re.I)
-            after = re.sub(r"^(?:\s|[,/&]|\b(?:and|и)\b)+", " ", after, flags=re.I)
-            occurrences.append(bool(WEAK_BEFORE.search(before) or WEAK_AFTER.search(after)))
-    return bool(occurrences) and all(occurrences)
+    """Use the same uncertainty policy for visible coverage and ML2 features."""
+    return uncertain_skill_mention(text, skill)
 
 
 def normalize_skill(value):
@@ -107,6 +99,115 @@ def candidate_source(record):
     return text, sources, strong, weak
 
 
+def source_evidence(items, record, vacancy):
+    """Recover original quotes and provenance from the model's joined input.
+
+    The extractor receives a filtered concatenation of resume and answers. Its
+    source hints therefore cannot establish that a quote came from the resume.
+    Never expose a transformed/masked model string as an original source quote.
+    """
+    original_sources = [("resume", record["text"])]
+    original_sources += [("clarification", item["answer"]) for item in record.get("clarifications", [])]
+    added = sorted(set(record.get("manual_added", [])) | set(record.get("manual_confirmed", [])))
+    if added:
+        original_sources.append(("hr", "Подтвержденные HR навыки: " + ", ".join(added)))
+    vacancy_sources = [("vacancy", str(vacancy.get(field, "")))
+                       for field in ("title", "requirements", "responsibilities", "description", "experience")]
+    output = []
+    seen = set()
+    for item in items or []:
+        quote = item.get("quote", "") if isinstance(item, dict) else ""
+        if not isinstance(quote, str) or not quote.strip():
+            continue
+        pattern = r"\s+".join(re.escape(part) for part in quote.strip().split())
+        candidates = vacancy_sources if item.get("source") == "vacancy" else original_sources
+        for source, text in candidates:
+            match = re.search(pattern, text, re.I)
+            if match:
+                # Limit display length while retaining a real contiguous quote.
+                actual = match.group()[:600]
+                identity = (source, actual)
+                if identity not in seen:
+                    output.append({"quote": actual, "source": source})
+                    seen.add(identity)
+                break
+    return output
+
+
+def score_breakdown(model, features, facts, record, vacancy, matched, evidence):
+    """Explain exactly the score used for ordering, without counterfactual claims."""
+    feature_reasons = facts.get("feature_reasons", {})
+    feature_evidence = facts.get("feature_evidence", {})
+    if model is not None:
+        # Use the model's own transform so explanation cannot drift from predict.
+        if hasattr(model, "explain"):
+            calculation = model.explain(np.asarray([features]))[0]
+        else:
+            # Compatible with saved pilot models during a source-only upgrade.
+            values = np.asarray(features, dtype=float)
+            parts = ((values - model.mean) / model.scale) * model.weights
+            calculation = {"base_score": 0., "raw_score": float(parts.sum()),
+                           "contributions": [{"feature": name, "value": float(values[i]),
+                                              "mean": float(model.mean[i]), "scale": float(model.scale[i]),
+                                              "weight": float(model.weights[i]), "contribution": float(parts[i])}
+                                             for i, name in enumerate(FEATURE_NAMES)]}
+        contributions = []
+        for item in calculation["contributions"]:
+            name = item["feature"]
+            reason = feature_reasons.get(name)
+            if not reason:
+                reason = ("По этому признаку пока нет достаточного подтверждения в источниках."
+                          if item["value"] == 0 else "Признак рассчитан по профессиональному тексту и требованиям вакансии.")
+            if item["weight"] == 0:
+                reason += " В текущей обученной модели этот признак имеет нулевой вес."
+            contributions.append({**item, "label": FEATURE_LABELS.get(name, name), "reason": reason,
+                                  "evidence": source_evidence(feature_evidence.get(name, []), record, vacancy)})
+        version, feature_version = MODEL_VERSION, FEATURE_VERSION
+        warnings = list(facts.get("warnings", []))
+    else:
+        score = len(matched) / max(1, len(vacancy["skills"]))
+        calculation = {"base_score": 0., "raw_score": score}
+        contributions = [{"feature": "skill_coverage", "label": FEATURE_LABELS["skill_coverage"],
+                          "value": score, "mean": 0., "scale": 1., "weight": 1.,
+                          "contribution": score,
+                          "reason": f"Подтверждено {len(matched)} из {len(vacancy['skills'])} обнаруженных навыков вакансии.",
+                          "evidence": [{"quote": item["quote"], "source": item["source"]}
+                                       for item in evidence if item["skill"] in matched]}]
+        version, feature_version = "offline-baseline", "dictionary-skills"
+        warnings = ["ML2 недоступна. Балл рассчитан только по доле подтверждённых навыков."]
+    adjustments = []
+    for item in calculation.get("adjustments", []):
+        relevant = facts.get("relevant_years")
+        required = facts.get("minimum_general_years")
+        reason = "Явное правило учитывает подтверждённый недостаток профильного стажа; это не обученный коэффициент."
+        if relevant is not None and required is not None:
+            years = f"{relevant:g}".replace(".", ",")
+            minimum = f"{required:g}".replace(".", ",")
+            factor = f"{item['factor']:.6f}".rstrip("0").rstrip(".").replace(".", ",")
+            reason = (f"Подтверждённый профильный стаж: {years} г.; минимум вакансии: {minimum} г. "
+                      f"Положительная часть обученного балла умножена на {factor}. "
+                      "Это явное правило, а не обученный коэффициент; неизвестный стаж не считается нулевым.")
+        proofs = list(facts.get("experience_evidence", []))
+        if vacancy.get("experience"):
+            proofs.append({"quote": vacancy["experience"], "source": "vacancy"})
+        adjustments.append({**item, "label": "Недостаточный профильный стаж", "reason": reason,
+                            "evidence": source_evidence(proofs, record, vacancy)})
+    return {"model_version": version, "feature_version": feature_version,
+            "base_score": float(calculation.get("base_score", 0.)),
+            "raw_score": float(calculation["raw_score"]),
+            "final_score": float(calculation.get("final_score", calculation["raw_score"])),
+            "contributions": contributions, "adjustments": adjustments,
+            "experience": {"general_years": facts.get("claimed_total_years"),
+                           "relevant_years": facts.get("relevant_years"),
+                           "required_years": facts.get("minimum_general_years"),
+                           "reason": facts.get("experience_reason", "Релевантный стаж по этой вакансии не подтверждён."),
+                           "evidence": source_evidence(facts.get("experience_evidence", []), record, vacancy)},
+            "role": {"candidate_areas": facts.get("cv_professional_areas", []),
+                     "vacancy_areas": facts.get("vacancy_professional_areas", []),
+                     "reason": facts.get("role_reason", "Специализацию необходимо проверить по резюме.")},
+            "warnings": warnings}
+
+
 class Matching:
     def __init__(self):
         self.catalogue = self._read_catalogue()
@@ -162,6 +263,8 @@ class Matching:
                 "label": ("NLP → ML1 → ML2" if self.ml1 else "NLP → навыки и текст → ML2") if self.model else "NLP → навыки и текст",
                 "ml1_available": bool(self.ml1), "ml2_available": bool(self.model),
                 "ml2_experimental": True, "score_semantics": "Относительный балл ранжирования, не вероятность трудоустройства",
+                "model_version": MODEL_VERSION if self.model else "offline-baseline",
+                "feature_version": FEATURE_VERSION if self.model else "dictionary-skills",
                 "warning": self.warning}
 
     def pair(self, record, vacancy):
@@ -172,15 +275,13 @@ class Matching:
         missing = sorted(need - strong - weak)
         # ML2 accepts original source keys; ensure description is included in text.
         features, facts = extract_features(text, {**vacancy, "text": vacancy["description"]})
-        if self.model:
-            score = float(self.model.predict(np.asarray([features]))[0])
-        else:
-            score = len(matched) / max(1, len(need))
         evidence = []
         for skill in matched + uncertain:
             candidates = [row for row in sources if row["skill"] == skill]
             chosen = sorted(candidates, key=lambda row: (row["uncertain"], row["source"] != "hr"))[0]
             evidence.append(chosen)
+        breakdown = score_breakdown(self.model, features, facts, record, vacancy, matched, evidence)
+        score = breakdown["final_score"]
         if need:
             explanation = f"В тексте подтверждено {len(matched)} из {len(need)} обнаруженных навыков вакансии."
         else:
@@ -196,8 +297,9 @@ class Matching:
                 "skill_score": len(matched) / len(need) if need else 0., "matched_skills": matched,
                 "missing_skills": missing, "uncertain_skills": uncertain, "evidence": evidence,
                 "explanation": explanation, "status": "new", "questions": questions,
+                "score_breakdown": breakdown,
                 "signals": {**facts["signals"], "ml1_adjusted_skill_score": calculate_skill_similarity(matched, vacancy["skills"]),
-                            "model_version": "ml2-pairwise-linear-v1" if self.model else "offline-baseline",
+                            "model_version": breakdown["model_version"],
                             "model_features": FEATURE_NAMES}}
 
     def shortlist(self, records, vacancy, reviews):
@@ -248,6 +350,6 @@ class Matching:
         rows = []
         for _, vacancy in candidates[:max(60, limit * 3)]:
             assessment = self.pair(record, vacancy)
-            rows.append({"vacancy": vacancy, **{key: assessment[key] for key in ("score", "skill_score", "matched_skills", "missing_skills", "uncertain_skills", "explanation")}})
+            rows.append({"vacancy": vacancy, **{key: assessment[key] for key in ("score", "skill_score", "matched_skills", "missing_skills", "uncertain_skills", "explanation", "score_breakdown")}})
         rows.sort(key=lambda row: (-row["score"], -row["skill_score"], row["vacancy"]["id"]))
         return rows[:limit], pipeline
