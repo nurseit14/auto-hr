@@ -31,11 +31,18 @@ def legacy_data(store, sid="a" * 64, suffix="one"):
     return record, vac
 
 
-def test_public_login_state_and_private_routes_require_auth(app):
+def test_public_login_state_and_private_routes_require_auth(app, tmp_path, monkeypatch):
+    # Test the public shell independently of an optional local frontend build.
+    dist = tmp_path / "frontend" / "dist"
+    dist.mkdir(parents=True)
+    (dist / "index.html").write_text("<!doctype html><title>Public login shell</title>", encoding="utf-8")
+    monkeypatch.setattr("backend.app.ROOT", tmp_path)
     with TestClient(app) as client:
         assert client.get("/api/auth/me").json() == {"user": None}
         assert client.get("/api/health").status_code == 200
-        assert client.get("/").status_code == 200
+        shell = client.get("/")
+        assert shell.status_code == 200
+        assert "Public login shell" in shell.text
         for method, path in (("get", "/api/candidates"), ("get", "/api/vacancies"),
                              ("get", "/api/questions"), ("get", "/api/stats"),
                              ("post", "/api/candidates"), ("post", "/api/vacancies"),

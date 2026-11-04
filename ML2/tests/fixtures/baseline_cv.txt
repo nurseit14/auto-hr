@@ -1,0 +1,6 @@
+Вымышленное резюме для инженерной демонстрации ML2-04.
+Backend Developer.
+Опыт backend-разработки 3 года.
+Разработал REST API на Python и Django.
+Оптимизировал запросы PostgreSQL и разворачивал backend-сервисы с Docker.
+English B1.

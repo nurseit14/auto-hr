@@ -1,0 +1,92 @@
+[
+  {
+    "vacancy_id": "demo-data-high-ml1",
+    "title": "Middle Data Engineer",
+    "requirements": "Требуются Python, SQL, Airflow и ETL. English B2.",
+    "responsibilities": "Построение ETL-пайплайнов и хранилищ данных.",
+    "experience": "Опыт Data Engineering от 3 лет",
+    "skill_score": 0.9,
+    "semantic_score": 0.95,
+    "hybrid_score": 0.93,
+    "matching_metadata": {
+      "fixture": true,
+      "source": "fictional ML1-like scores, not an executed retrieval run",
+      "alpha": 0.4,
+      "semantic_weight": 0.6,
+      "index_version": "fixture-no-index",
+      "model_name": "fixture-no-encoder"
+    }
+  },
+  {
+    "vacancy_id": "demo-partial-fastapi",
+    "title": "Python Backend Developer",
+    "requirements": "Требуются Python, FastAPI и PostgreSQL. English B2.",
+    "responsibilities": "Разработка backend-сервисов и REST API.",
+    "experience": "Опыт backend-разработки от 4 лет",
+    "skill_score": 0.75,
+    "semantic_score": 0.9,
+    "hybrid_score": 0.84,
+    "matching_metadata": {
+      "fixture": true,
+      "source": "fictional ML1-like scores, not an executed retrieval run",
+      "alpha": 0.4,
+      "semantic_weight": 0.6,
+      "index_version": "fixture-no-index",
+      "model_name": "fixture-no-encoder"
+    }
+  },
+  {
+    "vacancy_id": "zz-demo-backend-tie",
+    "title": "Python Backend Developer",
+    "requirements": "Требуются Python, Django, PostgreSQL и Docker. English B1.",
+    "responsibilities": "Разработка REST API и backend-сервисов.",
+    "experience": "Опыт backend-разработки от 2 лет",
+    "skill_score": 0.6,
+    "semantic_score": 0.62,
+    "hybrid_score": 0.612,
+    "matching_metadata": {
+      "fixture": true,
+      "source": "fictional ML1-like scores, not an executed retrieval run",
+      "alpha": 0.4,
+      "semantic_weight": 0.6,
+      "index_version": "fixture-no-index",
+      "model_name": "fixture-no-encoder"
+    }
+  },
+  {
+    "vacancy_id": "aa-demo-backend-tie",
+    "title": "Python Backend Developer",
+    "requirements": "Требуются Python, Django, PostgreSQL и Docker. English B1.",
+    "responsibilities": "Разработка REST API и backend-сервисов.",
+    "experience": "Опыт backend-разработки от 2 лет",
+    "skill_score": 0.6,
+    "semantic_score": 0.62,
+    "hybrid_score": 0.612,
+    "matching_metadata": {
+      "fixture": true,
+      "source": "fictional ML1-like scores, not an executed retrieval run",
+      "alpha": 0.4,
+      "semantic_weight": 0.6,
+      "index_version": "fixture-no-index",
+      "model_name": "fixture-no-encoder"
+    }
+  },
+  {
+    "vacancy_id": "demo-frontend",
+    "title": "Frontend Developer",
+    "requirements": "Требуются React и TypeScript. English B1.",
+    "responsibilities": "Разработка пользовательских интерфейсов.",
+    "experience": "Опыт frontend-разработки от 2 лет",
+    "skill_score": 0.3,
+    "semantic_score": 0.6,
+    "hybrid_score": 0.48,
+    "matching_metadata": {
+      "fixture": true,
+      "source": "fictional ML1-like scores, not an executed retrieval run",
+      "alpha": 0.4,
+      "semantic_weight": 0.6,
+      "index_version": "fixture-no-index",
+      "model_name": "fixture-no-encoder"
+    }
+  }
+]
