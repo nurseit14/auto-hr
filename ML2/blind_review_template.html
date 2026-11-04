@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; img-src 'none'; font-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Auto-HR — независимая проверка пар</title>
+<style>
+:root{font-family:Manrope,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#162237;background:#f1f5fa;font-size:14px;line-height:1.6;--navy:#182838;--blue:#2c58dc;--muted:#56677f;--line:#dce3ed;--green:#14734d;--danger:#a82e39}
+[hidden]{display:none!important}*{box-sizing:border-box;scrollbar-width:thin;scrollbar-color:#b7c4d6 transparent}body{margin:0;min-width:320px}button,input,textarea,select{font:inherit}button,input,textarea,select,a{outline-offset:3px}button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid #79a5ff}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.55}a{color:var(--blue);text-underline-offset:3px}::selection{background:#cfddff;color:#0f2c71}input,textarea{caret-color:var(--blue)}h1,h2,h3,p{margin:0}h1{font-size:27px;line-height:1.3;letter-spacing:-.03em;font-weight:800}h2{font-size:18px;line-height:1.4;letter-spacing:-.02em}h3{font-size:15px;line-height:1.45}p+p{margin-top:8px}.muted{color:var(--muted)}.small{font-size:12px}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.skip{position:fixed;left:16px;top:-90px;z-index:9;background:#fff;padding:12px}.skip:focus{top:12px}
+.topbar{background:var(--navy);color:#fff;padding:19px 28px;display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:800;letter-spacing:-.02em}.brand-mark{display:grid;grid-template-columns:9px 9px;grid-template-rows:9px 9px;gap:3px}.brand-mark i{background:#8db4ff;border-radius:2px}.brand-mark i:last-child{background:#fff}.topbar p{color:#c8d4e2}.topbar a{color:#d8e6ff}.shell{display:grid;grid-template-columns:210px minmax(0,1fr);max-width:1840px;margin:auto}.pair-nav{padding:22px 16px;border-right:1px solid var(--line);align-self:start;position:sticky;top:0;max-height:100vh;overflow:auto}.pair-nav summary{font-weight:750;cursor:pointer;margin-bottom:12px}.progress{font-variant-numeric:tabular-nums;color:var(--muted);margin-bottom:12px}.progress-track{height:4px;background:#dce4ef;margin:8px 0 18px}.progress-track span{display:block;height:100%;width:0;background:var(--green);transition:width .15s ease}.pair-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.pair-button{min-height:39px;padding:6px;border:1px solid #cad5e4;background:#fff;color:#34465e;border-radius:5px;font-weight:650;font-variant-numeric:tabular-nums}.pair-button:hover{background:#e7eefb}.pair-button[aria-current=true]{border-color:var(--blue);background:var(--blue);color:#fff}.pair-button.complete:not([aria-current=true]){color:#11643f;background:#e1f5eb;border-color:#a9d9c0}.pair-button.draft:not([aria-current=true]){background:#fff2d6;color:#80550e;border-color:#e9d39f}.nav-key{font-size:12px;color:var(--muted);margin-top:14px;line-height:1.7}.workspace{min-width:0;padding:24px 28px 40px}.intro{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:20px}.intro p{margin-top:7px;max-width:76ch}.panel{background:#fff;border:1px solid var(--line);border-radius:8px;padding:20px;margin-bottom:18px}.identity{display:grid;grid-template-columns:minmax(170px,310px) auto minmax(220px,1fr);align-items:end;gap:12px}.identity p{align-self:center}.field{display:flex;flex-direction:column;gap:7px;min-width:0;font-size:12px;font-weight:700}.field input,.field textarea,.field select{width:100%;min-width:0;padding:10px 11px;border:1px solid #c6d2e3;background:#fff;color:#162237;border-radius:5px;font-weight:450;font-size:14px}.field input::placeholder,.field textarea::placeholder{color:#67778e;opacity:1}.field textarea{resize:vertical;min-height:88px}.field select{min-height:43px}.field input:disabled,.field textarea:disabled,.field select:disabled{background:#f2f5f9;color:#6e7d91}.button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:43px;padding:10px 15px;border-radius:6px;border:1px solid #bdcde4;background:#fff;color:#294eaa;font-weight:750;font-size:12px;text-decoration:none}.button:hover{background:#edf3ff}.button.primary{background:var(--blue);border-color:var(--blue);color:#fff}.button.primary:hover{background:#2147bc}.button.danger{color:var(--danger);border-color:#dfb7bd}.button.danger:hover{background:#fff1f2}.button.text{min-height:35px;padding:5px 8px;background:transparent;border-color:transparent}.inline-note{padding:12px 15px;border-radius:5px;background:#edf3ff;color:#254a8f;margin-bottom:18px;font-size:12px}.error-banner{padding:12px 15px;background:#fff0f1;color:#9b2633;border-radius:5px;margin-bottom:18px}.notice{padding:12px 15px;background:#e1f5eb;color:#11643f;border-radius:5px;margin-bottom:18px}.notice:empty,.error-banner:empty{display:none}.section-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:12px}.pair-caption{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;margin-bottom:4px}.pair-state{font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap}.pair-state.complete{color:var(--green)}.sources{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;margin-bottom:18px}.source{margin:0;padding:0;overflow:hidden}.source h2{padding:15px 18px;border-bottom:1px solid var(--line);font-size:16px}.source-text{white-space:pre-wrap;overflow-wrap:anywhere;word-break:normal;max-height:510px;overflow:auto;padding:18px;font-size:13px;line-height:1.8;tab-size:4}.source-text:empty:before{content:"Текст резюме пустой. Оценивайте отсутствие сведений по правилам.";color:var(--muted);font-style:italic}.rubric{font-size:12px;line-height:1.65}.rubric summary{font-weight:750;color:#294eaa;cursor:pointer}.rubric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:12px}.rubric-grid strong{display:block;color:#162237}.rubric p{margin-top:12px}.requirements-heading{margin:25px 0 15px}.requirements-heading p{margin-top:6px;max-width:78ch}.requirement{padding:20px 0;border-top:1px solid var(--line)}.requirement:first-child{border-top:0;padding-top:0}.requirement:last-child{padding-bottom:0}.row-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.row-heading h3{font-variant-numeric:tabular-nums}.form-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:15px}.form-grid .wide{grid-column:1/-1}.help{font-size:12px;font-weight:450;color:var(--muted);line-height:1.55}.check{display:flex;align-items:flex-start;gap:9px;font-weight:600;font-size:13px;margin-top:16px}.check input{margin:5px 0 0;width:16px;height:16px;accent-color:var(--blue);flex:none}.form-footer{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;margin-top:20px;padding-top:18px;border-top:1px solid var(--line)}.navigation-actions{display:flex;flex-wrap:wrap;gap:9px}.validation{padding:12px 15px;background:#fff2d6;color:#79500d;border-radius:5px;margin-top:14px;font-size:12px}.validation ul{margin:7px 0 0;padding-left:20px}.validation:empty{display:none}.export-bar{display:flex;justify-content:space-between;align-items:center;gap:20px}.export-bar p{max-width:78ch;margin-top:5px}.bottom-note{font-size:12px;color:var(--muted);max-width:84ch;margin-top:12px}fieldset{min-width:0;padding:0;margin:0;border:0}fieldset:disabled{opacity:.65}.empty-requirements{padding:15px 0;color:var(--muted);font-size:13px}.fatal{max-width:700px;padding:40px 24px;margin:auto}.fatal p{margin-top:15px}
+@media(max-width:1100px){.identity{grid-template-columns:minmax(170px,1fr) auto}.identity p{grid-column:1/-1}.workspace{padding:22px 20px}.rubric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.topbar{padding:16px 18px;align-items:flex-start}.topbar p{font-size:12px}.shell{display:block}.pair-nav{position:static;border-right:0;border-bottom:1px solid var(--line);max-height:none;padding:15px 18px}.pair-nav details:not([open]) summary{margin-bottom:0}.pair-list{grid-template-columns:repeat(10,minmax(0,1fr))}.pair-button{min-height:36px}.workspace{padding:20px 16px 28px}.intro{display:block}h1{font-size:25px}.sources{grid-template-columns:1fr}.source-text{max-height:360px;font-size:13px}.panel{padding:17px}.source{padding:0}.form-grid{grid-template-columns:1fr}.form-grid .wide{grid-column:auto}.export-bar{align-items:stretch;flex-direction:column;gap:13px}.export-bar .button{align-self:flex-start}}
+@media(max-width:470px){.topbar{gap:10px}.brand{font-size:18px}.topbar a{font-size:12px}.topbar p{max-width:140px}.pair-list{grid-template-columns:repeat(7,minmax(0,1fr))}.identity{grid-template-columns:1fr}.identity p{grid-column:auto}.identity .button{justify-self:start}.field input,.field textarea,.field select{font-size:16px}.rubric-grid{grid-template-columns:1fr 1fr;gap:12px}h1{font-size:24px}.section-heading{align-items:flex-start}.navigation-actions{width:100%}.navigation-actions .button{flex:1}.pair-state{white-space:normal;text-align:right}.form-footer>.button{width:100%}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">К содержимому</a>
+<header class="topbar"><div class="brand"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>Auto-HR</div><div><p>Независимая проверка пар</p><a href="ANNOTATION_GUIDELINES.md" target="_blank" rel="noopener">Полные правила оценки</a></div></header>
+<div class="shell" id="app" hidden>
+<aside class="pair-nav" aria-label="Переход между парами"><details id="pair-nav-details" open><summary>Пары для проверки</summary><p class="progress" id="progress-text">Завершено 0</p><div class="progress-track" aria-hidden="true"><span id="progress-fill"></span></div><nav class="pair-list" id="pair-list" aria-label="Выберите пару"></nav><p class="nav-key">Синий — открыта · зелёный — завершена · жёлтый — черновик. Номер обозначает порядок в этом пакете.</p></details></aside>
+<main class="workspace" id="main" tabindex="-1">
+<div class="intro"><div><h1>Проверка резюме и вакансий</h1><p class="muted">Сформируйте собственную оценку по текстам. Здесь нет готовых оценок, выделений или объяснений другого участника.</p></div></div>
+<section class="panel identity" aria-label="Участник проверки"><label class="field" for="reviewer-id">Ваше имя или идентификатор<input id="reviewer-id" autocomplete="off" maxlength="80" placeholder="Например, participant_2"></label><button class="button primary" id="start-review" type="button">Начать / продолжить</button><p class="muted small" id="identity-note">Введите своё имя перед оценкой. Чтобы продолжить позже, используйте то же имя и этот файл.</p></section>
+<div class="error-banner" id="storage-error" role="alert"></div><div class="notice" id="notice" role="status" aria-live="polite"></div>
+<div class="inline-note" id="reference-note"></div>
+<section class="panel rubric"><details><summary>Краткие правила оценки</summary><div class="rubric-grid"><div><strong>0 — нет сведений</strong>Требование нельзя подтвердить или опровергнуть. Цитату CV оставьте пустой.</div><div><strong>1 — не соответствует</strong>Есть прямое основание несоответствия. Нужна точная цитата CV.</div><div><strong>2 — частично</strong>Подтверждена только часть требования. Нужна точная цитата CV.</div><div><strong>3 — соответствует</strong>Требование подтверждается резюме. Нужна точная цитата CV.</div></div><p>Общая оценка: <strong>0</strong> — недостаточно данных, <strong>1</strong> — слабое соответствие, <strong>2</strong> — частичное, <strong>3</strong> — хорошее. Это отдельное суждение, не среднее баллов требований. Отсутствие слова не доказывает отсутствие навыка. Стаж оценивайте по нужной профессии. Пожелания не превращайте в обязательные требования.</p><p><a href="ANNOTATION_GUIDELINES.md" target="_blank" rel="noopener">Открыть полное руководство и примеры</a></p></details></section>
+<div class="section-heading"><div><p class="pair-caption" id="pair-caption"></p><h2 id="pair-heading">Пара</h2></div><span class="pair-state" id="pair-state"></span></div>
+<div class="sources"><section class="panel source"><h2>Резюме</h2><div class="source-text" id="cv-text" tabindex="0" aria-label="Полный текст резюме"></div></section><section class="panel source"><h2>Вакансия</h2><div class="source-text" id="vacancy-text" tabindex="0" aria-label="Полный текст вакансии"></div></section></div>
+<fieldset id="review-fields" disabled>
+<div class="requirements-heading"><h2>Оценки отдельных требований</h2><p class="muted small">Выделите требования самостоятельно: роль и уровень, профильный опыт, технологии и другие условия. Копируйте цитаты из текстов выше. Пробелы и переносы могут отличаться; слова менять нельзя.</p></div>
+<section class="panel"><div id="requirements"></div><button class="button" id="add-requirement" type="button">Добавить требование</button></section>
+<section class="panel" aria-labelledby="overall-heading"><h2 id="overall-heading">Общая оценка пары</h2><div class="form-grid" style="margin-top:15px"><label class="field" for="overall-score">Насколько кандидат соответствует вакансии<select id="overall-score"><option value="">Выберите оценку</option><option value="0">0 — недостаточно данных</option><option value="1">1 — слабое соответствие</option><option value="2">2 — частичное соответствие</option><option value="3">3 — хорошее соответствие</option></select></label><label class="field wide" for="overall-reason">Почему вы выбрали эту общую оценку<textarea id="overall-reason" rows="3" placeholder="Главные совпадения, несоответствия и неизвестные сведения"></textarea></label><label class="field wide" for="review-notes">Замечания о качестве текста или спорном случае <span class="help">Необязательно. Например, документ обрезан или содержит противоречие.</span><textarea id="review-notes" rows="2"></textarea></label></div><label class="check"><input type="checkbox" id="reviewed"><span>Я прочитал тексты, самостоятельно проверил требования и общую оценку.</span></label><div class="validation" id="validation" role="status" aria-live="polite"></div><div class="form-footer"><button class="button primary" id="check-pair" type="button">Проверить заполнение</button><div class="navigation-actions"><button class="button" id="previous-pair" type="button">Предыдущая</button><button class="button" id="next-pair" type="button">Следующая</button></div></div></section>
+</fieldset>
+<section class="panel export-bar"><div><h2>Сохранить результат проверки</h2><p class="muted small" id="export-summary">Экспорт содержит ваши оценки и черновики. Перед отправкой проверьте число завершённых пар.</p></div><div class="navigation-actions"><button class="button" id="import-results" type="button">Восстановить JSON</button><button class="button primary" id="export-results" type="button" disabled>Экспортировать ответы</button><input type="file" id="import-file" accept=".json,application/json" hidden></div></section>
+<p class="bottom-note">Форма работает без интернета и ничего не отправляет автоматически. Ответы сохраняются в этом браузере под вашим идентификатором. Экспортируйте JSON после каждого сеанса: очистка браузера или перенос файла могут удалить локальные черновики. Кнопка «Восстановить JSON» продолжит работу из вашего файла. Передайте Куату только свой экспорт.</p>
+</main></div>
+<div id="fatal" class="fatal" role="alert" hidden></div>
+<script type="application/json" id="blind-tasks">__AUTOHR_BLIND_TASKS_JSON__</script>
+<script type="application/json" id="blind-meta">__AUTOHR_BLIND_META_JSON__</script>
+<script>
+"use strict";
+(() => {
+  const $ = id => document.getElementById(id);
+  let tasks, meta;
+  try {
+    tasks = JSON.parse($("blind-tasks").textContent).map(task => task.data);
+    meta = JSON.parse($("blind-meta").textContent);
+    if (!tasks.length || !meta.packet_id || tasks.some(task => !task.review_id || typeof task.cv_text !== "string" || typeof task.vacancy_display !== "string")) throw new Error("Некорректный состав пакета");
+    if (new Set(tasks.map(task => task.review_id)).size !== tasks.length) throw new Error("Повторяющиеся номера пар");
+  } catch (_) {
+    $("fatal").hidden = false;
+    $("fatal").textContent = "Не удалось открыть пакет проверки. Используйте готовый файл START_REVIEW.html из полученного архива. Если ошибка остаётся, попросите Куата проверить пакет.";
+    return;
+  }
+  const categories = ["ROLE_LEVEL", "EXPERIENCE", "HARD_SKILL", "SOFT_SKILL", "EDUCATION", "LANGUAGE", "OTHER"];
+  const categoryLabels = {ROLE_LEVEL:"Роль и уровень", EXPERIENCE:"Опыт", HARD_SKILL:"Технический навык", SOFT_SKILL:"Взаимодействие и работа", EDUCATION:"Образование", LANGUAGE:"Язык", OTHER:"Другое требование"};
+  let reviewer = "", activeIndex = 0, responses = Object.create(null);
+  const blankRequirement = () => ({requirement_id:"r_" + Math.random().toString(36).slice(2,12), category:"", requirement:"", vacancy_quote:"", score:"", cv_quote:"", explanation:""});
+  const blankResponse = task => ({review_id:task.review_id,requirements:[blankRequirement()],overall_score:"",overall_explanation:"",notes:"",reviewed:false,updated_at:null});
+  const storageKey = () => "autohr_blind_review_v1:" + meta.packet_id + ":" + encodeURIComponent(reviewer);
+  const current = () => responses[tasks[activeIndex].review_id];
+  function canonicalQuote(value, source, wordBoundary = false) {
+    if (!value || !value.trim()) return null;
+    const positions = [], normalized = [];
+    for (let n=0;n<source.length;n++) if (!/\s/u.test(source[n])) { positions.push(n); normalized.push(source[n]); }
+    const wanted = value.replace(/\s/gu, "");
+    const start = normalized.join("").indexOf(wanted);
+    if (start < 0 || !wanted) return null;
+    const begin = positions[start], end = positions[start + wanted.length - 1] + 1;
+    if (wordBoundary) {
+      const word = char => Boolean(char && /[\p{L}\p{N}_]/u.test(char));
+      if ((word(source[begin-1]) && word(source[begin])) || (word(source[end-1]) && word(source[end]))) return null;
+    }
+    return source.slice(begin,end);
+  }
+  function validateResponse(response, task) {
+    const errors = [], seen = new Set();
+    if (!response.requirements.length) errors.push("Добавьте хотя бы одно требование вакансии.");
+    response.requirements.forEach((row,index) => {
+      const prefix = "Требование " + (index+1) + ": ";
+      if (!categories.includes(row.category)) errors.push(prefix + "выберите категорию.");
+      if (!row.requirement.trim()) errors.push(prefix + "укажите название.");
+      if (!canonicalQuote(row.vacancy_quote, task.vacancy_display, true)) errors.push(prefix + "вставьте точную цитату вакансии, не обрезая слова.");
+      if (!["0","1","2","3"].includes(String(row.score)) || row.score === null || row.score === "") errors.push(prefix + "выберите оценку.");
+      if (String(row.score) === "0" && row.cv_quote.trim()) errors.push(prefix + "для оценки 0 цитата резюме должна быть пустой.");
+      if (["1","2","3"].includes(String(row.score)) && !canonicalQuote(row.cv_quote,task.cv_text)) errors.push(prefix + "оценка 1–3 требует точной цитаты резюме.");
+      if (!row.explanation.trim()) errors.push(prefix + "объясните оценку.");
+      const key = row.category + ":" + row.requirement.trim().toLocaleLowerCase();
+      if (row.requirement.trim() && seen.has(key)) errors.push(prefix + "это требование уже добавлено; проверьте дубликат.");
+      seen.add(key);
+    });
+    const hasUnknown = response.requirements.some(row => String(row.score) === "0");
+    if (!["0","1","2","3"].includes(String(response.overall_score)) || response.overall_score === null || response.overall_score === "") errors.push("Выберите общую оценку пары.");
+    if (!response.overall_explanation.trim()) errors.push("Объясните общую оценку пары.");
+    if (response.requirements.length && response.requirements.every(row => String(row.score) === "0") && String(response.overall_score) !== "0") errors.push("Если все требования неизвестны, общая оценка должна быть 0.");
+    if (String(response.overall_score) === "0" && !hasUnknown) errors.push("Общая оценка 0 требует хотя бы одного неизвестного требования.");
+    if (String(response.overall_score) === "3" && response.requirements.some(row => row.category === "ROLE_LEVEL" && String(row.score) === "1")) errors.push("Подтверждённое несоответствие роли или уровня не допускает общую оценку 3.");
+    if (!task.cv_text.trim() && (String(response.overall_score) !== "0" || response.requirements.some(row => String(row.score) !== "0"))) errors.push("Пустое резюме допускает только неизвестные оценки 0.");
+    if (!response.reviewed) errors.push("Подтвердите самостоятельную проверку текстов и оценок.");
+    return errors;
+  }
+  function statusOf(response,task) { return validateResponse(response,task).length === 0 ? "completed" : response.updated_at ? "draft" : "not_started"; }
+  function counts() {
+    const result = {total:tasks.length,completed:0,draft:0,not_started:0};
+    tasks.forEach(task => result[statusOf(responses[task.review_id],task)]++);
+    return result;
+  }
+  function refreshProgress() {
+    const count = counts();
+    $("progress-text").textContent = "Завершено " + count.completed + " из " + count.total;
+    $("progress-fill").style.width = (100*count.completed/count.total) + "%";
+    $("export-summary").textContent = "Завершено " + count.completed + " из " + count.total + ". Черновиков: " + count.draft + "; не начато: " + count.not_started + ". Экспорт сохранит все ответы с их состоянием.";
+    $("export-results").disabled = !reviewer;
+    $("pair-list").querySelectorAll("button").forEach((button,index) => {
+      const status = statusOf(responses[tasks[index].review_id],tasks[index]);
+      button.className = "pair-button" + (status === "completed" ? " complete" : status === "draft" ? " draft" : "");
+      button.setAttribute("aria-current",String(index===activeIndex));
+      button.setAttribute("aria-label","Пара " + (index+1) + ", " + ({completed:"завершена",draft:"черновик",not_started:"не начата"})[status]);
+    });
+    const state = statusOf(current(),tasks[activeIndex]);
+    $("pair-state").textContent = {completed:"Проверка завершена",draft:"Черновик",not_started:"Не начато"}[state];
+    $("pair-state").className = "pair-state" + (state === "completed" ? " complete" : "");
+  }
+  function save() {
+    if (!reviewer) return;
+    try { localStorage.setItem(storageKey(),JSON.stringify({schema_version:"autohr-blind-review-local-v1",packet_id:meta.packet_id,reviewer_id:reviewer,responses,active_index:activeIndex})); }
+    catch (_) {
+      $("storage-error").textContent = "Браузер не смог сохранить черновики. Не закрывайте страницу: скачайте JSON с ответами. Чтобы продолжить позже, экспортируйте ответы и восстановите их из JSON.";
+    }
+  }
+  function changed() {
+    current().updated_at = new Date().toISOString();
+    current().reviewed = false;
+    $("reviewed").checked = false;
+    $("validation").textContent = "";
+    $("notice").textContent = "";
+    save(); refreshProgress();
+  }
+  function createField(label,kind,value,handler,options={}) {
+    const wrap = document.createElement("label"); wrap.className = "field" + (options.wide ? " wide" : "");
+    const caption = document.createElement("span"); caption.textContent = label; wrap.append(caption);
+    const input = document.createElement(kind);
+    if (kind === "select") {
+      const empty = document.createElement("option"); empty.value="";empty.textContent=options.placeholder||"Выберите";input.append(empty);
+      options.options.forEach(([id,name])=>{const option=document.createElement("option");option.value=id;option.textContent=name;input.append(option);});
+    } else { input.rows=options.rows||2; }
+    input.value = value;
+    input.addEventListener(kind === "select" ? "change" : "input",()=>handler(input.value));
+    wrap.append(input);
+    if (options.help) {const help=document.createElement("span");help.className="help";help.textContent=options.help;wrap.append(help);}
+    return wrap;
+  }
+  function renderRequirements() {
+    const container = $("requirements"); container.replaceChildren();
+    if (!current().requirements.length) {const empty=document.createElement("p");empty.className="empty-requirements";empty.textContent="Добавьте отдельные требования вакансии и оцените каждое по резюме.";container.append(empty);}
+    current().requirements.forEach((row,index) => {
+      const section=document.createElement("section");section.className="requirement";
+      const heading=document.createElement("div");heading.className="row-heading";
+      const title=document.createElement("h3");title.textContent="Требование " + (index+1);heading.append(title);
+      const remove=document.createElement("button");remove.type="button";remove.className="button text danger";remove.textContent="Удалить";remove.setAttribute("aria-label","Удалить требование " + (index+1));
+      remove.addEventListener("click",()=>{current().requirements.splice(index,1);changed();renderRequirements();});heading.append(remove);section.append(heading);
+      const grid=document.createElement("div");grid.className="form-grid";
+      const field=(label,kind,key,options={})=>grid.append(createField(label,kind,row[key],value=>{row[key]=value;changed();},options));
+      field("Категория","select","category",{options:categories.map(id=>[id,categoryLabels[id]])});
+      field("Название требования","textarea","requirement",{rows:1,help:"Например, Python или профильный стаж от 3 лет. Пожелание обозначьте явно."});
+      field("Цитата из вакансии","textarea","vacancy_quote",{wide:true,help:"Непрерывный исходный фрагмент с этим требованием."});
+      field("Оценка требования","select","score",{options:[["0","0 — нет сведений"],["1","1 — не соответствует"],["2","2 — частично"],["3","3 — соответствует"]],placeholder:"Выберите оценку"});
+      field("Цитата из резюме","textarea","cv_quote",{help:"Для 0 оставьте пустой. Для 1–3 нужна цитата, подтверждающая именно ваше суждение."});
+      field("Объяснение оценки","textarea","explanation",{wide:true,rows:2});
+      section.append(grid);container.append(section);
+    });
+  }
+  function renderPair(focus=false) {
+    const task=tasks[activeIndex],response=current();
+    $("pair-caption").textContent="Пара " + (activeIndex+1) + " из " + tasks.length;
+    $("pair-heading").textContent=task.review_id;
+    $("cv-text").textContent=task.cv_text;$("vacancy-text").textContent=task.vacancy_display;
+    $("cv-text").scrollTop=0;$("vacancy-text").scrollTop=0;
+    $("reference-note").textContent="Для опыта «по настоящее время» используйте дату " + (task.reference_date||"из задания") + ". Оценивайте сведения в сохранённых текстах.";
+    $("overall-score").value=response.overall_score;$("overall-reason").value=response.overall_explanation;$("review-notes").value=response.notes;$("reviewed").checked=response.reviewed;
+    $("validation").textContent="";$("notice").textContent="";$("previous-pair").disabled=activeIndex===0;$("next-pair").disabled=activeIndex===tasks.length-1;
+    renderRequirements();refreshProgress();save();
+    if(focus){$("pair-heading").setAttribute("tabindex","-1");$("pair-heading").focus({preventScroll:true});$("pair-heading").scrollIntoView({block:"start",behavior:"instant"});}
+  }
+  function initializeResponses() { responses=Object.create(null);tasks.forEach(task=>responses[task.review_id]=blankResponse(task)); }
+  function beginReview() {
+    const entered=$("reviewer-id").value.trim();
+    if (!entered) {$("notice").textContent="Сначала введите своё имя или идентификатор участника.";$("reviewer-id").focus();return;}
+    save();reviewer=entered;activeIndex=0;initializeResponses();
+    $("storage-error").textContent="";
+    try {
+      const raw=localStorage.getItem(storageKey());
+      if(raw){
+        const stored=JSON.parse(raw);
+        if(stored.packet_id!==meta.packet_id||stored.reviewer_id!==reviewer||!stored.responses)throw new Error("Неверный черновик");
+        const restored=parseImported({schema_version:"autohr-blind-review-responses-v1",packet_id:meta.packet_id,rubric_version:meta.rubric_version,reviewer_id:reviewer,responses:Object.values(stored.responses).map(item=>({...item,requirements:item.requirements.map(row=>({...row,score:row.score===""?null:Number(row.score)})),overall_score:item.overall_score===""?null:Number(item.overall_score)}))});
+        Object.keys(restored.responses).forEach(id=>responses[id]=restored.responses[id]);
+        if(Number.isInteger(stored.active_index)&&stored.active_index>=0&&stored.active_index<tasks.length)activeIndex=stored.active_index;
+      }
+    } catch (_) {$("storage-error").textContent="Не удалось восстановить локальный черновик. Локальные данные не изменены. Восстановите сохранённый JSON или используйте другой идентификатор.";reviewer="";$("review-fields").disabled=true;refreshProgress();return;}
+    $("review-fields").disabled=false;
+    $("identity-note").textContent="Участник: " + reviewer + ". Ответы сохраняются отдельно для этого имени. Для другого участника введите другой идентификатор и нажмите «Начать / продолжить».";
+    renderPair();
+    $("notice").textContent="Кабинет проверки открыт для участника «" + reviewer + "». Перед закрытием скачайте JSON с ответами.";
+  }
+  function buildExport() {
+    const count=counts();
+    return {schema_version:"autohr-blind-review-responses-v1",packet_id:meta.packet_id,rubric_version:meta.rubric_version,reviewer_id:reviewer,exported_at:new Date().toISOString(),counts:count,responses:tasks.map(task=>{
+      const response=responses[task.review_id];
+      return {review_id:task.review_id,status:statusOf(response,task),requirements:response.requirements.map(row=>({requirement_id:row.requirement_id,category:row.category,requirement:row.requirement,vacancy_quote:canonicalQuote(row.vacancy_quote,task.vacancy_display,true)||row.vacancy_quote,score:row.score===""?null:Number(row.score),cv_quote:canonicalQuote(row.cv_quote,task.cv_text)||row.cv_quote,explanation:row.explanation})),overall_score:response.overall_score===""?null:Number(response.overall_score),overall_explanation:response.overall_explanation,notes:response.notes,reviewed:response.reviewed,updated_at:response.updated_at};
+    })};
+  }
+  function parseImported(payload) {
+    if (!payload || payload.schema_version !== "autohr-blind-review-responses-v1" || payload.packet_id !== meta.packet_id || payload.rubric_version !== meta.rubric_version) throw new Error("Файл относится к другому пакету или версии правил.");
+    if (typeof payload.reviewer_id !== "string" || !payload.reviewer_id.trim() || payload.reviewer_id.length > 80) throw new Error("В файле отсутствует корректный идентификатор участника.");
+    if (!Array.isArray(payload.responses) || payload.responses.length > tasks.length) throw new Error("Некорректный список ответов.");
+    const known = new Set(tasks.map(task=>task.review_id)), seen = new Set(), imported = Object.create(null);
+    const text = (value,name) => {if(typeof value!=="string" || value.length>100000)throw new Error("Некорректное поле «"+name+"».");return value;};
+    const score = value => {if(value===null)return "";if(!Number.isInteger(value)||value<0||value>3)throw new Error("Недопустимая оценка в файле.");return String(value);};
+    payload.responses.forEach(item=>{
+      if(!item || !known.has(item.review_id) || seen.has(item.review_id))throw new Error("В файле есть неизвестная или повторяющаяся пара.");
+      seen.add(item.review_id);
+      if(!Array.isArray(item.requirements)||item.requirements.length>200||typeof item.reviewed!=="boolean")throw new Error("Некорректные требования или подтверждение проверки.");
+      const rowIds=new Set();
+      const requirements=item.requirements.map(row=>{
+        if(!row || typeof row.requirement_id!=="string" || !row.requirement_id || row.requirement_id.length>100 || rowIds.has(row.requirement_id))throw new Error("Некорректный или повторяющийся номер требования.");
+        rowIds.add(row.requirement_id);
+        if(row.category!==""&&!categories.includes(row.category))throw new Error("Неизвестная категория требования.");
+        return {requirement_id:row.requirement_id,category:row.category,requirement:text(row.requirement,"название"),vacancy_quote:text(row.vacancy_quote,"цитата вакансии"),score:score(row.score),cv_quote:text(row.cv_quote,"цитата резюме"),explanation:text(row.explanation,"объяснение")};
+      });
+      if(item.updated_at!==null && (typeof item.updated_at!=="string" || !Number.isFinite(Date.parse(item.updated_at))))throw new Error("Некорректная дата ответа.");
+      imported[item.review_id]={review_id:item.review_id,requirements,overall_score:score(item.overall_score),overall_explanation:text(item.overall_explanation,"общее объяснение"),notes:text(item.notes,"замечания"),reviewed:item.reviewed,updated_at:item.updated_at};
+    });
+    return {reviewer_id:payload.reviewer_id.trim(),responses:imported};
+  }
+  initializeResponses();
+  tasks.forEach((task,index)=>{const button=document.createElement("button");button.type="button";button.className="pair-button";button.textContent=String(index+1);button.addEventListener("click",()=>{activeIndex=index;renderPair(true);});$("pair-list").append(button);});
+  $("start-review").addEventListener("click",beginReview);
+  $("reviewer-id").addEventListener("keydown",event=>{if(event.key==="Enter"){event.preventDefault();beginReview();}});
+  $("add-requirement").addEventListener("click",()=>{current().requirements.push(blankRequirement());changed();renderRequirements();const fields=$("requirements").querySelectorAll("select");fields[fields.length-2]?.focus();});
+  $("overall-score").addEventListener("change",()=>{current().overall_score=$("overall-score").value;changed();});
+  $("overall-reason").addEventListener("input",()=>{current().overall_explanation=$("overall-reason").value;changed();});
+  $("review-notes").addEventListener("input",()=>{current().notes=$("review-notes").value;changed();});
+  $("reviewed").addEventListener("change",()=>{current().reviewed=$("reviewed").checked;current().updated_at=new Date().toISOString();save();refreshProgress();});
+  $("check-pair").addEventListener("click",()=>{
+    const errors=validateResponse(current(),tasks[activeIndex]);$("validation").replaceChildren();
+    if(errors.length){const title=document.createElement("strong");title.textContent="Пара пока не завершена";const list=document.createElement("ul");errors.forEach(error=>{const item=document.createElement("li");item.textContent=error;list.append(item);});$("validation").append(title,list);}
+    else{$("notice").textContent="Пара завершена. Перейдите к следующей или скачайте текущие ответы.";}
+    refreshProgress();save();
+  });
+  $("previous-pair").addEventListener("click",()=>{if(activeIndex>0){activeIndex--;renderPair(true);}});
+  $("next-pair").addEventListener("click",()=>{if(activeIndex<tasks.length-1){activeIndex++;renderPair(true);}});
+  $("import-results").addEventListener("click",()=>$("import-file").click());
+  $("import-file").addEventListener("change",async()=>{
+    const file=$("import-file").files[0];$("import-file").value="";if(!file)return;
+    try {
+      if(file.size>8*1024*1024)throw new Error("Файл больше 8 МБ. Выберите экспорт этой формы.");
+      const imported=parseImported(JSON.parse(await file.text()));
+      const entered=$("reviewer-id").value.trim();
+      if(entered && entered!==imported.reviewer_id)throw new Error("В файле указан другой участник: «"+imported.reviewer_id+"». Введите это имя перед восстановлением или выберите свой файл.");
+      const nextKey="autohr_blind_review_v1:"+meta.packet_id+":"+encodeURIComponent(imported.reviewer_id);
+      let existing=false;
+      try{existing=Boolean(localStorage.getItem(nextKey));}catch(_){}
+      if(existing && !confirm("Заменить локальные ответы участника «"+imported.reviewer_id+"» ответами из выбранного JSON? Перед заменой можно отменить и экспортировать текущие ответы."))return;
+      save();reviewer=imported.reviewer_id;$("reviewer-id").value=reviewer;initializeResponses();
+      Object.keys(imported.responses).forEach(id=>responses[id]=imported.responses[id]);
+      activeIndex=Math.max(0,tasks.findIndex(task=>statusOf(responses[task.review_id],task)!=="completed"));
+      $("review-fields").disabled=false;$("storage-error").textContent="";$("identity-note").textContent="Участник: "+reviewer+". Восстановлены только его ответы из выбранного файла.";
+      renderPair();const count=counts();$("notice").textContent="Ответы восстановлены. Завершено "+count.completed+" из "+count.total+". Остальные ответы сохранены как черновики или не начаты.";
+    }catch(error){$("storage-error").textContent="Не удалось восстановить JSON: "+(error instanceof Error?error.message:"проверьте файл")+" Текущие ответы не заменены.";}
+  });
+  $("export-results").addEventListener("click",()=>{
+    if(!reviewer)return;save();
+    const result=buildExport(),blob=new Blob([JSON.stringify(result,null,2)],{type:"application/json;charset=utf-8"}),url=URL.createObjectURL(blob),link=document.createElement("a");
+    link.href=url;link.download="autohr-review-"+String(meta.packet_id).replace(/[^a-zA-Z0-9_-]/g,"_")+"-"+new Date().toISOString().slice(0,10)+".json";document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+    $("notice").textContent="Экспорт подготовлен: завершено " + result.counts.completed + " из " + result.counts.total + ". Черновиков: " + result.counts.draft + ". Проверьте файл в загрузках и передайте его Куату после проверки.";
+  });
+  window.addEventListener("beforeunload",()=>save());
+  window.AUTOHRBlindReview={validateResponse,buildExport,canonicalQuote};
+  if(matchMedia("(max-width:760px)").matches)$("pair-nav-details").open=false;
+  $("app").hidden=false;renderPair();
+})();
+</script>
+</body>
+</html>

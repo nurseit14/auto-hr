@@ -227,6 +227,10 @@ One username/password form opens the account's workspace without a role selector
 
 A shared context strip selects the resume and optional vacancy. Desktop places feedback and questions in two flat panels; narrow screens stack them. Feedback separates existing evidence, unknown requirements and improvements. Questions offer editable examples, a text field and chronological replies. Source quotes and the existing score explanation remain inspectable in disclosure controls. An imported vacancy opens the normal editable form with filename and warnings before creation.
 
+### Offline annotation form
+
+The independent ML2 review packet inherits the navy, cobalt and light reading surfaces without downloading fonts or assets. A compact numbered rail tracks unstarted, draft and completed pairs with text labels as well as color. Source documents sit side by side, followed by editable requirements and a separate overall assessment. Narrow screens stack the sources and fields. The utility uses a 27px desktop title and 24px narrow title, with system-font fallback for offline use. Empty score controls and neutral document presentation preserve independent review; export and restore controls remain distinct from completion.
+
 ### Evidence dossier
 
 A candidate header, underlined tabs, scrollable evidence region, source-context actions, and a separate decision footer keep inspection and action legible. Evidence quotes remain inspectable; source-context actions can reveal highlighted text. Green confirmed tags and amber unknowns sit beside explanations rather than replacing them. Relative model values use separate muted-blue numeric fields.
